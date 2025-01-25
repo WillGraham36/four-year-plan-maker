@@ -1,10 +1,19 @@
+import { auth } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
 import React from 'react'
 
-function Authedlayout({
+async function Authedlayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+  const { userId }: { userId: string | null } = await auth();
+
+  if(!userId) {
+    return redirect('/')
+  }
+
   return (
     <>
       {children}
