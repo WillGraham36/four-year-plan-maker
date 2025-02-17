@@ -1,16 +1,23 @@
+'use server';
 export const getCourseInfo = async (courseId: string) => {
-  const res = await fetch(`/api/courses/${courseId}`);
-  if (!res.ok) {
-    console.log("Failed to fetch course data");
+  const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);
+  if (response.status === 404) {
     return {
       ok: false,
-      message: "Failed to fetch course data",
+      message: "Course not found",
       data: null,
     }
   }
-  const data = await res.json();
+  if (!response.ok) {
+    return {
+      ok: false,
+      message: `HTTP error! status: ${response.status}`,
+      data: null,
+    }
+  }
+  const data = await response.json();
   return {
-    ok: res.ok,
+    ok: response.ok,
     message: "Successfully fetched course data",
     data: data,
   }

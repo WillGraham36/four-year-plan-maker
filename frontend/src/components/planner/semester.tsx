@@ -11,6 +11,7 @@ const Semester = () => {
     e.preventDefault();
     // Handle form submission and save the courseInfo
     console.log("Form submitted")
+    console.log(e.target)
   };
 
 
@@ -43,6 +44,15 @@ const Class = () => {
       ...course,
       courseID: courseId,
     });
+    if(courseId.length === 0) {
+      setCourse({
+        courseID: "",
+        name: "",
+        description: "",
+        credits: 0,
+        genEds: [],
+      });
+    }
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
       const res = await getCourseInfo(courseId);
       if(!res.ok) {
