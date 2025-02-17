@@ -6,11 +6,12 @@ export type Semester = {
 }
 
 export type Course = {
-  courseID: string
+  courseId: string
   name: string
   description: string
   credits: number
   genEds: GenEd[]
+  preReqs: string[];
 }
 
 export type GenEd = 
@@ -27,3 +28,7 @@ export type GenEd =
   | "SCIS"
   | "DVUP"
   | "DVCC"
+
+export type CustomServerResponse<T> =
+  | { ok: true; message: string; data: T }
+  | { ok: false; message: string; data: null }

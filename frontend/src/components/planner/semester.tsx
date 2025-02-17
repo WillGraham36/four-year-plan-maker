@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input"
 import { Course, GenEd } from "@/lib/utils/types";
-import { getCourseInfo } from "@/lib/api/planner/planner.client";
+import { getCourseInfo } from "@/lib/api/planner/planner.server";
 
 const Semester = () => {
 
@@ -31,26 +31,28 @@ const Semester = () => {
 
 const Class = () => {
   const [course, setCourse] = useState<Course>({
-    courseID: "",
+    courseId: "",
     name: "",
     description: "",
     credits: 0,
     genEds: [],
+    preReqs: [],
   });
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const courseId = e.target.value.toUpperCase();
     setCourse({
       ...course,
-      courseID: courseId,
+      courseId: courseId,
     });
     if(courseId.length === 0) {
       setCourse({
-        courseID: "",
+        courseId: "",
         name: "",
         description: "",
         credits: 0,
         genEds: [],
+        preReqs: [],
       });
     }
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
@@ -59,18 +61,7 @@ const Class = () => {
         console.log(res.message);
         return;
       }
-      const courseInfo = res.data;
-
-
-  
-      const genEds = courseInfo[0].gen_ed.length !== 0 ? courseInfo[0].gen_ed[0].map((genEds: string) => genEds as GenEd) : [];
-      setCourse({
-        courseID: courseInfo[0].course_id,
-        name: courseInfo[0].name,
-        description: courseInfo[0].description,
-        credits: courseInfo[0].credits,
-        genEds: genEds,
-      });
+      setCourse(res.data);
     }
   };
 
@@ -79,7 +70,7 @@ const Class = () => {
       className="bg-neutral-500 flex gap-2 items-center p-2"
 
     >
-      <Input value={course.courseID} onChange={handleInputChange} />
+      <Input value={course.courseId} onChange={handleInputChange} />
       <Input className="disabled:cursor-default" disabled value={course.genEds.length > 0 ? course.genEds : "-"} />
       <Input className="disabled:cursor-default" disabled value={course.credits}/>
     </form>
