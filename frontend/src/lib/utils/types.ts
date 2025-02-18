@@ -15,6 +15,7 @@ export type Course = {
 }
 
 export type GenEd = 
+  | "NONE"
   | "FSAW"
   | "FSPW"
   | "FSMA"

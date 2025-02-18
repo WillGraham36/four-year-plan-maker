@@ -15,12 +15,12 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
   if (!response.ok) {
     return {
       ok: false,
-      message: `HTTP error! status: ${response.status}`,
+      message: `Something went wrong: Error status ${response.status}`,
       data: null,
     }
   }
+
   const data = await response.json();
-  // console.log(data);
   try {
     const parsedData = CourseInfoSchema.parse(data[0]);
     const courseInfo: Course = {
@@ -31,7 +31,6 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
       genEds: (parsedData.gen_ed ? parsedData.gen_ed.flat() : []) as GenEd[],
       preReqs: parsedData.relationships?.prereqs ? [parsedData.relationships.prereqs] : [],
     };
-    console.log(courseInfo);
     return {
       ok: true,
       message: "Successfully fetched course data",

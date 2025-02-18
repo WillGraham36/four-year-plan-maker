@@ -10,17 +10,18 @@ const Navbar = () => {
         <h3 className="text-2xl font-bold py-2 px-4 rounded-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50">UMD 4-year planner</h3>
         <div className="gap-2 items-center flex">
           <SignedOut>
-            <SignInButton />
+            <SignInButton>
+              <Button
+                variant={'secondary'}
+                className="px-5"
+              >
+                Log In
+              </Button>
+            </SignInButton>
           </SignedOut>
           <SignedIn>
             <UserButton />
           </SignedIn>
-          <Button
-            variant={'secondary'}
-            className="px-5"
-          >
-            Log In
-          </Button>
           <ModeToggle />
         </div>
       </div>
