@@ -21,6 +21,7 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
   }
 
   const data = await response.json();
+  console.log(data[0].gen_ed);
   try {
     const parsedData = CourseInfoSchema.parse(data[0]);
     const courseInfo: Course = {
@@ -28,7 +29,7 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
       name: parsedData.name,
       description: parsedData.description,
       credits: parsedData.credits,
-      genEds: (parsedData.gen_ed ? parsedData.gen_ed.flat() : []) as GenEd[],
+      genEds: (parsedData.gen_ed ? parsedData.gen_ed : [[]]) as GenEd[][],
       preReqs: parsedData.relationships?.prereqs ? [parsedData.relationships.prereqs] : [],
     };
     return {

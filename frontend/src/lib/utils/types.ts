@@ -10,7 +10,11 @@ export type Course = {
   name: string
   description: string
   credits: number
-  genEds: GenEd[]
+  // 2D array of gen eds
+  // e.g. [["FSAW", "FSPW"], ["DSNL", "DSNS"]]
+  // Each inner array represents gen-eds that a course can use simultaneously
+  // Each seperate inner array represents the OR relationship between the gen-eds
+  genEds: GenEd[][]
   preReqs: string[];
 }
 

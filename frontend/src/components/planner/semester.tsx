@@ -4,7 +4,7 @@ const Semester = () => {
 
 
   return (
-    <div className="flex flex-col max-w-xl">
+    <div className="flex flex-col">
       <div className="flex justify-around">
         <p>Course</p>
         <p>GenEd</p>
