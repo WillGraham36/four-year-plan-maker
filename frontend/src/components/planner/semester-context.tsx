@@ -15,6 +15,7 @@ export const SemesterProvider = ({ children }: { children: ReactNode }) => {
 
   const addCourse = (course: Course) => {
     setCourses([...courses, course]);
+    console.log(courses);
   }
 
   const removeCourse = (course: Course) => {

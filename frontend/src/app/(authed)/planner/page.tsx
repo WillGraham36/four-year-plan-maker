@@ -4,7 +4,16 @@ import React from 'react'
 const PlannerPage = () => {
   return (
     <main>
-      <Semester />
+      <div className='grid grid-cols-2 w-max'>
+        <Semester />
+        <Semester />
+        <Semester />
+        <Semester />
+        <Semester />
+        <Semester />
+        <Semester />
+        <Semester />
+      </div>
     </main>
   )
 }
