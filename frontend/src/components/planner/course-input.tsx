@@ -1,5 +1,5 @@
 "use client";
-import { Course } from '@/lib/utils/types';
+import { Course, GenEd } from '@/lib/utils/types';
 import React, { useState } from 'react'
 import { Input } from '../ui/input';
 import { getCourseInfo } from '@/lib/api/planner/planner.server';
@@ -9,9 +9,13 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Info } from 'lucide-react';
+import { useSemester } from './semester-context';
 
 
 const CourseInput = () => {
+  const { courses, addCourse, removeCourse } = useSemester();
+  const [courseId, setCourseId] = useState<string>("");
+
   const [course, setCourse] = useState<Course>({
     courseId: "",
     name: "",
@@ -31,6 +35,7 @@ const CourseInput = () => {
       genEds: [["NONE"]],
       preReqs: [],
     });
+    removeCourse(course);
   }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,6 +56,7 @@ const CourseInput = () => {
       }
       setCourse(res.data);
       setErrorMessage("");
+      addCourse(res.data);
     }
   };
 
@@ -59,8 +65,7 @@ const CourseInput = () => {
       return null;
     }
 
-    // TODO: Add a context so this knows the other courses in the semester and dont show the hoverCard if the dependant course is met
-    if (course.genEds.length > 0) {
+    if (course.genEds[0].length > 0) {
       return (
         <span className='flex items-center gap-1'>
           {course.genEds.map((genEdGroups, groupIndex) => (
@@ -69,17 +74,21 @@ const CourseInput = () => {
                 <React.Fragment key={`${groupIndex}-${genEdIndex}`}>
                   {genEdIndex > 0 && ", "}
                   {genEd.length > 4 ? (
-                    <HoverCard>
-                      <HoverCardTrigger className='text-orange-600 flex items-center gap-1 cursor-pointer'>
-                        <Info size={16} className='inline' />
-                        {genEd.slice(0, 4)}
-                      </HoverCardTrigger>
-                      <HoverCardContent className='p-3 text-center'>
-                        Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
-                      </HoverCardContent>
-                    </HoverCard>
+                    !courses.some(course => course.courseId === genEd.slice(5)) ? (
+                      <HoverCard>
+                        <HoverCardTrigger className='text-orange-500 flex items-center gap-1 cursor-pointer'>
+                          <Info size={16} className='inline' />
+                          {genEd.slice(0, 4)}
+                        </HoverCardTrigger>
+                        <HoverCardContent className='p-3 text-center'>
+                          Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
+                        </HoverCardContent>
+                      </HoverCard>
+                    ) : (
+                      genEd.slice(0, 4)
+                    )
                   ) : (
-                    genEd
+                  genEd
                   )}
                 </React.Fragment>
               ))}
