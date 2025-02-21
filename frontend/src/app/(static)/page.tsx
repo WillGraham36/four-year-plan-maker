@@ -4,7 +4,6 @@ import React from 'react'
 const HomePage = async () => {
   return (
     <>
-      <Navbar />
       <div>
       </div>
     </>
