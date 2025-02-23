@@ -37,3 +37,5 @@ export type GenEd =
 export type CustomServerResponse<T> =
   | { ok: true; message: string; data: T }
   | { ok: false; message: string; data: null }
+
+export type Term = "FALL" | "SPRING" | "SUMMER" | "WINTER";

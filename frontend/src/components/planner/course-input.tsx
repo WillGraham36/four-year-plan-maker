@@ -12,6 +12,7 @@ import {
 
 import { CircleAlert, Info } from 'lucide-react';
 import { useSemester } from './semester-context';
+import { fetchWithAuth } from '@/lib/api/server';
 
 
 const CourseInput = () => {
