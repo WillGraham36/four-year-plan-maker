@@ -1,8 +1,10 @@
 package com.willgraham.four_year_planner.controller;
 
+import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.UserCourseRequestDto;
 import com.willgraham.four_year_planner.dto.UserCourseResponseDto;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
+import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.model.UserCourse;
@@ -12,9 +14,11 @@ import com.willgraham.four_year_planner.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -28,33 +32,42 @@ public class UserCourseController {
     /**
      * Add courses that a user is taking
      * @param requestDtos - List of user_courses the user is taking
-     * @return - The saved courses (no user id)
+     * @return - The saved courses
      */
     @PostMapping
-    public ResponseEntity<List<UserCourseResponseDto>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos) {
+    public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new JwtAuthenticationException("Unauthorized");
+        }
+        String userId = (String) authentication.getPrincipal();
+
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
-                .map(this::processUserCourse)
+                .map(dto -> processUserCourse(dto, userId))
                 .toList();
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedCourses);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(savedCourses));
     }
 
     /**
      * Get all courses the user is currently planning on taking
-     * @param userId - Temporarily take in the userId in the parameters
      * @return - All the courses the user is registered for
      */
     @GetMapping
-    public ResponseEntity<List<UserCourse>> getUserCourses(@RequestParam String userId) {
+    public ResponseEntity<ApiResponse<List<UserCourse>>> getUserCourses(Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new JwtAuthenticationException("Unauthorized");
+        }
+        String userId = (String) authentication.getPrincipal();
+
         List<UserCourse> courses = userCourseService.getAllCoursesForUser(userId);
-        return ResponseEntity.ok(courses);
+        return ResponseEntity.ok(ApiResponse.success(courses));
     }
 
-    private UserCourseResponseDto processUserCourse(UserCourseRequestDto requestDto) {
+    private UserCourseResponseDto processUserCourse(UserCourseRequestDto requestDto, String userId) {
         Course course = courseService.findOrCreateCourse(requestDto.getCourse());
 
         // Create new UserCourse
         UserCourse userCourse = new UserCourse();
-        userCourse.setUserId(requestDto.getUserId());  // Set only the userId
+        userCourse.setUserId(userId);  // Set only the userId
         userCourse.setCourseId(course.getCourseId());  // Set only the courseId
         userCourse.setSemester(requestDto.getSemester());
 

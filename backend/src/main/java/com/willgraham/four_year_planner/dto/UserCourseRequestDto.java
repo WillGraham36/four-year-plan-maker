@@ -6,7 +6,6 @@ import lombok.Data;
 
 @Data
 public class UserCourseRequestDto {
-    private String userId;
     private Course course;
     private Semester semester;
 }

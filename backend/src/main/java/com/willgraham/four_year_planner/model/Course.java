@@ -1,5 +1,6 @@
 package com.willgraham.four_year_planner.model;
 
+import com.willgraham.four_year_planner.utils.ListOfListStringConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,6 +16,8 @@ public class Course {
     private String department; //ex: "Mathmatics"
     private String name;
     private Integer credits;
-    private List<String> genEds;
-//    private List<String> preReqs;
+
+    @Convert(converter = ListOfListStringConverter.class)
+    @Column(columnDefinition = "TEXT") // Ensure enough space for JSON storage
+    private List<List<String>> genEds;
 }
