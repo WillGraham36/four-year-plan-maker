@@ -13,10 +13,11 @@ import {
 import { CircleAlert, Info } from 'lucide-react';
 import { useSemester } from './semester-context';
 import { fetchWithAuth } from '@/lib/api/server';
+import { saveCourse } from '@/lib/api/planner/planner.client';
 
 
 const CourseInput = () => {
-  const { courses, addCourse, removeCourse } = useSemester();
+  const { courses, addCourse, removeCourse, term, year } = useSemester();
 
   const [course, setCourse] = useState<Course>({
     courseId: "",
@@ -61,6 +62,7 @@ const CourseInput = () => {
       setCourse(res.data);
       setErrorMessage("");
       addCourse(res.data);
+      await saveCourse(res.data, term, year);
     }
   };
 

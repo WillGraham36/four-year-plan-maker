@@ -3,14 +3,25 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
+import { Term } from "@/lib/utils/types";
 
-const Semester = () => {
+interface SemesterProps {
+  term: Term;
+  year: number;
+}
+
+const Semester = ({
+  term,
+  year,
+}: SemesterProps) => {
   const [numCourses, setNumCourses] = useState<number>(4);
 
   return (
-    <SemesterProvider>
+    <SemesterProvider term={term} year={year}>
       <div className="flex flex-col rounded-lg border border-neutral-600 mt-5 ml-5 max-w-lg h-min overflow-hidden dark:text-neutral-300">
-        <p className="w-full border-b border-neutral-600 p-2 px-3">Fall 2026</p>
+        <p className="w-full border-b border-neutral-600 p-2 px-3">
+            {term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()} {year}
+        </p>
 
         <div className="grid grid-cols-[1fr,2fr,4rem] border-b border-neutral-600 text-sm">
           <p className="w-full px-3 py-1">Course</p>

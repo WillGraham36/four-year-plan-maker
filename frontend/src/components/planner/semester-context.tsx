@@ -1,8 +1,10 @@
 "use client";
-import { Course } from "@/lib/utils/types";
+import { Course, Term } from "@/lib/utils/types";
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface SemesterContextProps {
+  term: Term;
+  year: number;
   courses: Course[];
   addCourse: (course: Course) => void;
   removeCourse: (course: Course) => void;
@@ -10,7 +12,7 @@ interface SemesterContextProps {
 
 const SemesterContext = createContext<SemesterContextProps | undefined>(undefined);
 
-export const SemesterProvider = ({ children }: { children: ReactNode }) => {
+export const SemesterProvider = ({ children, term, year }: { children: ReactNode, term: Term, year: number }) => {
   const [courses, setCourses] = useState<Course[]>([]);
 
   const addCourse = (course: Course) => {
@@ -23,7 +25,7 @@ export const SemesterProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <SemesterContext.Provider value={{ courses, addCourse, removeCourse }}>
+    <SemesterContext.Provider value={{ courses, addCourse, removeCourse, term, year }}>
       {children}
     </SemesterContext.Provider>
   )
