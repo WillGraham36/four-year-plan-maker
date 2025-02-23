@@ -19,14 +19,10 @@ public class UserCourseService {
                 userCourse.getSemester()
         );
 
+        // If this is just a duplicate course, don't save it and return a blank course
         if(existsInSameSemester) {
-            throw new IllegalStateException("User is already registered for this course in this semester");
+            return new UserCourse();
         }
-
-        // Check if there are previous attempts
-        List<UserCourse> previousAttempts = userCourseRepository
-                .findByUserIdAndCourseIdOrderBySemesterDesc(userCourse.getUserId(), userCourse.getCourseId());
-        userCourse.setRetake(!previousAttempts.isEmpty());
 
         return userCourseRepository.save(userCourse);
     }

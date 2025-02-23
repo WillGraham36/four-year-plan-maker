@@ -15,6 +15,5 @@ public class UserCourseResponseDto {
         this.id = userCourse.getId();
         this.courseId = userCourse.getCourseId();
         this.semester = userCourse.getSemester();
-        this.retake = userCourse.isRetake();
     }
 }

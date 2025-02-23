@@ -24,6 +24,4 @@ public class UserCourse {
 
     @Embedded
     private Semester semester;
-
-    private boolean retake;
 }
