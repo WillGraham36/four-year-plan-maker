@@ -15,16 +15,14 @@ import { useSemester } from './semester-context';
 import { saveCourse } from '@/lib/api/planner/planner.server';
 
 
-const CourseInput = () => {
+const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
   const { courses, addCourse, removeCourse, term, year } = useSemester();
 
-  const [course, setCourse] = useState<Course>({
+  const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",
     name: "",
-    description: "",
     credits: -1,
     genEds: [["NONE"]],
-    preReqs: [],
   });
   const [errorMessage, setErrorMessage] = useState<string>("");
 
@@ -32,10 +30,8 @@ const CourseInput = () => {
     setCourse({
       courseId: courseId,
       name: "",
-      description: "",
       credits: -1,
       genEds: [["NONE"]],
-      preReqs: [],
     });
     removeCourse(course);
   }
@@ -49,6 +45,10 @@ const CourseInput = () => {
     if(courseId.length < 7) {
       setErrorMessage("");
       resetCourseFields(courseId);
+      return;
+    }
+    if(courses.some(course => course.courseId === courseId)) {
+      setErrorMessage("Course already added");
       return;
     }
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {

@@ -12,12 +12,11 @@ interface SemesterContextProps {
 
 const SemesterContext = createContext<SemesterContextProps | undefined>(undefined);
 
-export const SemesterProvider = ({ children, term, year }: { children: ReactNode, term: Term, year: number }) => {
-  const [courses, setCourses] = useState<Course[]>([]);
+export const SemesterProvider = ({ children, term, year, initialCourses }: { children: ReactNode, term: Term, year: number, initialCourses: Course[] }) => {
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
 
   const addCourse = (course: Course) => {
     setCourses([...courses, course]);
-    console.log(courses);
   }
 
   const removeCourse = (course: Course) => {

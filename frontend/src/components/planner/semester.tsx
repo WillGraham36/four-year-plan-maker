@@ -16,11 +16,9 @@ const Semester = ({
   year,
   courses,
 }: SemesterProps) => {
-  const [numCourses, setNumCourses] = useState<number>(4);
-  console.log(courses);
 
   return (
-    <SemesterProvider term={term} year={year}>
+    <SemesterProvider term={term} year={year} initialCourses={courses}>
       <div className="flex flex-col rounded-lg border border-neutral-600 mt-5 ml-5 max-w-lg h-min overflow-hidden dark:text-neutral-300">
         <p className="w-full border-b border-neutral-600 p-2 px-3">
             {term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()} {year}
@@ -32,7 +30,7 @@ const Semester = ({
           <p className="w-full text-center py-1">Credits</p>
         </div>
 
-        <SemesterCourseList numCourses={numCourses} increaseNumCourses={() => setNumCourses(numCourses + 1)} />
+        <SemesterCourseList initialCourses={courses}  />
       </div>
     </SemesterProvider>
   )
@@ -41,20 +39,24 @@ const Semester = ({
 /**
  * Keeps track of the number of courses and adds additional CourseInput components as needed
  * Shows total credits as well
- * @param numCourses - The number of courses to display
- * @param increaseNumCourses - Function to increase the number of courses
  */
-const SemesterCourseList = ({ numCourses, increaseNumCourses }: { numCourses: number, increaseNumCourses: () => void }) => {
+const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) => {
+  const initialLength = initialCourses?.length ?? 0;
   const { courses } = useSemester();
+  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 4));
+
   useEffect(() => {
-    if(courses.length === numCourses && numCourses < 8) {
-      increaseNumCourses();
+    if(courses.length === numCourseInputs && numCourseInputs < 8) {
+      setNumCourseInputs((prevNum) => prevNum + 1);
     }
-  }, [courses, numCourses])
+  }, [courses, numCourseInputs])
 
   return (
     <>
-      {[...Array(numCourses)].map((_, i) => (
+      {initialCourses?.map((course) => (
+          <CourseInput key={course.courseId} initialCourse={course} />
+      ))}
+      {[...Array(numCourseInputs - initialLength)].map((_, i) => (
         <CourseInput key={i} />
       ))}
       <div className="h-10 w-full grid grid-cols-[1fr,2fr,4rem] text-sm">
