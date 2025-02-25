@@ -1,7 +1,81 @@
 'use server';
 
-import { CourseInfoSchema } from "@/lib/utils/schemas";
-import { Course, CustomServerResponse, GenEd } from "@/lib/utils/types";
+import { CourseInfoSchema, SemestersSchema } from "@/lib/utils/schemas";
+import { Course, CustomServerResponse, GenEd, Term } from "@/lib/utils/types";
+import { fetchWithAuth } from "../server";
+
+export const saveCourse = async (course: Course, term: Term, year: number) => {
+  const body = JSON.stringify([{
+    course: {
+      courseId: course.courseId,
+      name: course.name,
+      credits: course.credits,
+      genEds: course.genEds,
+    },
+    semester: {
+      term: term,
+      year: year,
+    }
+  }]);
+  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+
+  return res;
+}
+
+
+export const saveSemester = async (courses: Course[], term: Term, year: number) => {
+  const body = JSON.stringify(
+    courses.map((course) => {
+      return {
+        course: {
+          courseId: course.courseId,
+          name: course.name,
+          credits: course.credits,
+          genEds: course.genEds,
+        },
+        semester: {
+          term: { term },
+          year: { year },
+        },
+      };
+    })
+  );
+  console.log(body);
+
+  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+
+  return res;
+}
+
+
+interface GetSemesterCoursesProps {
+  term: Term;
+  year: number;
+}
+
+export const getSemesterCourses = async (props: GetSemesterCoursesProps) => {
+  const courses = await fetchWithAuth("v1/usercourses");
+  console.log(courses.data);
+}
+
+export const getAllSemesters = async () => {
+  const res = await fetchWithAuth("v1/usercourses");
+  const courses = SemestersSchema.safeParse(res.data);
+  return courses.data || {};
+}
+
 
 export const getCourseInfo = async (courseId: string): Promise<CustomServerResponse<Course>> => {
   const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);
@@ -26,10 +100,8 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
     const courseInfo: Course = {
       courseId: parsedData.course_id,
       name: parsedData.name,
-      description: parsedData.description,
       credits: parsedData.credits,
       genEds: (parsedData.gen_ed?.length !== 0 ? parsedData.gen_ed : [[]]) as GenEd[][],
-      preReqs: parsedData.relationships?.prereqs ? [parsedData.relationships.prereqs] : [],
     };
     return {
       ok: true,

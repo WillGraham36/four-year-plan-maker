@@ -3,18 +3,21 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
-import { Term } from "@/lib/utils/types";
+import { Course, Term } from "@/lib/utils/types";
 
 interface SemesterProps {
   term: Term;
   year: number;
+  courses: Course[];
 }
 
 const Semester = ({
   term,
   year,
+  courses,
 }: SemesterProps) => {
   const [numCourses, setNumCourses] = useState<number>(4);
+  console.log(courses);
 
   return (
     <SemesterProvider term={term} year={year}>

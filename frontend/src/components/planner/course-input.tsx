@@ -12,8 +12,7 @@ import {
 
 import { CircleAlert, Info } from 'lucide-react';
 import { useSemester } from './semester-context';
-import { fetchWithAuth } from '@/lib/api/server';
-import { saveCourse } from '@/lib/api/planner/planner.client';
+import { saveCourse } from '@/lib/api/planner/planner.server';
 
 
 const CourseInput = () => {

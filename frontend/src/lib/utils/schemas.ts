@@ -1,3 +1,4 @@
+import { Course } from '@/lib/utils/types';
 import { z } from "zod";
 
 export const CourseInfoSchema = z.object({
@@ -6,7 +7,15 @@ export const CourseInfoSchema = z.object({
   description: z.string(),
   credits: z.union([z.string(), z.number()]).transform((val) => Number(val)),
   gen_ed: z.array(z.array(z.string())).optional(),
-  relationships: z.object({
-    prereqs: z.union([z.string(), z.null()]).optional(),
-  }).optional(),
 })
+
+export const CourseSchema = z.object({
+  courseId: z.string(),
+  name: z.string(),
+  credits: z.number(),
+  genEds: z.array(z.array(z.string())),
+});
+
+export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
+
+export type Semesters = z.infer<typeof SemestersSchema>;

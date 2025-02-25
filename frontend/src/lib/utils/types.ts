@@ -8,14 +8,12 @@ export type Semester = {
 export type Course = {
   courseId: string
   name: string
-  description: string
   credits: number
   // 2D array of gen eds
   // e.g. [["FSAW", "FSPW"], ["DSNL", "DSNS"]]
   // Each inner array represents gen-eds that a course can use simultaneously
   // Each seperate inner array represents the OR relationship between the gen-eds
   genEds: GenEd[][]
-  preReqs: string[];
 }
 
 export type GenEd = 
