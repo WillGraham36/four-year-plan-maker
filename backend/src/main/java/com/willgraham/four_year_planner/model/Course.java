@@ -13,7 +13,6 @@ import java.util.Objects;
 public class Course {
     @Id
     private String courseId; // ex: "MATH140"
-    private String department; //ex: "Mathmatics"
     private String name;
     private Integer credits;
 

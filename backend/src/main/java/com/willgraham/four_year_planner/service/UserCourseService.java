@@ -1,11 +1,15 @@
 package com.willgraham.four_year_planner.service;
 
+import com.willgraham.four_year_planner.dto.ApiResponse;
+import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -27,11 +31,7 @@ public class UserCourseService {
         return userCourseRepository.save(userCourse);
     }
 
-    public List<UserCourse> getAllAttemptsForCourse(String userId, String courseId) {
-        return userCourseRepository.findByUserIdAndCourse_CourseIdOrderBySemesterDesc(userId, courseId);
-    }
-
     public List<UserCourse> getAllCoursesForUser(String userId) {
-        return userCourseRepository.findByUserId(userId);
+        return userCourseRepository.findByUserIdOrderBySemesterAsc(userId);
     }
 }

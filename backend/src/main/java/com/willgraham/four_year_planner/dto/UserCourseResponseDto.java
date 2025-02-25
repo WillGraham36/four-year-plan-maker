@@ -9,7 +9,6 @@ public class UserCourseResponseDto {
     private Long id;
     private String courseId;
     private Semester semester;
-    private boolean retake;
 
     public UserCourseResponseDto(UserCourse userCourse) {
         this.id = userCourse.getId();

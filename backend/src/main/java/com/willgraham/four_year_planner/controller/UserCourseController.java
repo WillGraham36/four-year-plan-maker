@@ -1,11 +1,13 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.ApiResponse;
+import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.dto.UserCourseRequestDto;
 import com.willgraham.four_year_planner.dto.UserCourseResponseDto;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
 import com.willgraham.four_year_planner.model.Course;
+import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
@@ -17,8 +19,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 @AllArgsConstructor
 @RestController
@@ -52,14 +58,25 @@ public class UserCourseController {
      * @return - All the courses the user is registered for
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<UserCourse>>> getUserCourses(Authentication authentication) {
+    public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
         if (authentication == null || authentication.getPrincipal() == null) {
             throw new JwtAuthenticationException("Unauthorized");
         }
         String userId = (String) authentication.getPrincipal();
-
         List<UserCourse> courses = userCourseService.getAllCoursesForUser(userId);
-        return ResponseEntity.ok(ApiResponse.success(courses));
+
+        // Transform DTOs
+        List<CourseDto> courseDtos = courses.stream()
+                .map(CourseDto::fromUserCourse)
+                .toList();
+
+        // Group by semester
+        Map<Semester, List<CourseDto>> coursesBySemester = courseDtos.stream()
+                .collect(Collectors.groupingBy(CourseDto::getSemester));
+
+
+
+        return ResponseEntity.ok(ApiResponse.success(coursesBySemester));
     }
 
     private UserCourseResponseDto processUserCourse(UserCourseRequestDto requestDto, String userId) {
