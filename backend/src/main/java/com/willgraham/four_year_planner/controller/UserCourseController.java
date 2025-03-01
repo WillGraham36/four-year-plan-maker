@@ -1,14 +1,9 @@
 package com.willgraham.four_year_planner.controller;
 
-import com.willgraham.four_year_planner.dto.ApiResponse;
-import com.willgraham.four_year_planner.dto.CourseDto;
-import com.willgraham.four_year_planner.dto.UserCourseRequestDto;
-import com.willgraham.four_year_planner.dto.UserCourseResponseDto;
-import com.willgraham.four_year_planner.exception.CourseNotFoundException;
+import com.willgraham.four_year_planner.dto.*;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
-import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.UserCourseService;
@@ -19,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,6 +71,30 @@ public class UserCourseController {
 
 
         return ResponseEntity.ok(ApiResponse.success(coursesBySemester));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new JwtAuthenticationException("Unauthorized");
+        }
+        String userId = (String) authentication.getPrincipal();
+
+        int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
+
+        return ResponseEntity.ok(ApiResponse.success("Successfully deleted " + deletedCount + "courses from user"));
+    }
+
+    private UserCourse convertDtoToUserCourse(UserCourseRequestDto requestDto, String userId) {
+        Course course = courseService.findOrCreateCourse(requestDto.getCourse());
+
+        // Create new UserCourse
+        UserCourse userCourse = new UserCourse();
+        userCourse.setUserId(userId);  // Set only the userId
+        userCourse.setCourseId(course.getCourseId());  // Set only the courseId
+        userCourse.setSemester(requestDto.getSemester());
+
+        return userCourse;
     }
 
     private UserCourseResponseDto processUserCourse(UserCourseRequestDto requestDto, String userId) {

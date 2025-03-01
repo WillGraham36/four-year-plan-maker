@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.service;
 
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.CourseDto;
+import com.willgraham.four_year_planner.dto.CourseIdentifierDto;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import lombok.AllArgsConstructor;
@@ -33,5 +34,14 @@ public class UserCourseService {
 
     public List<UserCourse> getAllCoursesForUser(String userId) {
         return userCourseRepository.findByUserIdOrderBySemesterAsc(userId);
+    }
+
+    public int deleteUserCoursesByIdentifiers(String userId, List<CourseIdentifierDto> courseIdentifiers) {
+        int count = 0;
+
+        for(CourseIdentifierDto dto : courseIdentifiers) {
+            count += userCourseRepository.deleteByUserIdAndCourseIdAndSemester(userId, dto.getCourseId(), dto.getSemester());
+        }
+        return count;
     }
 }
