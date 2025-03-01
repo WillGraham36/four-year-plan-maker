@@ -23,3 +23,18 @@ export function extractSemester(semesters: Semesters, term: Term, year: number):
   }
   return courses;
 }
+
+export function courseAndSemesterToDto(course: Course, term: Term, year: number) {
+  return {
+    course: {
+      courseId: course.courseId,
+      name: course.name,
+      credits: course.credits,
+      genEds: course.genEds,
+    },
+    semester: {
+      term: { term },
+      year: { year },
+    },
+  };
+}

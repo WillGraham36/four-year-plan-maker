@@ -3,6 +3,7 @@
 import { CourseInfoSchema, SemestersSchema } from "@/lib/utils/schemas";
 import { Course, CustomServerResponse, GenEd, Term } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
+import { courseAndSemesterToDto } from "@/lib/utils";
 
 export const saveCourse = async (course: Course, term: Term, year: number) => {
   const body = JSON.stringify([{
@@ -31,25 +32,33 @@ export const saveCourse = async (course: Course, term: Term, year: number) => {
 
 export const saveSemester = async (courses: Course[], term: Term, year: number) => {
   const body = JSON.stringify(
-    courses.map((course) => {
-      return {
-        course: {
-          courseId: course.courseId,
-          name: course.name,
-          credits: course.credits,
-          genEds: course.genEds,
-        },
-        semester: {
-          term: { term },
-          year: { year },
-        },
-      };
-    })
+    courses.map((course) => courseAndSemesterToDto(course, term, year))
   );
-  console.log(body);
 
   const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: body,
+  });
+
+  return res;
+}
+
+export const deleteSemesterCourses = async (courseIds: string[], term: Term, year: number) => {
+  const body = JSON.stringify(
+    courseIds.map((courseId) => ({
+      courseId: courseId,
+      semester: {
+        term: term,
+        year: year
+      }
+    }))
+  );
+
+  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },

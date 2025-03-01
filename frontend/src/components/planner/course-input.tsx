@@ -1,8 +1,8 @@
 "use client";
 import { Course, GenEd } from '@/lib/utils/types';
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Input } from '../ui/input';
-import { getCourseInfo } from '@/lib/api/planner/planner.server';
+import { deleteSemesterCourses, getCourseInfo } from '@/lib/api/planner/planner.server';
 import {
   Tooltip,
   TooltipContent,
@@ -16,7 +16,7 @@ import { saveCourse } from '@/lib/api/planner/planner.server';
 
 
 const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
-  const { courses, addCourse, removeCourse, term, year } = useSemester();
+  const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
 
   const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",
@@ -25,43 +25,62 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
     genEds: [["NONE"]],
   });
   const [errorMessage, setErrorMessage] = useState<string>("");
+  const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
 
-  const resetCourseFields = (courseId: string = "") => {
+  // If courseId is provided, courseId field will NOT be reset
+  const resetCourseFields = async (courseId: string = "") => {
     setCourse({
       courseId: courseId,
       name: "",
       credits: -1,
       genEds: [["NONE"]],
     });
-    removeCourse(course);
+
+    if(verifiedCourseId.current === "") return;
+    
+    // Make use of fact that course state has not updated yet to check 
+    // if the course was added and validated to remove it from backend
+    if(hasCourse(verifiedCourseId.current)) {
+      removeCourse(verifiedCourseId.current);
+      await deleteSemesterCourses([verifiedCourseId.current], term, year);
+      verifiedCourseId.current = "";
+    }
   }
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const courseId = e.target.value.toUpperCase();
-    setCourse({
-      ...course,
-      courseId: courseId,
-    });
+    setCourse(prevCourse => ({
+      ...prevCourse,
+      courseId,
+    }));
+    setErrorMessage("");
+    
     if(courseId.length < 7) {
-      setErrorMessage("");
-      resetCourseFields(courseId);
+      await resetCourseFields(courseId);
       return;
     }
-    if(courses.some(course => course.courseId === courseId)) {
+
+    if (courses.some(c => c.courseId === courseId)) {
       setErrorMessage("Course already added");
       return;
     }
+
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
-      const res = await getCourseInfo(courseId);
-      if(!res.ok) {
-        setErrorMessage(res.message);
-        resetCourseFields(courseId);
-        return;
+      try {
+        const res = await getCourseInfo(courseId);
+        if(!res.ok) {
+          setErrorMessage(res.message);
+          await resetCourseFields(courseId);
+          return;
+        }
+        setCourse(res.data);
+        addCourse(res.data);
+        await saveCourse(res.data, term, year);
+        verifiedCourseId.current = courseId;
+      } catch (e) {
+        setErrorMessage("Error fetching course information");
+        console.log(e);
       }
-      setCourse(res.data);
-      setErrorMessage("");
-      addCourse(res.data);
-      await saveCourse(res.data, term, year);
     }
   };
 
