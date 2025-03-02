@@ -85,6 +85,11 @@ export const getAllSemesters = async () => {
   return courses.data || {};
 }
 
+export const getAllGenEds = async () => {
+  const res = await fetchWithAuth("v1/geneds");
+  return res.data;
+}
+
 
 export const getCourseInfo = async (courseId: string): Promise<CustomServerResponse<Course>> => {
   const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);

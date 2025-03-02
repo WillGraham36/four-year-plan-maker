@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";

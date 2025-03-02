@@ -1,10 +1,12 @@
 import Semester from '@/components/planner/semester'
-import { getAllSemesters } from '@/lib/api/planner/planner.server';
+import { getAllGenEds, getAllSemesters } from '@/lib/api/planner/planner.server';
 import { extractSemester } from '@/lib/utils';
 import React from 'react'
 
 const PlannerPage = async () => {
   const semesters = await getAllSemesters();
+  const genEds = await getAllGenEds();
+  console.log(genEds);
 
   return (
     <main>
