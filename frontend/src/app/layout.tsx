@@ -1,19 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit } from 'next/font/google'
 import "./globals.css";
-import { ThemeProvider } from "../components/theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
-import Navbar from "@/components/layout/navbar";
+import Providers from "@/components/layout/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const outfit = Outfit({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: "UMD Four Year Planner",
@@ -28,21 +18,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark:bg-neutral-900`}
+        className={`${outfit.className} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          key="four-year-planner-theme"
-          storageKey="four-year-planner-theme"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ClerkProvider>
-            <Navbar />
-            {children}
-          </ClerkProvider>
-        </ThemeProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

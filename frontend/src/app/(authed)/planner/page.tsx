@@ -5,8 +5,8 @@ import React from 'react'
 
 const PlannerPage = async () => {
   const semesters = await getAllSemesters();
-  const genEds = await getAllGenEds();
-  console.log(genEds);
+  // const genEds = await getAllGenEds();
+  // console.log(genEds);
 
   return (
     <main>

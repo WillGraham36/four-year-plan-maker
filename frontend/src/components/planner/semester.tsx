@@ -18,14 +18,14 @@ const Semester = ({
 
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
-      <div className="flex flex-col rounded-lg border border-neutral-600 mt-5 ml-5 max-w-lg h-min overflow-hidden dark:text-neutral-300">
-        <p className="w-full border-b border-neutral-600 p-2 px-3">
-            {term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()} {year}
+      <div className="flex flex-col rounded-lg border mt-5 ml-5 max-w-[30rem] h-min overflow-hidden bg-card shadow-md">
+        <p className="w-full border-b p-2 px-3">
+          {term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()} {year}
         </p>
 
-        <div className="grid grid-cols-[1fr,2fr,4rem] border-b border-neutral-600 text-sm">
+        <div className="grid grid-cols-[1fr,2fr,3.5rem] border-b text-sm text-muted-foreground">
           <p className="w-full px-3 py-1">Course</p>
-          <p className="border-x border-neutral-600 w-full px-3 py-1">GenEd</p>
+          <p className="border-x w-full px-3 py-1">GenEd</p>
           <p className="w-full text-center py-1">Credits</p>
         </div>
 
@@ -58,9 +58,9 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
       {[...Array(numCourseInputs - initialLength)].map((_, i) => (
         <CourseInput key={i} />
       ))}
-      <div className="h-10 w-full grid grid-cols-[1fr,2fr,4rem] text-sm">
-        <p className="w-full flex items-center justify-center">Total Credits</p>
-        <div className="w-full border-r border-neutral-600"></div>
+      <div className="h-10 w-full grid grid-cols-[1fr,2fr,3.5rem] text-sm">
+        <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
+        <div className="w-full border-r"></div>
         <p className="w-full flex items-center justify-center">
           {courses.reduce((total, course) => total + (course.credits || 0), 0)}
         </p>

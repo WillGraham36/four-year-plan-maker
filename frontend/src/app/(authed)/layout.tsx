@@ -8,7 +8,7 @@ async function Authedlayout({
   children: React.ReactNode;
 }>) {
 
-  const { userId }: { userId: string | null } = await auth();
+  const { userId } = await auth();
 
   if(!userId) {
     return redirect('/')

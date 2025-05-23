@@ -6,7 +6,6 @@ import { deleteSemesterCourses, getCourseInfo } from '@/lib/api/planner/planner.
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
@@ -99,17 +98,15 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
                   {genEdIndex > 0 && ", "}
                   {genEd.length > 4 ? (
                     !courses.some(course => course.courseId === genEd.slice(5)) ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className='text-orange-500 flex items-center gap-1 cursor-pointer'>
-                            <Info size={16} className='inline' />
-                            {genEd.slice(0, 4)}
-                          </TooltipTrigger>
-                          <TooltipContent className='p-3 text-center'>
-                            Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className='text-orange-500 flex items-center gap-1 cursor-pointer'>
+                          <Info size={16} className='inline' />
+                          {genEd.slice(0, 4)}
+                        </TooltipTrigger>
+                        <TooltipContent className='text-center'>
+                          Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
+                        </TooltipContent>
+                      </Tooltip>
                     ) : (
                       genEd.slice(0, 4)
                     )
@@ -130,29 +127,33 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
 
   return (
     <div className="flex flex-col">
-      <div className='grid grid-cols-[1fr,2fr,4rem] relative'>
-        <div className='flex flex-row items-center dark:bg-neutral-950 bg-white'>
+      <div className='grid grid-cols-[1fr,2fr,3.5rem] relative'>
+        <div className='flex flex-row items-center'>
           {errorMessage.length > 0 && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="text-red-500 flex items-center cursor-pointer h-full border-neutral-600 border-b pl-3">
-                  <CircleAlert size={16} className='inline' />
-                </TooltipTrigger>
-                <TooltipContent className='text-center'>
-                  {errorMessage}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="text-red-500 flex items-center cursor-pointer h-full border-b pl-3">
+                <CircleAlert size={16} className='inline' />
+              </TooltipTrigger>
+              <TooltipContent className='text-center'>
+                {errorMessage}
+              </TooltipContent>
+            </Tooltip>
           )}
-          <Input className='p-0 px-3 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b border-neutral-600 dark:border-neutral-600 text-sm' value={course.courseId} onChange={handleInputChange} />
+          <Input 
+            className='p-0 px-3 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-sm !bg-card !border-border'
+            value={course.courseId} 
+            onChange={handleInputChange} 
+          />
         </div>
+
         <div 
-          className='flex items-center h-10 w-full border-b border-x border-neutral-600 bg-white/40 text-sm text-neutral-500 cursor-default dark:bg-neutral-950/40 dark:text-neutral-400 px-3 border-t-0'
+          className='flex items-center h-10 w-full border-b border-x bg-background text-sm cursor-default px-3 border-t-0'
         >
           {displayGenEds()}
         </div>
+
         <div
-          className='flex items-center justify-center h-10 w-full border-b border-neutral-600 bg-white/40 text-sm text-neutral-500 cursor-default dark:bg-neutral-950/40 dark:text-neutral-400'
+          className='flex items-center justify-center h-10 w-full border-b bg-background text-sm cursor-default'
         >
           {course.credits === -1 ? "" : course.credits}
         </div>
