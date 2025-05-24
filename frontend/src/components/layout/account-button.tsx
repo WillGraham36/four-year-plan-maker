@@ -1,10 +1,11 @@
 import { UserButton, useUser } from '@clerk/nextjs'
 import React from 'react'
 import { Button } from '../ui/button';
-import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
 const AccountButton = () => {
   const { user } = useUser();
+  const { theme } = useTheme();
 
   return (
     <div className="relative inline-block h-10">
@@ -15,7 +16,7 @@ const AccountButton = () => {
             elements: {
               rootBox: "h-full w-full rounded-none",
               userButtonTrigger: "h-full w-full rounded-none p-1"
-            }
+            },
           }}
         />
       </div>

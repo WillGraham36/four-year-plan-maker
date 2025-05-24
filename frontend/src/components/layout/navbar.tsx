@@ -6,9 +6,9 @@ import AccountButton from "./account-button";
 
 const Navbar = () => {
   return (
-    <nav className="w-full top-0 h-16 flex items-center justify-center z-50 dark:bg-neutral-800 bg-neutral-300">
+    <nav className="w-full top-0 h-16 flex items-center justify-center z-50 border-b shadow-sm">
       <div className="w-full lg:w-[95%] flex justify-between items-center px-4">
-        <h3 className="text-2xl font-bold py-2 px-4 rounded-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50">UMD 4-year planner</h3>
+        <h3 className="text-2xl font-bold py-2 px-4 rounded-md bg-card">4 Year Planner</h3>
         <div className="gap-2 items-center flex">
           <SignedOut>
             <SignInButton>

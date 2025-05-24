@@ -10,7 +10,7 @@ const PlannerPage = async () => {
 
   return (
     <main>
-      <div className='grid grid-cols-2 w-max'>
+      <div className='grid lg:w-max grid-cols-1 lg:grid-cols-2 w-full max-lg:justify-items-center '>
         <Semester term='FALL' year={2024} courses={extractSemester(semesters, 'FALL', 2024)} />
         <Semester term='SPRING' year={2025} courses={extractSemester(semesters, 'SPRING', 2025)} />
 

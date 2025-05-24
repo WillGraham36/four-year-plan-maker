@@ -1,8 +1,8 @@
 import React from 'react'
 import { ThemeProvider } from '../theme-provider';
-import { ClerkProvider } from '@clerk/nextjs';
 import Navbar from './navbar';
 import { TooltipProvider } from '../ui/tooltip';
+import CustomClerkProvider from './clerk-provider';
 
 export default function Providers({
   children,
@@ -18,12 +18,12 @@ export default function Providers({
       enableSystem
       disableTransitionOnChange
     >
-      <ClerkProvider>
+      <CustomClerkProvider>
         <UIProviders>
           <Navbar />
           {children}
         </UIProviders>
-      </ClerkProvider>
+      </CustomClerkProvider>
     </ThemeProvider>
   )
 };

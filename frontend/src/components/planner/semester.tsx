@@ -18,7 +18,7 @@ const Semester = ({
 
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
-      <div className="flex flex-col rounded-lg border mt-5 ml-5 max-w-[30rem] h-min overflow-hidden bg-card shadow-md">
+      <div className="flex flex-col rounded-lg border mt-5 lg:ml-5 max-w-[30rem] h-min overflow-hidden bg-card shadow-md">
         <p className="w-full border-b p-2 px-3">
           {term.charAt(0).toUpperCase() + term.slice(1).toLowerCase()} {year}
         </p>
