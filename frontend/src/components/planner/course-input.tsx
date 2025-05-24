@@ -140,20 +140,20 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
             </Tooltip>
           )}
           <Input 
-            className='p-0 px-3 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-sm !bg-card !border-border'
+            className='p-0 px-3 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border'
             value={course.courseId} 
             onChange={handleInputChange} 
           />
         </div>
 
         <div 
-          className='flex items-center h-10 w-full border-b border-x bg-background text-sm cursor-default px-3 border-t-0'
+          className='flex items-center h-10 w-full border-b border-x bg-background text-xs md:text-sm cursor-default px-3 border-t-0'
         >
           {displayGenEds()}
         </div>
 
         <div
-          className='flex items-center justify-center h-10 w-full border-b bg-background text-sm cursor-default'
+          className='flex items-center justify-center h-10 w-full border-b bg-background text-xs md:text-sm cursor-default'
         >
           {course.credits === -1 ? "" : course.credits}
         </div>

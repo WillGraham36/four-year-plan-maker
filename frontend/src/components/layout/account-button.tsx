@@ -2,10 +2,10 @@ import { UserButton, useUser } from '@clerk/nextjs'
 import React from 'react'
 import { Button } from '../ui/button';
 import { useTheme } from 'next-themes';
+import Image from 'next/image';
 
 const AccountButton = () => {
   const { user } = useUser();
-  const { theme } = useTheme();
 
   return (
     <div className="relative inline-block h-10">
@@ -24,16 +24,20 @@ const AccountButton = () => {
       {/* Visual presentation */}
       <Button
         variant={'secondary'}
-        className="px-5"
+        className="p-0 lg:py-2 lg:px-5 max-lg:!bg-background"
       >
         <div className="h-8 w-8 rounded-full overflow-hidden">
-          <img
-            src={user?.imageUrl}
-            alt="Profile"
+          <Image
+            src={user?.imageUrl || "/default-user.svg"}
+            width={32}
+            height={32}
+            alt="Profile Picture"
             className="h-full w-full object-cover"
           />
         </div>
-        {user?.fullName || user?.username || 'My Account'}
+        <p className='hidden lg:block'>
+          {user?.fullName || user?.username || 'My Account'}
+        </p>
       </Button>
     </div>
   )
