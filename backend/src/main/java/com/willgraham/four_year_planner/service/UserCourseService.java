@@ -3,6 +3,8 @@ package com.willgraham.four_year_planner.service;
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.dto.CourseIdentifierDto;
+import com.willgraham.four_year_planner.model.Course;
+import com.willgraham.four_year_planner.model.GenEd;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import lombok.AllArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor

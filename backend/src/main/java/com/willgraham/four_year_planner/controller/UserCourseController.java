@@ -25,7 +25,6 @@ import static java.util.Arrays.stream;
 @RequestMapping("/api/v1/usercourses")
 public class UserCourseController {
 
-    private final UserService userService;
     private final UserCourseService userCourseService;
     private final CourseService courseService;
 
