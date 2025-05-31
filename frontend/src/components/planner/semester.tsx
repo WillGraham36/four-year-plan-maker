@@ -4,7 +4,6 @@ import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";
 
-
 interface SemesterProps {
   term: Term;
   year: number;
@@ -20,8 +19,8 @@ const Semester = ({
 
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
-      <div className="flex flex-col rounded-lg border mt-5 lg:ml-5 max-w-[30rem] h-min overflow-hidden bg-card shadow-md max-md:mx-1">
-        <p className="w-full border-b p-2 px-3 text-sm md:text-base">
+      <div className="flex flex-col rounded-lg border w-full h-min overflow-hidden bg-card shadow-md">
+        <p className="w-full border-b p-1 px-3 text-sm md:text-base">
           {semesterTerm}
         </p>
 
@@ -46,6 +45,7 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
   const { courses } = useSemester();
   const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 4));
 
+  // Ensure that there is alwyas at least one empty CourseInput, with a max of 8
   useEffect(() => {
     if(courses.length === numCourseInputs && numCourseInputs < 8) {
       setNumCourseInputs((prevNum) => prevNum + 1);
@@ -60,9 +60,8 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
       {[...Array(numCourseInputs - initialLength)].map((_, i) => (
         <CourseInput key={i} />
       ))}
-      <div className="h-10 w-full grid grid-cols-[1fr,2fr,3.5rem] text-xs md:text-sm">
+      <div className="h-8 w-full grid grid-cols-[3fr,3.5rem] text-xs md:text-sm">
         <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
-        <div className="w-full border-r"></div>
         <p className="w-full flex items-center justify-center">
           {courses.reduce((total, course) => total + (course.credits || 0), 0)}
         </p>
