@@ -1,6 +1,7 @@
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
 import Semester from '@/components/planner/semester'
 import Year from '@/components/planner/year';
+import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters } from '@/lib/api/planner/planner.server';
 import { extractSemester } from '@/lib/utils';
 
@@ -33,8 +34,9 @@ const PlannerPage = async () => {
         </Year>
       </div>
       
-      <div className='flex flex-col w-full mt-2 xl:w-[40%]'>
+      <div className='flex flex-col w-full gap-4 mt-2 xl:w-[40%]'>
         <GenEdsContainer />
+        <UpperLevelConcentrationContainer />
       </div>
     </main>
   )
