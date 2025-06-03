@@ -38,3 +38,21 @@ export function courseAndSemesterToDto(course: Course, term: Term, year: number)
     },
   };
 }
+
+/**
+ * Converts a term and year into a string representation
+ * @example termYearToString('FALL', 2024) => 'Fall 2024'
+ */
+export function termYearToString(term: string, year: number | string): string;
+export function termYearToString(termYear: string): string;
+export function termYearToString(termOrTermYear: string, year?: number | string): string {
+  if (year !== undefined) {
+    return `${termOrTermYear.charAt(0).toUpperCase()}${termOrTermYear.slice(1).toLowerCase()} ${year}`;
+  }
+  if(termOrTermYear.length === 0) {
+    return "";
+  }
+  // Assume input is like "FALL 2024"
+  const [term, yr] = termOrTermYear.split(" ");
+  return `${term.charAt(0).toUpperCase()}${term.slice(1).toLowerCase()} ${yr}`;
+}

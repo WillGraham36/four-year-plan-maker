@@ -1,4 +1,8 @@
-import React from 'react'
+'use client';
+import { termYearToString } from '@/lib/utils'
+import React, { useMemo } from 'react'
+import { useGenEds } from '../planner/geneds-context';
+import { GenEdList } from '@/lib/utils/schemas';
 
 const GenEds = [
   'FSAW',
@@ -24,6 +28,40 @@ const GenEds = [
 ]
 
 const GenEdsContainer = () => {
+
+  const { genEds } = useGenEds();
+
+  // Create a local copy of genEds to work with, only recalculated when genEds changes
+  const localGenEds = useMemo(() => [...genEds], [genEds]);
+
+  const assignGenEdsToRequirements = useMemo(() => {
+    const assignments: GenEdList = [];
+    const usedCourses = new Set(); // Track which courses have been used for each requirement
+    
+    GenEds.forEach(requiredGenEd => {
+      // Find a course that satisfies this requirement and hasn't been used for this exact requirement
+      const availableCourse = localGenEds.find(genEdCourse => 
+        genEdCourse.genEd === requiredGenEd && 
+        !usedCourses.has(`${genEdCourse.courseId}-${requiredGenEd}`)
+      );
+      
+      if (availableCourse) {
+        // Mark this specific course-requirement pair as used
+        usedCourses.add(`${availableCourse.courseId}-${requiredGenEd}`);
+        assignments.push(availableCourse);
+      } else {
+        // No available course for this requirement
+        assignments.push({ 
+          genEd: requiredGenEd, 
+          courseId: '', 
+          semesterName: '' 
+        });
+      }
+    });
+    
+    return assignments;
+  }, [localGenEds]);
+
   return (
     <div className='w-full rounded-lg border bg-card shadow-md h-full'>
       <p className="w-full border-b p-1.5 px-3 text-lg font-bold">
@@ -44,24 +82,27 @@ const GenEdsContainer = () => {
           </tr>
         </thead>
         <tbody>
-          {GenEds.map((genEd, i) => (
-            <React.Fragment key={i}>
-              <GenEdRow
-                genEd={genEd}
-                course={''}
-                semester={''}
-                isLast={i === GenEds.length - 1}
-              />
-              {/* Add empty row between gen-ed sections */}
-              {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
-                <tr>
-                  <td colSpan={3} className='bg-border p-0'>
-                    <div className='h-0.5' />
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
-          ))}
+          {GenEds.map((genEd, i) => {
+            const { courseId, semesterName } = assignGenEdsToRequirements[i];
+            return (
+              <React.Fragment key={i}>
+                <GenEdRow
+                  genEd={genEd}
+                  course={courseId}
+                  semester={termYearToString(semesterName)}
+                  isLast={i === GenEds.length - 1}
+                />
+                {/* Add empty row between gen-ed sections */}
+                {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
+                  <tr>
+                    <td colSpan={3} className='bg-border p-0'>
+                      <div className='h-0.5' />
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -88,7 +129,7 @@ const GenEdRow = ({
       <td className='px-3 py-1 text-sm md:text-sm text-muted-foreground'>
         {genEd}
       </td>
-      <td className='border-x px-3 py-1 text-sm md:text-sm text-muted-foreground'>
+      <td className='border-x px-3 py-1 text-sm md:text-sm text-muted-foreground font-mono'>
         {course}
       </td>
       <td className='px-3 py-1 text-sm md:text-sm text-muted-foreground'>

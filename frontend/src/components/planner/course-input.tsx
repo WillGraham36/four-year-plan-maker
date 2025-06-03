@@ -12,10 +12,12 @@ import {
 import { CircleAlert, Info } from 'lucide-react';
 import { useSemester } from './semester-context';
 import { saveCourse } from '@/lib/api/planner/planner.server';
+import { useGenEds } from './geneds-context';
 
 
 const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
+  const { triggerGenEdsUpdate } = useGenEds();
 
   const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",
@@ -42,6 +44,7 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
     if(hasCourse(verifiedCourseId.current)) {
       removeCourse(verifiedCourseId.current);
       await deleteSemesterCourses([verifiedCourseId.current], term, year);
+      triggerGenEdsUpdate();
       verifiedCourseId.current = "";
     }
   }
@@ -75,6 +78,7 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
         setCourse(res.data);
         addCourse(res.data);
         await saveCourse(res.data, term, year);
+        triggerGenEdsUpdate();
         verifiedCourseId.current = courseId;
       } catch (e) {
         setErrorMessage("Error fetching course information");

@@ -19,3 +19,11 @@ export const CourseSchema = z.object({
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
 
 export type Semesters = z.infer<typeof SemestersSchema>;
+
+export const GenEdListSchema = z.array(z.object({
+  genEd: z.string(),
+  courseId: z.string(),
+  semesterName: z.string(),
+}));
+
+export type GenEdList = z.infer<typeof GenEdListSchema>;

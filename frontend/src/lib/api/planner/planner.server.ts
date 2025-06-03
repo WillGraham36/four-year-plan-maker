@@ -1,6 +1,6 @@
 'use server';
 
-import { CourseInfoSchema, SemestersSchema } from "@/lib/utils/schemas";
+import { CourseInfoSchema, GenEdListSchema, SemestersSchema } from "@/lib/utils/schemas";
 import { Course, CustomServerResponse, GenEd, Term } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
@@ -18,12 +18,14 @@ export const saveCourse = async (course: Course, term: Term, year: number) => {
       year: year,
     }
   }]);
-  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: body,
+  const res = await fetchWithAuth("v1/usercourses", {
+    init: { 
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    }
   });
 
   return res;
@@ -35,12 +37,14 @@ export const saveSemester = async (courses: Course[], term: Term, year: number) 
     courses.map((course) => courseAndSemesterToDto(course, term, year))
   );
 
-  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: body,
+  const res = await fetchWithAuth("v1/usercourses", {
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    }
   });
 
   return res;
@@ -57,12 +61,14 @@ export const deleteSemesterCourses = async (courseIds: string[], term: Term, yea
     }))
   );
 
-  const res = await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: body,
+  const res = await fetchWithAuth("v1/usercourses", {
+    init: {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    }
   });
 
   return res;
@@ -87,7 +93,8 @@ export const getAllSemesters = async () => {
 
 export const getAllGenEds = async () => {
   const res = await fetchWithAuth("v1/geneds");
-  return res.data;
+  const genEdList = GenEdListSchema.safeParse(res.data);
+  return genEdList.data || [];
 }
 
 

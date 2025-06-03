@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";
+import { termYearToString } from "@/lib/utils";
 
 interface SemesterProps {
   term: Term;
@@ -15,7 +16,7 @@ const Semester = ({
   year,
   courses,
 }: SemesterProps) => {
-  const semesterTerm = `${term.charAt(0).toUpperCase()}${term.slice(1).toLowerCase()} ${year}`;
+  const semesterTerm = termYearToString(term, year);
 
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
@@ -43,7 +44,7 @@ const Semester = ({
 const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) => {
   const initialLength = initialCourses?.length ?? 0;
   const { courses } = useSemester();
-  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 4));
+  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 5));
 
   // Ensure that there is alwyas at least one empty CourseInput, with a max of 8
   useEffect(() => {
