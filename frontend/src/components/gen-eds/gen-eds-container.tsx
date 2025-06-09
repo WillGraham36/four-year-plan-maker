@@ -12,7 +12,7 @@ const GenEds = [
   'FSAR',
 
   'DSNL',
-  'DSNS or NL',
+  'DSNS or DSNL',
   'DSHS',
   'DSHS',
   'DSHU',
@@ -24,27 +24,37 @@ const GenEds = [
   'SCIS',
 
   'DVUP',
-  'DVUP or CC',
+  'DVUP or DVCC',
 ]
 
 const GenEdsContainer = () => {
 
   const { genEds } = useGenEds();
 
-  // Create a local copy of genEds to work with, only recalculated when genEds changes
+  // Create a local copy of genEds to work with when filtering and rendering
   const localGenEds = useMemo(() => [...genEds], [genEds]);
 
+  // Create a mapping of GenEds to their courses
   const assignGenEdsToRequirements = useMemo(() => {
     const assignments: GenEdList = [];
     const usedCourses = new Set(); // Track which courses have been used for each requirement
     
+    // For each course, check if it satisfies any of the GenEd requirements
     GenEds.forEach(requiredGenEd => {
-      // Find a course that satisfies this requirement and hasn't been used for this exact requirement
-      const availableCourse = localGenEds.find(genEdCourse => 
-        genEdCourse.genEd === requiredGenEd && 
-        !usedCourses.has(`${genEdCourse.courseId}-${requiredGenEd}`)
-      );
-      
+      let availableCourse: GenEdList[number] | undefined = undefined;
+      if(requiredGenEd.includes('or')) {
+        const [firstGenEd, secondGenEd] = requiredGenEd.split(' or ');
+        availableCourse = localGenEds.find(genEdCourse => 
+          (genEdCourse.genEd === firstGenEd || genEdCourse.genEd === secondGenEd) && 
+          !usedCourses.has(`${genEdCourse.courseId}-${firstGenEd}`) &&
+          !usedCourses.has(`${genEdCourse.courseId}-${secondGenEd}`)
+        );
+      } else {
+        availableCourse = localGenEds.find(genEdCourse => 
+          genEdCourse.genEd === requiredGenEd && 
+          !usedCourses.has(`${genEdCourse.courseId}-${requiredGenEd}`)
+        );  
+      }      
       if (availableCourse) {
         // Mark this specific course-requirement pair as used
         usedCourses.add(`${availableCourse.courseId}-${requiredGenEd}`);

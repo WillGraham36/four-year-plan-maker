@@ -56,7 +56,7 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
   return (
     <>
       {initialCourses?.map((course) => (
-          <CourseInput key={course.courseId} initialCourse={course} />
+        <CourseInput key={course.courseId} initialCourse={course} />
       ))}
       {[...Array(numCourseInputs - initialLength)].map((_, i) => (
         <CourseInput key={i} />

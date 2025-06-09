@@ -14,6 +14,7 @@ export type Course = {
   // Each inner array represents gen-eds that a course can use simultaneously
   // Each seperate inner array represents the OR relationship between the gen-eds
   genEds: GenEd[][]
+  selectedGenEds?: GenEd[]
 }
 
 export type GenEd = 

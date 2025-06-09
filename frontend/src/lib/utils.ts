@@ -56,3 +56,16 @@ export function termYearToString(termOrTermYear: string, year?: number | string)
   const [term, yr] = termOrTermYear.split(" ");
   return `${term.charAt(0).toUpperCase()}${term.slice(1).toLowerCase()} ${yr}`;
 }
+
+
+export function arraysEqual<T>(a: T[], b: T[]): boolean {
+  if (a.length !== b.length) return false;
+  return a.every((val, idx) => val === b[idx]);
+};
+
+export function arrayEqualsNoOrdering<T>(a: T[], b: T[]): boolean {
+  if (a.length !== b.length) return false;
+  const aSorted = [...a].sort();
+  const bSorted = [...b].sort();
+  return aSorted.every((val, idx) => val === bSorted[idx]);
+}

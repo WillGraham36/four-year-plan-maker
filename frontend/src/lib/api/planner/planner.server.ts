@@ -50,6 +50,25 @@ export const saveSemester = async (courses: Course[], term: Term, year: number) 
   return res;
 }
 
+export const updateCourseSelectedGenEds = async (courseId: string, selectedGenEds: GenEd[]) => {
+  const body = JSON.stringify({
+    courseId: courseId,
+    selectedGenEds: selectedGenEds,
+  });
+
+  const res = await fetchWithAuth("v1/usercourses", {
+    init: {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    }
+  });
+
+  return res;
+}
+
 export const deleteSemesterCourses = async (courseIds: string[], term: Term, year: number) => {
   const body = JSON.stringify(
     courseIds.map((courseId) => ({
