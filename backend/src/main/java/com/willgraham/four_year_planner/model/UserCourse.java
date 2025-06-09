@@ -3,6 +3,8 @@ package com.willgraham.four_year_planner.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "user_courses")
@@ -24,4 +26,6 @@ public class UserCourse {
 
     @Embedded
     private Semester semester;
+
+    private List<String> selectedGenEds;
 }

@@ -17,6 +17,7 @@ public class CourseDto {
     private String name;
     private Integer credits;
     private List<List<String>> genEds;
+    private List<String> selectedGenEds;
     private String description;
     private Semester semester;
 
@@ -27,6 +28,7 @@ public class CourseDto {
         dto.setName(userCourse.getCourse().getName());
         dto.setCredits(userCourse.getCourse().getCredits());
         dto.setGenEds(userCourse.getCourse().getGenEds());
+        dto.setSelectedGenEds(userCourse.getSelectedGenEds());
         dto.setSemester(userCourse.getSemester());
         return dto;
     }

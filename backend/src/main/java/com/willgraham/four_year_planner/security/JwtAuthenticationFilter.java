@@ -32,32 +32,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String authHeader = request.getHeader("Authorization");
 
-            if(authHeader == null || !authHeader.startsWith("Bearer ")) {
-                throw new JwtAuthenticationException("Missing or invalid Authorization header");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String userId = jwtService.validateTokenAndGetUserId(token);
+
+                if (userId != null) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
-
-            String token = authHeader.substring(7);
-            String userId = jwtService.validateTokenAndGetUserId(token);
-
-            if (userId == null) {
-                throw new JwtAuthenticationException("Invalid or expired JWT token");
-            }
-
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
-            SecurityContextHolder.getContext().setAuthentication(authToken);
 
             filterChain.doFilter(request, response);
-        } catch (JwtAuthenticationException e) {
-            SecurityContextHolder.clearContext();
-            handleAuthenticationException(response, e.getMessage());
-        } catch ( Exception e) {
+        } catch (Exception e) {
+            logger.error("Authentication error: {}", e);
             SecurityContextHolder.clearContext();
             handleAuthenticationException(response, "Authentication failed");
         }
     }
 
     private void handleAuthenticationException(HttpServletResponse response, String message) throws IOException {
+        if(response.isCommitted()) {
+            return; // Response already set, so we cant change it
+        }
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
@@ -67,5 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         errorDetails.put("code", HttpServletResponse.SC_UNAUTHORIZED);
 
         response.getWriter().write(objectMapper.writeValueAsString(errorDetails));
+//        String jsonResponse = objectMapper.writeValueAsString(errorDetails);
+//        response.getOutputStream().write(jsonResponse.getBytes());
+//        response.getOutputStream().flush();
     }
 }

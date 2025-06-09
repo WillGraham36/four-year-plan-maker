@@ -1,9 +1,9 @@
 package com.willgraham.four_year_planner.service;
 
-import com.willgraham.four_year_planner.dto.GenEdCourseInfoDto;
+import com.willgraham.four_year_planner.dto.UserCourseWithInfoDto;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
-import com.willgraham.four_year_planner.projection.GenEdProjection;
+import com.willgraham.four_year_planner.projection.CourseProjection;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import com.willgraham.four_year_planner.utils.ListOfListStringConverter;
 import lombok.AllArgsConstructor;
@@ -23,15 +23,13 @@ public class GenEdService {
     @Autowired
     private UserCourseRepository userCourseRepository;
 
-    public List<GenEdCourseInfoDto> getUserCourseGenEds(String userId) {
+    public List<UserCourseWithInfoDto> getUserCoursesWithInfo(String userId) {
         logger.info("GenEdService.getUserCourseGenEds called with userId: {}", userId);
 
         try {
-            logger.info("About to call repository.findGenEdsByUserIdNative...");
-            List<GenEdProjection> projections = userCourseRepository.findGenEdsByUserIdNative(userId);
-            logger.info("Repository call completed. Result size: {}", projections.size());
+            List<CourseProjection> projections = userCourseRepository.findAllCoursesWithInfoByUser(userId);
 
-            List<GenEdCourseInfoDto> result = projections.stream()
+            List<UserCourseWithInfoDto> result = projections.stream()
                     .map(this::convertProjectionToDto)
                     .collect(Collectors.toList());
 
@@ -43,7 +41,7 @@ public class GenEdService {
         }
     }
 
-    private GenEdCourseInfoDto convertProjectionToDto(GenEdProjection projection) {
+    private UserCourseWithInfoDto convertProjectionToDto(CourseProjection projection) {
         // Convert JSON string back to List<List<String>>
         ListOfListStringConverter listConverter = new ListOfListStringConverter();
         List<List<String>> genEds = listConverter.convertToEntityAttribute(projection.getGenEds());
@@ -53,6 +51,6 @@ public class GenEdService {
         semester.setTerm(Term.valueOf(projection.getTerm()));
         semester.setYear(projection.getYear());
 
-        return new GenEdCourseInfoDto(genEds, projection.getCourseId(), semester);
+        return new UserCourseWithInfoDto(genEds, projection.getCourseId(), semester, projection.getSelectedGenEds());
     }
 }

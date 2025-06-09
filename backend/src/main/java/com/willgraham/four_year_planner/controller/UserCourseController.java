@@ -9,6 +9,8 @@ import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,7 @@ public class UserCourseController {
 
     private final UserCourseService userCourseService;
     private final CourseService courseService;
+    private static final Logger logger = LoggerFactory.getLogger(UserCourseController.class);
 
     /**
      * Add courses that a user is taking
@@ -44,6 +47,17 @@ public class UserCourseController {
                 .map(dto -> processUserCourse(dto, userId))
                 .toList();
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(savedCourses));
+    }
+
+    @PatchMapping
+    public ResponseEntity<ApiResponse<String>> updateSelectedGenEds(@RequestBody UserCourseSelectedGenEdRequestDto selectedGenEdRequestDto, Authentication authentication) {
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new JwtAuthenticationException("Unauthorized");
+        }
+        String userId = (String) authentication.getPrincipal();
+        userCourseService.updateUserCourseSelectedGenEds(userId, selectedGenEdRequestDto.getCourseId(), selectedGenEdRequestDto.getSelectedGenEds());
+
+        return ResponseEntity.ok(ApiResponse.success("Updated course genEds successfully"));
     }
 
     /**
@@ -66,8 +80,6 @@ public class UserCourseController {
         // Group by semester
         Map<Semester, List<CourseDto>> coursesBySemester = courseDtos.stream()
                 .collect(Collectors.groupingBy(CourseDto::getSemester));
-
-
 
         return ResponseEntity.ok(ApiResponse.success(coursesBySemester));
     }
@@ -104,6 +116,17 @@ public class UserCourseController {
         userCourse.setUserId(userId);  // Set only the userId
         userCourse.setCourseId(course.getCourseId());  // Set only the courseId
         userCourse.setSemester(requestDto.getSemester());
+
+        // Set the selectedGenEds to the first set if it exists
+        List<List<String>> requestGenEds = requestDto.getCourse().getGenEds();
+        if(requestGenEds.size() > 1) {
+            // Account for dependant genEds
+            if(requestGenEds.getFirst().stream().anyMatch(s -> s.contains("|"))) {
+                userCourse.setSelectedGenEds(requestGenEds.get(1));
+            } else {
+                userCourse.setSelectedGenEds(requestGenEds.getFirst());
+            }
+        }
 
         // Save userCourse
         UserCourse savedUserCourse = userCourseService.save(userCourse);

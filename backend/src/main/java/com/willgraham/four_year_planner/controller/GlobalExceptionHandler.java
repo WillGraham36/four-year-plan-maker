@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

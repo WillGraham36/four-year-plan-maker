@@ -11,6 +11,10 @@ public class Semester implements Comparable<Semester> {
 
     private Integer year;
 
+    public String getName() {
+        return term + " " + year;
+    }
+
     @Override
     public int compareTo(Semester o) {
         // Compare by year first
