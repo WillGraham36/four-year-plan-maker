@@ -1,8 +1,8 @@
 "use client";
 import { Course, GenEd } from '@/lib/utils/types';
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Input } from '../ui/input';
-import { deleteSemesterCourses, getCourseInfo } from '@/lib/api/planner/planner.server';
+import { deleteSemesterCourses, getCourseInfo, updateCourseSelectedGenEds } from '@/lib/api/planner/planner.server';
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +13,8 @@ import { CircleAlert, Info } from 'lucide-react';
 import { useSemester } from './semester-context';
 import { saveCourse } from '@/lib/api/planner/planner.server';
 import { useGenEds } from './geneds-context';
+import SelectGenEdButton from './select-gened-button';
+import { arraysEqual } from '@/lib/utils';
 
 
 const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
@@ -27,6 +29,20 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
   });
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
+
+  useEffect(() => {
+    const updatedCourse = courses.find(c => c.courseId === verifiedCourseId.current);
+    if (updatedCourse) {
+      setCourse(prev => {
+        // Only update if something actually changed
+        const changed =
+          JSON.stringify(prev.selectedGenEds) !== JSON.stringify(updatedCourse.selectedGenEds) ||
+          JSON.stringify(prev.genEds) !== JSON.stringify(updatedCourse.genEds);
+  
+        return changed ? updatedCourse : prev;
+      });
+    }
+  }, [courses]);
 
   // If courseId is provided, courseId field will NOT be reset
   const resetCourseFields = async (courseId: string = "") => {
@@ -75,7 +91,13 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
           await resetCourseFields(courseId);
           return;
         }
-        setCourse(res.data);
+        setCourse({
+          ...res.data,
+          // Default to first gen ed group, or second if the first has a dependent gen ed
+          selectedGenEds: res.data.genEds[0].some(genEd => genEd.includes("|"))
+            ? res.data.genEds[1]
+            : res.data.genEds[0]
+        });
         addCourse(res.data);
         await saveCourse(res.data, term, year);
         triggerGenEdsUpdate();
@@ -93,35 +115,65 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
     }
 
     if (course.genEds[0].length > 0) {
-      return (
+      return (        
         <span className='flex items-center gap-1'>
-          {course.genEds.map((genEdGroups, groupIndex) => (
-            <React.Fragment key={groupIndex}>
-              {genEdGroups.map((genEd, genEdIndex) => (
-                <React.Fragment key={`${groupIndex}-${genEdIndex}`}>
-                  {genEdIndex > 0 && ", "}
-                  {genEd.length > 4 ? (
-                    !courses.some(course => course.courseId === genEd.slice(5)) ? (
-                      <Tooltip>
-                        <TooltipTrigger className='text-orange-500 flex items-center gap-1 cursor-pointer'>
-                          <Info size={16} className='inline' />
-                          {genEd.slice(0, 4)}
-                        </TooltipTrigger>
-                        <TooltipContent className='text-center'>
-                          Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
-                        </TooltipContent>
-                      </Tooltip>
+          {course.genEds.map((genEdGroup, groupIndex) => {
+            const hasDependentGenEds = genEdGroup.some(genEd => 
+              genEd.length > 4 && !courses.some(course => course.courseId === genEd.slice(5))
+            );
+
+            const genEdContent = (
+              <React.Fragment>
+                {genEdGroup.map((genEd, genEdIndex) => (
+                  <React.Fragment key={`${groupIndex}-${genEdIndex}`}>
+                    {genEdIndex > 0 && ", "}
+                    {genEd.length > 4 ? (
+                      (!courses.some(course => course.courseId === genEd.slice(5))) ? (
+                        <Tooltip>
+                          <TooltipTrigger className='text-orange-500 flex items-center gap-1 cursor-pointer'>
+                            <Info size={16} className='inline' />
+                            {genEd.slice(0, 4)}
+                          </TooltipTrigger>
+                          <TooltipContent className='text-center'>
+                            Must be taken with <span className='font-bold'>{genEd.slice(5)}</span>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        genEd.slice(0, 4)
+                      )
                     ) : (
-                      genEd.slice(0, 4)
-                    )
-                  ) : (
-                  genEd
-                  )}
-                </React.Fragment>
-              ))}
-              {groupIndex < course.genEds.length - 1 ? " or " : ""}
-            </React.Fragment>
-          ))}
+                      genEd
+                    )}
+                  </React.Fragment>
+                ))}
+              </React.Fragment>
+            );
+
+            return (
+              <React.Fragment key={groupIndex}>
+                {hasDependentGenEds || course.genEds.length === 1 ? (
+                  genEdContent
+                ) : (
+                  <SelectGenEdButton
+                    genEds={genEdGroup}
+                    onSelect={async () => {
+                      setCourse(prevCourse => ({
+                        ...prevCourse,
+                        selectedGenEds: genEdGroup,
+                      }));
+                      await updateCourseSelectedGenEds(course.courseId, genEdGroup);
+                      triggerGenEdsUpdate();
+                    }}
+                    selected={arraysEqual(genEdGroup, course.selectedGenEds || [])}
+                    isFirstInGroup={groupIndex === 0}
+                  >
+                    {genEdContent}
+                  </SelectGenEdButton>
+                )}
+                {groupIndex < course.genEds.length - 1 && <span>or</span>}
+              </React.Fragment>
+            );
+          })}
         </span>
       );
     }
