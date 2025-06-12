@@ -1,18 +1,19 @@
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
-import { GenEdsProvider } from '@/components/planner/geneds-context';
+import { RequirementsProvider } from '@/components/planner/requirements-context';
 import Semester from '@/components/planner/semester'
 import Year from '@/components/planner/year';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
-import { getAllGenEds, getAllSemesters } from '@/lib/api/planner/planner.server';
+import { getAllGenEds, getAllSemesters, getAllULCourses } from '@/lib/api/planner/planner.server';
 import { extractSemester } from '@/lib/utils';
 
 const PlannerPage = async () => {
   const semesters = await getAllSemesters();
   const genEds = await getAllGenEds();
+  const ULCourses = await getAllULCourses();
 
   return (
     <main className='flex flex-col xl:flex-row items-center xl:items-start justify-between gap-4 mx-4'>
-      <GenEdsProvider initialGenEds={genEds}>
+      <RequirementsProvider initialGenEds={genEds} initialULCourses={ULCourses}>
         <div className='flex flex-col w-full mt-2 xl:w-[60%]'>
           <Year year={1}>
             <Semester term='FALL' year={2024} courses={extractSemester(semesters, 'FALL', 2024)} />
@@ -39,7 +40,7 @@ const PlannerPage = async () => {
           <GenEdsContainer />
           <UpperLevelConcentrationContainer />
         </div>
-      </GenEdsProvider>
+      </RequirementsProvider>
     </main>
   )
 }

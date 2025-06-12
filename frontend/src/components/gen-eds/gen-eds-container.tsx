@@ -1,7 +1,7 @@
 'use client';
 import { termYearToString } from '@/lib/utils'
 import React, { useMemo } from 'react'
-import { useGenEds } from '../planner/geneds-context';
+import { useRequirements } from '../planner/requirements-context';
 import { GenEdList } from '@/lib/utils/schemas';
 
 const GenEds = [
@@ -29,7 +29,7 @@ const GenEds = [
 
 const GenEdsContainer = () => {
 
-  const { genEds } = useGenEds();
+  const { genEds } = useRequirements();
 
   // Create a local copy of genEds to work with when filtering and rendering
   const localGenEds = useMemo(() => [...genEds], [genEds]);

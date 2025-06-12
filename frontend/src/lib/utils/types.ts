@@ -17,6 +17,14 @@ export type Course = {
   selectedGenEds?: GenEd[]
 }
 
+export type CourseWithSemester = {
+  course: Course
+  semester: {
+    term: Term
+    year: number
+  }
+}
+
 export type GenEd = 
   | "NONE"
   | "FSAW"
