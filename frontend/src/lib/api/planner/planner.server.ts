@@ -120,7 +120,31 @@ export const getAllULCourses = async () => {
   const res = await fetchWithAuth('v1/ulcourses');
   return {
     concentration: "ENES" as typeof ACCEPTABLE_ULC_AREAS[number],
-    courses: [] as CourseWithSemester[],  
+    // courses: [] as CourseWithSemester[],
+    courses: [{
+      course: {
+        courseId: "ENES489J",
+        name: "Special Topics in Engineering",
+        credits: 3,
+        genEds: [["NONE"]],
+      },
+      semester: {
+        term: "FALL" as Term,
+        year: 2024,
+      }
+    },
+    {
+      course: {
+        courseId: "ENES489K",
+        name: "Special Topics in Engineering",
+        credits: 3,
+        genEds: [["NONE"]],
+      },
+      semester: {
+        term: "SPRING" as Term,
+        year: 2025,
+      }
+    }] as CourseWithSemester[],  
   };
 }
 

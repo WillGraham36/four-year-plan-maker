@@ -33,6 +33,7 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
 
   const refreshULCourses = async () => {
     const ul = await getAllULCourses();
+    console.log("Upper Level Courses: ", ul);
     setULCourses(ul.courses);
   }
 
