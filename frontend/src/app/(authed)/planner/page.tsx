@@ -7,13 +7,15 @@ import { getAllGenEds, getAllSemesters, getAllULCourses } from '@/lib/api/planne
 import { extractSemester } from '@/lib/utils';
 
 const PlannerPage = async () => {
-  const semesters = await getAllSemesters();
-  const genEds = await getAllGenEds();
-  const ULCourses = await getAllULCourses();
+  const [semesters, genEds, { concentration, courses}] = await Promise.all([
+    getAllSemesters(),
+    getAllGenEds(),
+    getAllULCourses(),
+  ]);
 
   return (
     <main className='flex flex-col xl:flex-row items-center xl:items-start justify-between gap-4 mx-4'>
-      <RequirementsProvider initialGenEds={genEds} initialULCourses={ULCourses}>
+      <RequirementsProvider initialGenEds={genEds} initialULCourses={courses}>
         <div className='flex flex-col w-full mt-2 xl:w-[60%]'>
           <Year year={1}>
             <Semester term='FALL' year={2024} courses={extractSemester(semesters, 'FALL', 2024)} />
@@ -38,7 +40,7 @@ const PlannerPage = async () => {
         
         <div className='flex flex-col w-full gap-4 mt-2 xl:w-[40%]'>
           <GenEdsContainer />
-          <UpperLevelConcentrationContainer />
+          <UpperLevelConcentrationContainer concentration={concentration} />
         </div>
       </RequirementsProvider>
     </main>

@@ -1,16 +1,16 @@
 'use client';
-import { Course, Term } from "@/lib/utils/types";
 import { ULCCombobox } from "./concentration-combobox";
 import { useState } from "react";
 
 
 interface ULCProps {
   concentration: string;
-  courses: (Course & Term)[];
 }
 
-const UpperLevelConcentrationContainer = () => {
-  const [concentration, setConcentration] = useState<string>("");
+const UpperLevelConcentrationContainer = ({
+  concentration: initialConcentration = "",
+}: ULCProps) => {
+  const [concentration, setConcentration] = useState<string>(initialConcentration);
 
 
   return (
