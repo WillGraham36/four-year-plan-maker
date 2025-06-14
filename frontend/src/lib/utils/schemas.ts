@@ -19,6 +19,20 @@ export const CourseSchema = z.object({
 
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
 
+export const ULConcentrationSchema = z.object({
+  concentration: z.string(),
+  courses: z.array(z.object({
+    courseId: z.string(),
+    semester: z.object({
+      term: z.string(),
+      year: z.number(),
+    }),
+    credits: z.number(),
+  })),
+})
+
+export type ULCoursesInfo = z.infer<typeof ULConcentrationSchema.shape.courses>;
+
 export type Semesters = z.infer<typeof SemestersSchema>;
 
 export const GenEdListSchema = z.array(z.object({

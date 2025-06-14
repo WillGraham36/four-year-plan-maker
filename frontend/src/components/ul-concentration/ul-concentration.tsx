@@ -1,4 +1,5 @@
 'use client';
+import { termYearToString } from "@/lib/utils";
 import { useRequirements } from "../planner/requirements-context";
 import { ULCCombobox } from "./concentration-combobox";
 import { Fragment, useState } from "react";
@@ -37,13 +38,13 @@ const UpperLevelConcentrationContainer = ({
         {ULCourses.map((course, i) => (
           <Fragment key={i}>
             <p className={`w-full px-3 py-1 ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {course.course.name}
+              {course.courseId}
             </p>
             <p className={`border-x w-full h-full flex items-center px-3 py-1 ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {course.semester.term} {course.semester.year}
+              {termYearToString(course.semester.term, course.semester.year)}
             </p>
             <p className={`w-full py-1 h-full flex items-center justify-center ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {course.course.credits}
+              {course.credits}
             </p>
           </Fragment>
         ))}

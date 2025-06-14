@@ -1,6 +1,6 @@
 'use client';
 import { getAllGenEds, getAllULCourses } from "@/lib/api/planner/planner.server";
-import { GenEdList } from "@/lib/utils/schemas";
+import { GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
 import { CourseWithSemester } from "@/lib/utils/types";
 import { createContext, useContext, useState } from "react";
 
@@ -9,7 +9,7 @@ interface RequirementsContextProps {
   genEds: GenEdList;
 
   refreshULCourses: () => void;
-  ULCourses: CourseWithSemester[];
+  ULCourses: ULCoursesInfo;
 
   refreshAll: () => void;
 }
@@ -19,12 +19,12 @@ const RequirementsContext = createContext<RequirementsContextProps | undefined>(
 interface RequirementsProviderProps {
   children: React.ReactNode;
   initialGenEds: GenEdList;
-  initialULCourses: CourseWithSemester[];
+  initialULCourses: ULCoursesInfo;
 }
 
 export const RequirementsProvider = ({ children, initialGenEds, initialULCourses }: RequirementsProviderProps) => {
   const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
-  const [ULCourses, setULCourses] = useState<CourseWithSemester[]>(initialULCourses || []);
+  const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
 
   const refreshGenEds = async () => {
     const genEds = await getAllGenEds();

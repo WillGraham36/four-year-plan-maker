@@ -1,6 +1,6 @@
 'use server';
 
-import { CourseInfoSchema, GenEdListSchema, SemestersSchema } from "@/lib/utils/schemas";
+import { CourseInfoSchema, GenEdListSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
 import { Course, CourseWithSemester, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
@@ -117,35 +117,12 @@ export const getAllGenEds = async () => {
 }
 
 export const getAllULCourses = async () => {
-  const res = await fetchWithAuth('v1/ulcourses');
-  return {
-    concentration: "ENES" as typeof ACCEPTABLE_ULC_AREAS[number],
-    // courses: [] as CourseWithSemester[],
-    courses: [{
-      course: {
-        courseId: "ENES489J",
-        name: "Special Topics in Engineering",
-        credits: 3,
-        genEds: [["NONE"]],
-      },
-      semester: {
-        term: "FALL" as Term,
-        year: 2024,
-      }
-    },
-    {
-      course: {
-        courseId: "ENES489K",
-        name: "Special Topics in Engineering",
-        credits: 3,
-        genEds: [["NONE"]],
-      },
-      semester: {
-        term: "SPRING" as Term,
-        year: 2025,
-      }
-    }] as CourseWithSemester[],  
-  };
+  const res = await fetchWithAuth('v1/ulconcentration');
+  const ULCourses = ULConcentrationSchema.safeParse(res.data);
+  return ULCourses.data || {
+    concentration: "",
+    courses: [],
+  }
 }
 
 
