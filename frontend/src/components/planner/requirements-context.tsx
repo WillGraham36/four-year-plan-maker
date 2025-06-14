@@ -5,13 +5,13 @@ import { CourseWithSemester } from "@/lib/utils/types";
 import { createContext, useContext, useState } from "react";
 
 interface RequirementsContextProps {
-  refreshGenEds: () => void;
+  refreshGenEds: () => Promise<void>;
   genEds: GenEdList;
 
-  refreshULCourses: () => void;
+  refreshULCourses: () => Promise<void>;
   ULCourses: ULCoursesInfo;
 
-  refreshAll: () => void;
+  refreshAllRequirements: () => Promise<void>;
 }
 
 const RequirementsContext = createContext<RequirementsContextProps | undefined>(undefined);
@@ -33,14 +33,13 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
 
   const refreshULCourses = async () => {
     const ul = await getAllULCourses();
-    console.log("Upper Level Courses: ", ul);
     setULCourses(ul.courses);
   }
 
-  const refreshAll = async () => { await Promise.all([refreshGenEds(), refreshULCourses()]); }
+  const refreshAllRequirements = async () => { await Promise.all([refreshGenEds(), refreshULCourses()]); }
 
   return (
-    <RequirementsContext.Provider value={{ refreshGenEds, genEds, refreshULCourses, ULCourses, refreshAll }}>
+    <RequirementsContext.Provider value={{ refreshGenEds, genEds, refreshULCourses, ULCourses, refreshAllRequirements }}>
       {children}
     </RequirementsContext.Provider>
   );

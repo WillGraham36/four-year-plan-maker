@@ -19,7 +19,7 @@ import { useRequirements } from './requirements-context';
 
 const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
-  const { refreshGenEds } = useRequirements();
+  const { refreshGenEds, refreshAllRequirements } = useRequirements();
 
   const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",
@@ -59,8 +59,12 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
     // if the course was added and validated to remove it from backend
     if(hasCourse(verifiedCourseId.current)) {
       removeCourse(verifiedCourseId.current);
-      await deleteSemesterCourses([verifiedCourseId.current], term, year);
-      refreshGenEds();
+
+      await Promise.all([
+        deleteSemesterCourses([verifiedCourseId.current], term, year),
+        refreshAllRequirements(),
+      ])
+
       verifiedCourseId.current = "";
     }
   }
@@ -85,22 +89,35 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
 
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
       try {
-        const res = await getCourseInfo(courseId);
-        if(!res.ok) {
-          setErrorMessage(res.message);
+        const courseInfo = await getCourseInfo(courseId);
+        if(!courseInfo.ok) {
+          setErrorMessage(courseInfo.message);
           await resetCourseFields(courseId);
           return;
         }
         setCourse({
-          ...res.data,
+          ...courseInfo.data,
           // Default to first gen ed group, or second if the first has a dependent gen ed
-          selectedGenEds: res.data.genEds[0].some(genEd => genEd.includes("|"))
-            ? res.data.genEds[1]
-            : res.data.genEds[0]
+          selectedGenEds: courseInfo.data.genEds[0].some(genEd => genEd.includes("|"))
+            ? courseInfo.data.genEds[1]
+            : courseInfo.data.genEds[0]
         });
-        addCourse(res.data);
-        await saveCourse(res.data, term, year);
-        refreshGenEds();
+        addCourse(courseInfo.data);
+
+        // Avoid extra call to update ULConcentration if courseId is not 3 or 400 level
+        if(courseInfo.data.courseId.charAt(4) === "3" || courseInfo.data.courseId.charAt(4) === "4") {
+          await Promise.all([
+            saveCourse(courseInfo.data, term, year),
+            refreshAllRequirements()
+          ]);
+        } else {
+          await Promise.all([
+            saveCourse(courseInfo.data, term, year),
+            refreshGenEds()
+          ]);
+
+        }
+
         verifiedCourseId.current = courseId;
       } catch (e) {
         setErrorMessage("Error fetching course information");
@@ -161,8 +178,11 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
                         ...prevCourse,
                         selectedGenEds: genEdGroup,
                       }));
-                      await updateCourseSelectedGenEds(course.courseId, genEdGroup);
-                      refreshGenEds();
+
+                      await Promise.all([
+                        updateCourseSelectedGenEds(course.courseId, genEdGroup),
+                        refreshGenEds()
+                      ]);
                     }}
                     selected={arraysEqual(genEdGroup, course.selectedGenEds || [])}
                     isFirstInGroup={groupIndex === 0}

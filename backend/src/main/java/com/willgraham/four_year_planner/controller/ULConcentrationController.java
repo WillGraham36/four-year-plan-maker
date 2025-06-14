@@ -41,6 +41,9 @@ public class ULConcentrationController {
         String concentration = userService.findById(userId).getULConcentration();
         List<UserCourse> courses = userCourseService.getULCourses(userId, concentration);
 
+        //Filter out courses that are not 3 or 400 level
+        courses = courses.stream().filter(c -> c.getCourseId().charAt(4) == '3' || c.getCourseId().charAt(4) == '4').toList();
+
         List<ULCourseInfoDTO> coursesDTO = courses.stream()
                 .map(c -> new ULCourseInfoDTO(
                         c.getCourseId(),

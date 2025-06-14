@@ -109,6 +109,9 @@ public class UserCourseService {
     }
 
     public List<UserCourse> getULCourses(String userId, String concentration) {
+        if(concentration.isEmpty() || concentration.length() > 4) {
+            return List.of();
+        }
         return userCourseRepository.findByUserIdAndCourseIdStartingWith(userId, concentration);
     }
 
