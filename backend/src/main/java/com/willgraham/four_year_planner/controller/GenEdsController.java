@@ -8,6 +8,7 @@ import com.willgraham.four_year_planner.model.GenEd;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.service.GenEdService;
 import com.willgraham.four_year_planner.service.UserCourseService;
+import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +57,7 @@ public class GenEdsController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<GenEdDto>>> getAllGenEdsForUser(Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new JwtAuthenticationException("Unauthorized");
-        }
-        String userId = (String) authentication.getPrincipal();
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         // Get gen eds from database
         List<UserCourseWithInfoDto> courses = genEdService.getUserCoursesWithInfo(userId);

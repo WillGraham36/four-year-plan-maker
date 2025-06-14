@@ -25,6 +25,9 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
 
     UserCourse findByUserIdAndCourse_CourseId(String userId, String courseId);
 
+    // Get courses that satisfy a certain UL concentration prefix ("ENES", "CMSC" ...)
+    List<UserCourse> findByUserIdAndCourseIdStartingWith(String userId, String concentrationIdPrefix);
+
     @Modifying
     @Transactional
     @Query("UPDATE UserCourse uc SET uc.selectedGenEds = :selectedGenEds " +

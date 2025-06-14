@@ -8,6 +8,7 @@ import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
+import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +39,7 @@ public class UserCourseController {
      */
     @PostMapping
     public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new JwtAuthenticationException("Unauthorized");
-        }
-        String userId = (String) authentication.getPrincipal();
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
                 .map(dto -> processUserCourse(dto, userId))
@@ -51,10 +49,7 @@ public class UserCourseController {
 
     @PatchMapping
     public ResponseEntity<ApiResponse<String>> updateSelectedGenEds(@RequestBody UserCourseSelectedGenEdRequestDto selectedGenEdRequestDto, Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new JwtAuthenticationException("Unauthorized");
-        }
-        String userId = (String) authentication.getPrincipal();
+        String userId = AuthUtils.getCurrentUserId(authentication);
         userCourseService.updateUserCourseSelectedGenEds(userId, selectedGenEdRequestDto.getCourseId(), selectedGenEdRequestDto.getSelectedGenEds());
 
         return ResponseEntity.ok(ApiResponse.success("Updated course genEds successfully"));
@@ -66,10 +61,7 @@ public class UserCourseController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new JwtAuthenticationException("Unauthorized");
-        }
-        String userId = (String) authentication.getPrincipal();
+        String userId = AuthUtils.getCurrentUserId(authentication);
         List<UserCourse> courses = userCourseService.getAllCoursesForUser(userId);
 
         // Transform DTOs
@@ -86,10 +78,7 @@ public class UserCourseController {
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, Authentication authentication) {
-        if (authentication == null || authentication.getPrincipal() == null) {
-            throw new JwtAuthenticationException("Unauthorized");
-        }
-        String userId = (String) authentication.getPrincipal();
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
 

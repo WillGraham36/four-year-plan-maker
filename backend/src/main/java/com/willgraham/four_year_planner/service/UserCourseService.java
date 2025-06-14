@@ -108,6 +108,11 @@ public class UserCourseService {
         }
     }
 
+    public List<UserCourse> getULCourses(String userId, String concentration) {
+        return userCourseRepository.findByUserIdAndCourseIdStartingWith(userId, concentration);
+    }
+
+
     record DependentGenEd(String genEd, String requiredCourseId) {}
 
     Optional<DependentGenEd> parseDependentGenEd(String genEdRaw) {

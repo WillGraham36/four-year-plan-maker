@@ -15,5 +15,7 @@ public class User {
 
     private String email;
     private LocalDate createdAt;
+    @Column(name = "ul_concentration")
+    private String ULConcentration;
 
 }
