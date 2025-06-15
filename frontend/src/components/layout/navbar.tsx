@@ -11,7 +11,11 @@ const Navbar = () => {
         <h3 className="text-2xl font-bold py-2 px-4 rounded-md bg-card">4 Year Planner</h3>
         <div className="gap-2 items-center flex">
           <SignedOut>
-            <SignInButton>
+            <SignInButton 
+              fallbackRedirectUrl={"/"} 
+              forceRedirectUrl={"/planner"} 
+              mode="modal"
+            >
               <Button
                 variant={'secondary'}
                 className="px-5"
