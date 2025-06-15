@@ -3,6 +3,7 @@ import { termYearToString } from '@/lib/utils'
 import React, { useMemo } from 'react'
 import { useRequirements } from '../planner/requirements-context';
 import { GenEdList } from '@/lib/utils/schemas';
+import SatisfiedCheck from '../ui/satisfied-check';
 
 const GenEds = [
   'FSAW',
@@ -72,26 +73,35 @@ const GenEdsContainer = () => {
     return assignments;
   }, [localGenEds]);
 
+  const allGenEdsSatisfied = assignGenEdsToRequirements.every(
+    ({ courseId }) => courseId && courseId.trim() !== ""
+  );
+
   return (
     <div className='w-full rounded-lg border bg-card shadow-md h-full'>
-      <p className="w-full border-b p-1.5 px-3 text-lg font-bold">
-        Gen Eds
-      </p>
-      <table className="w-full">
-        <thead className=''>
-          <tr className='border-b-2'>
-            <th className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-              Gen Ed
-            </th>
-            <th className='border-x text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-              Course
-            </th>
-            <th className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-              Semester
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+      <div className='flex items-center gap-2 border-b p-2 px-3'>
+        <SatisfiedCheck
+          isSatisfied={allGenEdsSatisfied}
+          message="You need to complete all Gen Eds to satisfy this requirement"
+        />
+        <p className="w-full font-semibold text-lg">
+          Gen Eds
+        </p>
+      </div>
+      <div className='flex flex-col'>
+        <div className='grid grid-cols-[1fr,2fr,7rem] border-b'>
+          <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+            Gen Ed
+          </p>
+          <p className='border-x text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+            Course
+          </p>
+          <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+            Semester
+          </p>
+        </div>
+
+        <div className='grid grid-cols-[1fr,2fr,7rem]'>
           {GenEds.map((genEd, i) => {
             const { courseId, semesterName } = assignGenEdsToRequirements[i];
             return (
@@ -103,18 +113,15 @@ const GenEdsContainer = () => {
                   isLast={i === GenEds.length - 1}
                 />
                 {/* Add empty row between gen-ed sections */}
-                {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
-                  <tr>
-                    <td colSpan={3} className='bg-border p-0'>
-                      <div className='h-0.5' />
-                    </td>
-                  </tr>
-                )}
+                {/* {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
+                    <div className='bg-border p-0 h-0.5'>
+                    </div>
+                )} */}
               </React.Fragment>
             )
           })}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   )
 }
@@ -135,17 +142,17 @@ const GenEdRow = ({
   isLast = false,
 }: GenEdRowProps) => {
   return (
-    <tr className={`${!isLast ? 'border-b' : ''}`}>
-      <td className='px-3 py-1 text-sm md:text-sm text-muted-foreground'>
+    <React.Fragment>
+      <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground ${!isLast ? 'border-b' : ''}`}>
         {genEd}
-      </td>
-      <td className='border-x px-3 py-1 text-sm md:text-sm text-muted-foreground font-mono'>
+      </p>
+      <p className={`border-x px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
         {course}
-      </td>
-      <td className='px-3 py-1 text-sm md:text-sm text-muted-foreground'>
+      </p>
+      <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
         {semester}
-      </td>
-    </tr>
+      </p>
+      </React.Fragment>
   )
 }
 
