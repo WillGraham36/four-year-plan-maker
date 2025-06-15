@@ -1,6 +1,7 @@
 "use client";
 import { Course, Term } from "@/lib/utils/types";
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import { useRequirements } from "./requirements-context";
 
 interface SemesterContextProps {
   term: Term;
@@ -15,6 +16,7 @@ const SemesterContext = createContext<SemesterContextProps | undefined>(undefine
 
 export const SemesterProvider = ({ children, term, year, initialCourses }: { children: ReactNode, term: Term, year: number, initialCourses: Course[] }) => {
   const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const { updateTotalCredits } = useRequirements();
 
   const addCourse = useCallback((course: Course) => {
     setCourses(prevCourses => {
@@ -24,6 +26,7 @@ export const SemesterProvider = ({ children, term, year, initialCourses }: { chi
       }
       return [...prevCourses, course];
     });
+    updateTotalCredits(course.credits); // Update total credits when adding a course
   }, []);
 
   const removeCourse = useCallback((courseId: string) => {
@@ -48,6 +51,7 @@ export const SemesterProvider = ({ children, term, year, initialCourses }: { chi
       })
       return (updatedCourses);
     });
+    updateTotalCredits(courses.find(c => c.courseId === courseId)?.credits || 0, true); // Update total credits when removing a course
   }, []);
 
   const hasCourse = useCallback((courseId: string) => {
