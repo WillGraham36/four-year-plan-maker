@@ -3,6 +3,7 @@ import { termYearToString } from "@/lib/utils";
 import { useRequirements } from "../planner/requirements-context";
 import { ULCCombobox } from "./concentration-combobox";
 import { Fragment, useState } from "react";
+import { updateULConcentration } from "@/lib/api/planner/planner.server";
 
 
 interface ULCProps {
@@ -22,9 +23,12 @@ const UpperLevelConcentrationContainer = ({
         <p className="text-sm md:text-base">
           Upper Level Concentration
         </p>
-        <ULCCombobox value={concentration} setValueStateAction={(newConcentration) => {
+        <ULCCombobox value={concentration} setValueStateAction={async (newConcentration) => {
           setConcentration(newConcentration);
-          refreshULCourses();
+          await Promise.all([
+            refreshULCourses(),
+            updateULConcentration(newConcentration.toString()),
+          ]);
         }}/>
       </div>
 

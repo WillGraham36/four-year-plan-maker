@@ -1,7 +1,7 @@
 'use server';
 
 import { CourseInfoSchema, GenEdListSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
-import { Course, CourseWithSemester, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS } from "@/lib/utils/types";
+import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
 
@@ -122,6 +122,23 @@ export const getAllULCourses = async () => {
   return ULCourses.data || {
     concentration: "",
     courses: [],
+  }
+}
+
+export const updateULConcentration = async (concentration: string) => {
+  console.log("Updating upper level concentration to:", concentration);
+  const res = await fetchWithAuth('v1/ulconcentration', {
+    init: {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ concentration }),
+    }
+  })
+  
+  if (!res.ok) {
+    throw new Error("Failed to update upper level concentration");
   }
 }
 
