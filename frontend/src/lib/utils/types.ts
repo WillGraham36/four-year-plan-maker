@@ -73,3 +73,11 @@ export const ACCEPTABLE_ULC_AREAS = [
   "TLPL", "TLTC", "UMEI", "UNIV", "URSP", "USLT", "VIPS", "VMSC",
   "WEID", "WGSS", "XPER"
 ];
+
+export const ACCEPTABLE_ULC_AREAS_SET: Record<string, true> = Object.fromEntries(
+  ACCEPTABLE_ULC_AREAS.map(area => [area, true])
+);
+
+export const ACCEPTABLE_ULC_AREAS_MAP = new Map(
+  ACCEPTABLE_ULC_AREAS.map(area => [area, true])
+);

@@ -1,6 +1,4 @@
 "use client"
-
-import * as React from "react"
 import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -18,7 +16,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { ACCEPTABLE_ULC_AREAS } from "@/lib/utils/types"
+import { ACCEPTABLE_ULC_AREAS, ACCEPTABLE_ULC_AREAS_SET } from "@/lib/utils/types"
+import { useEffect, useState } from "react"
 
 interface ULCComboboxProps {
   value: string
@@ -29,7 +28,22 @@ export function ULCCombobox({
   value,
   setValueStateAction,
 }: ULCComboboxProps) {
-  const [open, setOpen] = React.useState(false)
+  const previewOptions = ACCEPTABLE_ULC_AREAS.slice(0, 12); // show only 12 options at first
+
+  const [open, setOpen] = useState(false);
+  const [visibleOptions, setVisibleOptions] = useState(previewOptions);
+
+  useEffect(() => {
+    if (open) {
+      const timeout = setTimeout(() => {
+        setVisibleOptions(ACCEPTABLE_ULC_AREAS); // show full list
+      }, 0);
+  
+      return () => clearTimeout(timeout);
+    } else {
+      setVisibleOptions(previewOptions); // reset if closed
+    }
+  }, [open, ACCEPTABLE_ULC_AREAS]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -41,7 +55,7 @@ export function ULCCombobox({
           className="text-sm"
         >
           {value
-            ? ACCEPTABLE_ULC_AREAS.find((area) => area === value)
+            ? (ACCEPTABLE_ULC_AREAS_SET[value] && value)
             : "Select area..."}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -52,7 +66,7 @@ export function ULCCombobox({
           <CommandList className="bg-popover">
             <CommandEmpty>Area not found</CommandEmpty>
             <CommandGroup>
-              {ACCEPTABLE_ULC_AREAS.map((area) => (
+              {visibleOptions.map((area) => (
                 <CommandItem
                   key={area}
                   value={area}
