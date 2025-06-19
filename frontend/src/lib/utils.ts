@@ -69,3 +69,8 @@ export function arrayEqualsNoOrdering<T>(a: T[], b: T[]): boolean {
   const bSorted = [...b].sort();
   return aSorted.every((val, idx) => val === bSorted[idx]);
 }
+
+export function capitalizeFirstLetter(str: string): string {
+  if (str.length === 0) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
