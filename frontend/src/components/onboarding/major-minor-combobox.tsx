@@ -44,7 +44,7 @@ export function MajorMinorCombobox({
         >
           {value
             ? (allValues.includes(value) && value)
-            : `Select ${type}`}
+            : `Select ${type} ${type === "minor" ? "(optional)" : ""}`}
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

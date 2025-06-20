@@ -34,6 +34,7 @@ import { Input } from "../ui/input"
 import { Plus, Trash2 } from "lucide-react"
 import { isFormValid } from "@/lib/utils/helpers"
 import { MajorMinorCombobox } from "./major-minor-combobox"
+import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
 
 const formSchema = z.object({
   startTerm: z.string(),
@@ -104,8 +105,82 @@ export default function OnboardingForm() {
     }
   })
 
-  function onSubmit(values:z.infer<typeof formSchema >) {
+  async function onSubmit(values:z.infer<typeof formSchema >) {
     try {
+      const errors: Record<number, string> = {};
+
+      // If there are transfer credits, ensure they are trimmed and formatted correctly
+      // then validate
+      if (values.transferCredits && values.transferCredits.length > 0) {
+        values.transferCredits = values.transferCredits.map(credit => ({
+          name: credit.name?.trim() || "",
+          courseId: credit.courseId?.trim().toUpperCase() || "",
+        }));
+
+        // Validate transfer credits
+        values.transferCredits?.forEach((credit, index) => {
+          if (!credit.name || !credit.courseId) {
+            errors[index] = "Both course name and ID are required";
+          } else if (!credit.courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
+            errors[index] = `Invalid course ID format`;
+          }
+        });
+
+        // If any errors, set them using setError from RHF
+        if (Object.keys(errors).length > 0) {
+          Object.entries(errors).forEach(([index, message]) => {
+            form.setError(
+              `transferCredits.${Number(index)}.courseId` as const,
+              {
+                type: "manual",
+                message,
+              }
+            );
+          });
+          return;
+        }
+
+        if (!values.transferCredits || values.transferCredits.length === 0) { return;}
+        const courseIds = values.transferCredits.map(credit => credit.courseId);
+        const coursesInfo = await getMultipleCourseInfos(courseIds);
+
+        if (!coursesInfo.ok || !Array.isArray(coursesInfo.data)) {
+          values.transferCredits.forEach((_, idx) => {
+            form.setError(
+              `transferCredits.${idx}.courseId` as const,
+              {
+                type: "manual",
+                message: "Course could not be found",
+              }
+            );
+          });
+          return;
+        } else {
+          // coursesInfo.data should be an array of found course objects with courseId property
+          const foundIds = new Set(coursesInfo.data.map((course: any) => course.courseId));
+          values.transferCredits.forEach((credit, idx) => {
+            if (!foundIds.has(credit.courseId)) {
+              form.setError(
+                `transferCredits.${idx}.courseId` as const,
+                {
+                  type: "manual",
+                  message: "Course could not be found",
+                }
+              );
+            }
+          });
+          // If any errors were set, stop submission
+          if (Object.keys(form.formState.errors.transferCredits || {}).length > 0) {
+            return;
+          }
+        }
+      } else {
+        // If no transfer credits, set to empty array
+        values.transferCredits = [];
+      }
+
+
+
       console.log(values);
       toast(
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
@@ -331,6 +406,7 @@ export default function OnboardingForm() {
                                 <Input
                                   placeholder="e.g. PSYC100"
                                   {...idField}
+                                  className="uppercase"
                                 />
                               </FormControl>
                               <FormMessage />

@@ -142,7 +142,6 @@ export const updateULConcentration = async (concentration: string) => {
   }
 }
 
-
 export const getCourseInfo = async (courseId: string): Promise<CustomServerResponse<Course>> => {
   const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);
   if (response.status === 404) {
@@ -183,3 +182,57 @@ export const getCourseInfo = async (courseId: string): Promise<CustomServerRespo
     }
   }
 }
+
+
+/**
+ * Fetches multiple course information based on an array of course IDs.
+ * @returns List of successfully fetched courses or an error message if ALL course IDs are invalid
+ */
+export const getMultipleCourseInfos = async (
+  courseIds: string[]
+): Promise<CustomServerResponse<Course[]>> => {
+  if (courseIds.length === 0) {
+    return {
+      ok: true,
+      message: "No course IDs provided",
+      data: [],
+    };
+  }
+
+  const joinedIds = courseIds.map(encodeURIComponent).join(",");
+  const response = await fetch(`https://api.umd.io/v1/courses/${joinedIds}`);
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      message: `Something went wrong: Error status ${response.status}`,
+      data: null,
+    };
+  }
+
+  try {
+    const data = await response.json();
+    const parsedCourses = data.map((raw: any) => {
+      const parsedData = CourseInfoSchema.parse(raw);
+      return {
+        courseId: parsedData.course_id,
+        name: parsedData.name,
+        credits: parsedData.credits,
+        genEds: (parsedData.gen_ed?.length !== 0 ? parsedData.gen_ed : [[]]) as GenEd[][],
+      } satisfies Course;
+    });
+
+    return {
+      ok: true,
+      message: "Successfully fetched all courses",
+      data: parsedCourses,
+    };
+  } catch (error) {
+    console.error("Validation error:", error);
+    return {
+      ok: false,
+      message: "Validation failed for one or more courses",
+      data: null,
+    };
+  }
+};
