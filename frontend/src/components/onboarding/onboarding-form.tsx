@@ -35,6 +35,7 @@ import { Plus, Trash2 } from "lucide-react"
 import { isFormValid } from "@/lib/utils/helpers"
 import { MajorMinorCombobox } from "./major-minor-combobox"
 import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
+import { ScaleLoader } from "react-spinners";
 
 const formSchema = z.object({
   startTerm: z.string(),
@@ -96,7 +97,7 @@ export type OnboardingFormValues = z.infer<typeof formSchema>;
 
 export default function OnboardingForm() {
 
-  const form = useForm <z.infer<typeof formSchema>> ({
+  const form = useForm<z.infer<typeof formSchema>> ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       transferCredits: [
@@ -104,6 +105,7 @@ export default function OnboardingForm() {
       ],
     }
   })
+  const { isSubmitting } = form.formState;
 
   async function onSubmit(values:z.infer<typeof formSchema >) {
     try {
@@ -447,8 +449,13 @@ export default function OnboardingForm() {
         <Button 
           type="submit"
           // disabled={!isFormValid(form.watch())}
+          disabled={isSubmitting}
+          className="flex items-center gap-4"
         >
           Submit
+          {isSubmitting && 
+            <ScaleLoader speedMultiplier={2} height={15} width={2} barCount={4} color="white"/>
+          }
         </Button>
       </form>
     </Form>
