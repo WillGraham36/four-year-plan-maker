@@ -95,13 +95,13 @@ const formSchema = z.object({
 
 export type OnboardingFormValues = z.infer<typeof formSchema>;
 
-export default function OnboardingForm() {
+export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingFormValues}) {
 
   const form = useForm<z.infer<typeof formSchema>> ({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: formInputs || {
       transferCredits: [
-        { name: "", courseId: "" }, // <- crucial for avoiding uncontrolled input
+        { name: "", courseId: "" },
       ],
     }
   })
@@ -209,7 +209,7 @@ export default function OnboardingForm() {
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select start term..." />
@@ -238,7 +238,7 @@ export default function OnboardingForm() {
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select start year" />
@@ -273,7 +273,7 @@ export default function OnboardingForm() {
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select graduation term..." />
@@ -286,7 +286,9 @@ export default function OnboardingForm() {
                     <SelectItem value="winter">Winter</SelectItem>
                   </SelectContent>
                 </Select>
+                {!formInputs && (
                   <FormDescription>You can always change this later</FormDescription>
+                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -302,7 +304,7 @@ export default function OnboardingForm() {
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select graduation year" />
@@ -408,7 +410,7 @@ export default function OnboardingForm() {
                                 <Input
                                   placeholder="e.g. PSYC100"
                                   {...idField}
-                                  className="uppercase"
+                                  className={idField.value ? "uppercase" : ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -453,7 +455,7 @@ export default function OnboardingForm() {
           className="flex items-center gap-4"
         >
           Submit
-          {isSubmitting && 
+          {isSubmitting &&
             <ScaleLoader speedMultiplier={2} height={15} width={2} barCount={4} color="white"/>
           }
         </Button>
