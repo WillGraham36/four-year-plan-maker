@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../toggle";
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+import { SignInButton, SignUpButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import AccountButton from "./account-button";
 
 const Navbar = () => {
@@ -11,19 +11,27 @@ const Navbar = () => {
         <h3 className="text-2xl font-bold py-2 px-4 rounded-md bg-card">4 Year Planner</h3>
         <div className="gap-2 items-center flex">
           <SignedOut>
-            <SignInButton 
-              fallbackRedirectUrl={"/"} 
-              forceRedirectUrl={"/planner"} 
-              mode="modal"
-            >
-              <Button
-                variant={'secondary'}
-                className="px-5"
+            <div className="flex gap-4">
+              <SignUpButton
+                mode="modal"
+                forceRedirectUrl="/account/setup" // Redirect after signup
               >
-                Log In
-              </Button>
-            </SignInButton>
+                <Button className="px-5">
+                  Sign Up
+                </Button>
+              </SignUpButton>
+
+              <SignInButton
+                mode="modal"
+                forceRedirectUrl="/planner" // Redirect after login
+              >
+                <Button variant="secondary" className="px-5">
+                  Log In
+                </Button>
+              </SignInButton>
+            </div>
           </SignedOut>
+
           <SignedIn>
             <AccountButton />
           </SignedIn>
