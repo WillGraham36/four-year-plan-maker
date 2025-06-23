@@ -29,13 +29,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { termOrder } from "@/lib/utils/types"
+import { Course, CustomServerResponse, termOrder } from "@/lib/utils/types"
 import { Input } from "../ui/input"
 import { Plus, Trash2 } from "lucide-react"
 import { isFormValid } from "@/lib/utils/helpers"
 import { MajorMinorCombobox } from "./major-minor-combobox"
 import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
 import { ScaleLoader } from "react-spinners";
+import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
 
 const formSchema = z.object({
   startTerm: z.string(),
@@ -110,6 +111,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
   async function onSubmit(values:z.infer<typeof formSchema >) {
     try {
       const errors: Record<number, string> = {};
+      let coursesInfo: CustomServerResponse<Course[]> = { ok: true, message: "", data: [] };
 
       // If there are transfer credits, ensure they are trimmed and formatted correctly
       // then validate
@@ -144,7 +146,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
 
         if (!values.transferCredits || values.transferCredits.length === 0) { return;}
         const courseIds = values.transferCredits.map(credit => credit.courseId);
-        const coursesInfo = await getMultipleCourseInfos(courseIds);
+        coursesInfo = await getMultipleCourseInfos(courseIds);
 
         if (!coursesInfo.ok || !Array.isArray(coursesInfo.data)) {
           values.transferCredits.forEach((_, idx) => {
@@ -180,14 +182,25 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
         // If no transfer credits, set to empty array
         values.transferCredits = [];
       }
+      
+      // All validation passed
+      const submitValues: SubmitOnboardingFormProps = {
+        ...values,
+        startTerm: values.startTerm.toUpperCase(),
+        endTerm: values.endTerm.toUpperCase(),
+        transferCredits: values.transferCredits.map(credit => ({
+          name: credit.name!,
+          course: coursesInfo.data.find((course: any) => course.courseId === credit.courseId)!,
+          semester: {
+            term: "TRANSFER",
+            year: -1,
+          }
+        })),
+      }
 
-
-
-      console.log(values);
+      const message = await submitOnboardingForm(submitValues);
       toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
+        message
       );
     } catch (error) {
       console.error("Form submission error", error);

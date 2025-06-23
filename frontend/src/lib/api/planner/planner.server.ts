@@ -219,6 +219,7 @@ export const getMultipleCourseInfos = async (
         name: parsedData.name,
         credits: parsedData.credits,
         genEds: (parsedData.gen_ed?.length !== 0 ? parsedData.gen_ed : [[]]) as GenEd[][],
+        selectedGenEds: parsedData.gen_ed?.length ? parsedData.gen_ed[0] as GenEd[] : [],
       } satisfies Course;
     });
 
