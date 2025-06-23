@@ -10,6 +10,7 @@ import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
+@ToString
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/usercourses")

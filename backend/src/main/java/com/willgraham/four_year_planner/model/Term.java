@@ -4,5 +4,6 @@ public enum Term {
     SPRING,
     FALL,
     WINTER,
-    SUMMER
+    SUMMER,
+    TRANSFER
 }

@@ -1,10 +1,14 @@
 package com.willgraham.four_year_planner.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
 public class Semester implements Comparable<Semester> {
     @Enumerated(EnumType.STRING)
     private Term term;
@@ -33,6 +37,7 @@ public class Semester implements Comparable<Semester> {
             case SUMMER -> 2;
             case FALL -> 3;
             case WINTER -> 4;
+            case TRANSFER -> 5;
         };
     }
 }

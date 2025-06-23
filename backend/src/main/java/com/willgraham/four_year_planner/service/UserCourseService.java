@@ -3,6 +3,7 @@ package com.willgraham.four_year_planner.service;
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.dto.CourseIdentifierDto;
+import com.willgraham.four_year_planner.dto.TransferCreditDto;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.GenEd;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserCourseService {
     private final UserCourseRepository userCourseRepository;
+    private final CourseService courseService;
 
     public UserCourse save(UserCourse userCourse) {
         boolean existsInSameSemester = userCourseRepository.existsByUserIdAndCourseIdAndSemester(
@@ -150,5 +152,26 @@ public class UserCourseService {
         }
 
         return List.of();
+    }
+
+    public void processTransferCreditDto(TransferCreditDto dto, String userId) {
+        Course course = courseService.findOrCreateCourse(dto.getCourse());
+
+        UserCourse userCourse = new UserCourse();
+        userCourse.setUserId(userId);
+        userCourse.setCourseId(course.getCourseId());
+        userCourse.setSemester(dto.getSemester());
+        userCourse.setTransferCreditName(dto.getName());
+
+        List<List<String>> requestGenEds = dto.getCourse().getGenEds();
+        if (requestGenEds.size() > 1) {
+            if (requestGenEds.getFirst().stream().anyMatch(s -> s.contains("|"))) {
+                userCourse.setSelectedGenEds(requestGenEds.get(1));
+            } else {
+                userCourse.setSelectedGenEds(requestGenEds.getFirst());
+            }
+        }
+
+        save(userCourse);
     }
 }

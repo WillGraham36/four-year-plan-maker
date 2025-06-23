@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -28,4 +29,7 @@ public class UserCourse {
     private Semester semester;
 
     private List<String> selectedGenEds;
+
+    @Column(name = "transfer_credit_name")
+    private String transferCreditName;
 }
