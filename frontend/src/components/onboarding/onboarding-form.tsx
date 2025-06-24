@@ -38,7 +38,7 @@ import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
 import { ScaleLoader } from "react-spinners";
 import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
 
-const formSchema = z.object({
+const baseOnboardingFormSchema = z.object({
   startTerm: z.string(),
   startYear: z.string(),
   endTerm: z.string(),
@@ -94,21 +94,21 @@ const formSchema = z.object({
   path: ["endYear"],
 });
 
-export type OnboardingFormValues = z.infer<typeof formSchema>;
+export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
 
 export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingFormValues}) {
-
-  const form = useForm<z.infer<typeof formSchema>> ({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof baseOnboardingFormSchema>> ({
+    resolver: zodResolver(baseOnboardingFormSchema),
     defaultValues: formInputs || {
       transferCredits: [
         { name: "", courseId: "" },
       ],
     }
-  })
+  });
+
   const { isSubmitting } = form.formState;
 
-  async function onSubmit(values:z.infer<typeof formSchema >) {
+  async function onSubmit(values:z.infer<typeof baseOnboardingFormSchema >) {
     try {
       const errors: Record<number, string> = {};
       let coursesInfo: CustomServerResponse<Course[]> = { ok: true, message: "", data: [] };

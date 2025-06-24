@@ -1,3 +1,4 @@
+import { OnboardingFormValues } from './../../components/onboarding/onboarding-form';
 import { Course } from '@/lib/utils/types';
 import { z } from "zod";
 
@@ -43,3 +44,22 @@ export const GenEdListSchema = z.array(z.object({
 
 export type GenEdList = z.infer<typeof GenEdListSchema>;
 export type GenEd = z.infer<typeof GenEdListSchema>[number];
+
+export const OnboardingFormInitialValuesSchema = z.object({
+  startTerm: z.string(),
+  startYear: z.preprocess(val => {
+    if (typeof val === 'number') return val.toString();
+    return val;
+  }, z.string()),
+  endTerm: z.string(),
+  endYear: z.preprocess(val => {
+    if (typeof val === 'number') return val.toString();
+    return val;
+  }, z.string()),
+  major: z.string(),
+  minor: z.string().optional(),
+  transferCredits: z.array(z.object({
+    name: z.string().optional(),
+    courseId: z.string().optional(),
+  })).optional().nullable(),
+});
