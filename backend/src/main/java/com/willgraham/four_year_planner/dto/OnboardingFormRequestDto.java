@@ -18,4 +18,14 @@ public class OnboardingFormRequestDto {
     private String major;
     private String minor;
     private List<TransferCreditDto> transferCredits;
+
+    // Constructor of just User values
+    public OnboardingFormRequestDto(Term startTerm, int startYear, Term endTerm, int endYear, String major, String minor) {
+        this.startTerm = startTerm;
+        this.startYear = startYear;
+        this.endTerm = endTerm;
+        this.endYear = endYear;
+        this.major = major;
+        this.minor = minor;
+    }
 }

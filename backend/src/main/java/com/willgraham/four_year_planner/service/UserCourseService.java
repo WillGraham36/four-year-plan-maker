@@ -174,4 +174,14 @@ public class UserCourseService {
 
         save(userCourse);
     }
+
+    public List<TransferCreditDto> getTransferCreditsForUser(String userId) {
+        List<UserCourse> transferCourses =  userCourseRepository.findTransferCreditsByUserId(userId);
+
+        return transferCourses.stream().map((course) -> new TransferCreditDto(
+                course.getTransferCreditName(),
+                course.getCourse(),
+                course.getSemester()
+        )).toList();
+    }
 }

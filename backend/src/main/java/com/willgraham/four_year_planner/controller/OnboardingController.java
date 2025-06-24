@@ -15,12 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -33,7 +31,6 @@ public class OnboardingController {
     @PostMapping
     public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        logger.info(onboardingFormRequestDto.toString());
 
         // Save courses
         onboardingFormRequestDto.getTransferCredits()
@@ -44,6 +41,25 @@ public class OnboardingController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Successfully submitted form"));
 
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        // Fetch user and course values for dto
+        Optional<OnboardingFormRequestDto> dtoOpt = userService.getOnboardingFormUserValues(userId);
+        List<TransferCreditDto> transferCourses = userCourseService.getTransferCreditsForUser(userId);
+
+
+        return dtoOpt
+                .map(dto -> {
+                    dto.setTransferCredits(transferCourses); // Add transfer courses to DTO
+                    return ResponseEntity.ok(
+                            new ApiResponse<>("success", dto, "Form data retrieved successfully")
+                    );
+                })
+                .orElseGet(() -> ResponseEntity.ok(new ApiResponse<>("success", null, "No form data present")));
     }
 }
 

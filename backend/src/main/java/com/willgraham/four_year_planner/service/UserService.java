@@ -8,6 +8,7 @@ import com.willgraham.four_year_planner.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -55,6 +56,25 @@ public class UserService {
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> userRepository.save(newUser));
+    }
+
+    public Optional<OnboardingFormRequestDto> getOnboardingFormUserValues(String userId) {
+        Optional<User> user = userRepository.findById(userId);
+
+        // Check if user exists
+        if(user.isEmpty()) {
+            return Optional.empty();
+        }
+
+        OnboardingFormRequestDto dto = new OnboardingFormRequestDto(
+                user.get().getStartSemester().getTerm(),
+                user.get().getStartSemester().getYear(),
+                user.get().getEndSemester().getTerm(),
+                user.get().getEndSemester().getYear(),
+                user.get().getMajor(),
+                user.get().getMinor()
+        );
+        return Optional.of(dto);
     }
 
 }

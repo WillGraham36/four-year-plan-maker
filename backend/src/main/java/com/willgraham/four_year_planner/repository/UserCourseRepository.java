@@ -49,4 +49,16 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
             "WHERE uc.user_id = :userId ",
             nativeQuery = true)
     List<CourseProjection> findAllCoursesWithInfoByUser(@Param("userId") String userId);
+
+
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        WHERE uc.userId = :userId
+        AND (
+            uc.semester.term = 'TRANSFER'
+            OR uc.transferCreditName IS NOT NULL
+        )
+        """)
+    List<UserCourse> findTransferCreditsByUserId(@Param("userId") String userId);
 }
