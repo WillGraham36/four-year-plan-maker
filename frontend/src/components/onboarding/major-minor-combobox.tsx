@@ -54,13 +54,32 @@ export function MajorMinorCombobox({
           <CommandList className="bg-popover">
             <CommandEmpty>{capitalizeFirstLetter(type)} not found</CommandEmpty>
             <CommandGroup>
+              {/* Only show clear option for minors */}
+              {type === "minor" && (
+                <CommandItem
+                  onSelect={() => {
+                    setValueStateAction("");
+                    setOpen(false);
+                  }}
+                  className="italic text-muted-foreground"
+                >
+                  <CheckIcon
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === "" ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  Clear selection
+                </CommandItem>
+              )}
+
               {allValues.map((major) => (
                 <CommandItem
                   key={major}
                   value={major}
                   onSelect={(currentValue) => {
-                    setValueStateAction(currentValue === value ? "" : currentValue)
-                    setOpen(false)
+                    setValueStateAction(currentValue === value ? "" : currentValue);
+                    setOpen(false);
                   }}
                 >
                   <CheckIcon

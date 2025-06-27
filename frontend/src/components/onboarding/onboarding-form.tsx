@@ -222,7 +222,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={!!formInputs?.startTerm}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select start term..." />
@@ -251,7 +251,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value} disabled={!!formInputs?.startYear}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select start year" />
