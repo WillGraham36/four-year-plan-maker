@@ -437,7 +437,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                           size="sm"
                           disabled={fields.length <= 1}
                           onClick={() => remove(index)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 h-full"
                         >
                           <Trash2 className="h-4 w-4" />
                           </Button>
