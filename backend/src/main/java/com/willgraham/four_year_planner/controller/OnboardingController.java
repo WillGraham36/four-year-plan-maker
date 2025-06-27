@@ -32,6 +32,16 @@ public class OnboardingController {
     public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
+        // First, remove all transfer credits the user has that
+        List<TransferCreditDto> existingTransferCourses = userCourseService.getTransferCreditsForUser(userId);
+        List<CourseIdentifierDto> existingIdentifiers =
+                existingTransferCourses
+                        .stream()
+                        .map(course -> new CourseIdentifierDto(course.getCourse().getCourseId(), course.getSemester()))
+                        .toList();
+        // Delete courses from db
+        userCourseService.deleteUserCoursesByIdentifiers(userId, existingIdentifiers);
+
         // Save courses
         onboardingFormRequestDto.getTransferCredits()
                 .forEach(dto -> userCourseService.processTransferCreditDto(dto, userId));
