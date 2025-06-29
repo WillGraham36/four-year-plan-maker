@@ -103,12 +103,12 @@ const GenEdsContainer = () => {
 
         <div className='grid grid-cols-[1fr,2fr,7rem]'>
           {GenEds.map((genEd, i) => {
-            const { courseId, semesterName } = assignGenEdsToRequirements[i];
+            const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
             return (
               <React.Fragment key={i}>
                 <GenEdRow
                   genEd={genEd}
-                  course={courseId}
+                  course={transferCreditName ? `${courseId} | ${transferCreditName}` : courseId}
                   semester={termYearToString(semesterName)}
                   isLast={i === GenEds.length - 1}
                 />

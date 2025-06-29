@@ -54,6 +54,9 @@ export function termYearToString(termOrTermYear: string, year?: number | string)
   }
   // Assume input is like "FALL 2024"
   const [term, yr] = termOrTermYear.split(" ");
+  if (term === "TRANSFER" || yr === "-1") {
+    return "Transfer";
+  }
   return `${term.charAt(0).toUpperCase()}${term.slice(1).toLowerCase()} ${yr}`;
 }
 

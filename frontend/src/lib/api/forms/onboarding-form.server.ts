@@ -63,6 +63,7 @@ export const getOnboardingFormValues = async () => {
   });
   return {
     ...parsed.data,
+    minor: parsed.data.minor ?? "",
     startTerm: parsed.data.startTerm.toLowerCase(),
     endTerm: parsed.data.endTerm.toLowerCase(),
     transferCredits: parsed.data.transferCredits?.map((tc) => ({

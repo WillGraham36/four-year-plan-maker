@@ -8,4 +8,6 @@ public interface CourseProjection {
     String getTerm();
     Integer getYear();
     List<String> getSelectedGenEds();
+    String getGenEdOverrides();
+    String getTransferCreditName();
 }
