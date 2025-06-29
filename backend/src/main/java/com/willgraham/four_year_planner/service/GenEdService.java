@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -51,6 +52,15 @@ public class GenEdService {
         semester.setTerm(Term.valueOf(projection.getTerm()));
         semester.setYear(projection.getYear());
 
-        return new UserCourseWithInfoDto(genEds, projection.getCourseId(), semester, projection.getSelectedGenEds());
+        // If there are genEd overrides return those instead
+        if(projection.getGenEdOverrides() != null && !projection.getGenEdOverrides().isEmpty()) {
+            List<List<String>> genEdOverrides = listConverter.convertToEntityAttribute(projection.getGenEdOverrides());
+            return new UserCourseWithInfoDto(genEdOverrides, projection.getCourseId(), semester, projection.getSelectedGenEds(), projection.getTransferCreditName());
+        }
+
+        return new UserCourseWithInfoDto(genEds, projection.getCourseId(), semester, projection.getSelectedGenEds(), "");
+
+
+
     }
 }

@@ -43,7 +43,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     List<Course> findCoursesByUserId(String userId);
 
     @Query(value = "SELECT c.gen_eds as genEds, c.course_id as courseId, " +
-            "uc.term, uc.year, uc.selected_gen_eds as selectedGenEds " +
+            "uc.term, uc.year, uc.selected_gen_eds as selectedGenEds, uc.transfer_gen_eds_override as genEdOverrides, uc.transfer_credit_name as transferCreditName " +
             "FROM user_courses uc " +
             "JOIN courses c ON uc.course_id = c.course_id " +
             "WHERE uc.user_id = :userId ",

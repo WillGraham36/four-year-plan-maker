@@ -40,6 +40,7 @@ export const GenEdListSchema = z.array(z.object({
   genEd: z.string(),
   courseId: z.string(),
   semesterName: z.string(),
+  transferCreditName: z.string().optional().nullable(),
 }));
 
 export type GenEdList = z.infer<typeof GenEdListSchema>;

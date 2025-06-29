@@ -97,7 +97,8 @@ public class GenEdsController {
                         genEd = genEd.substring(0, pipeIndex);
                     }
                     if (GENEDS_LIST.contains(genEd)) {
-                        result.add(new GenEdDto(genEd, course.getCourseId(), course.getSemester().getName()));
+
+                        result.add(new GenEdDto(genEd, course.getCourseId(), course.getSemester().getName(), course.getTransferCreditName()));
                     }
                 }
             }
