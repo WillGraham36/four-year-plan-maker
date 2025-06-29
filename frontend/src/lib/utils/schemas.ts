@@ -57,9 +57,10 @@ export const OnboardingFormInitialValuesSchema = z.object({
     return val;
   }, z.string()),
   major: z.string(),
-  minor: z.string().optional(),
+  minor: z.string().optional().nullable().default(""),
   transferCredits: z.array(z.object({
     name: z.string().optional(),
     courseId: z.string().optional(),
-  })).optional().nullable(),
+    genEdOverrides: z.array(z.array(z.string())).optional().nullable(),
+  })).optional().nullable().default([]),
 });
