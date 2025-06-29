@@ -162,8 +162,10 @@ public class UserCourseService {
         userCourse.setCourseId(course.getCourseId());
         userCourse.setSemester(dto.getSemester());
         userCourse.setTransferCreditName(dto.getName());
+        userCourse.setTransferGenEdsOverride(dto.getGenEdOverrides());
 
-        List<List<String>> requestGenEds = dto.getCourse().getGenEds();
+        // Logic for dependant genEds, won't be handling these right now though
+        List<List<String>> requestGenEds = dto.getGenEdOverrides();
         if (requestGenEds.size() > 1) {
             if (requestGenEds.getFirst().stream().anyMatch(s -> s.contains("|"))) {
                 userCourse.setSelectedGenEds(requestGenEds.get(1));
@@ -181,7 +183,8 @@ public class UserCourseService {
         return transferCourses.stream().map((course) -> new TransferCreditDto(
                 course.getTransferCreditName(),
                 course.getCourse(),
-                course.getSemester()
+                course.getSemester(),
+                course.getTransferGenEdsOverride()
         )).toList();
     }
 }

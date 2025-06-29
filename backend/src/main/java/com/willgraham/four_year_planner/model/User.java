@@ -19,7 +19,7 @@ public class User {
     private String id;
 
     @Column(name = "ul_concentration")
-    private String ULConcentration;
+    private String ULConcentration = "";
 
     @Embedded
     @AttributeOverrides({

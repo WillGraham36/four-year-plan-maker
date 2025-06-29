@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,4 +15,5 @@ public class TransferCreditDto {
     private String name;
     private Course course;
     private Semester semester;
+    private List<List<String>> genEdOverrides;
 }

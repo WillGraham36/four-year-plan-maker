@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { Course, CustomServerResponse, termOrder } from "@/lib/utils/types"
+import { Course, CustomServerResponse, GenEd, termOrder } from "@/lib/utils/types"
 import { Input } from "../ui/input"
 import { Plus, Trash2 } from "lucide-react"
 import { isFormValid } from "@/lib/utils/helpers"
@@ -48,6 +48,7 @@ const baseOnboardingFormSchema = z.object({
   transferCredits: z.array(z.object({
     name: z.string().optional(),
     courseId: z.string().optional(),
+    genEds: z.string().optional(),
   }))
   .optional()
   .transform((credits) => {
@@ -66,6 +67,7 @@ const baseOnboardingFormSchema = z.object({
       courseId: z.string().refine((val) => val.trim().length > 0, {
         message: "Course ID is required",
       }),
+      genEds: z.string().optional(),
     })).optional()
   ),
 })
@@ -101,7 +103,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
     resolver: zodResolver(baseOnboardingFormSchema),
     defaultValues: formInputs || {
       transferCredits: [
-        { name: "", courseId: "" },
+        { name: "", courseId: "", genEds: "" },
       ],
     }
   });
@@ -114,11 +116,13 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
       let coursesInfo: CustomServerResponse<Course[]> = { ok: true, message: "", data: [] };
 
       // If there are transfer credits, ensure they are trimmed and formatted correctly
-      // then validate
+      // Then validate
+      const courseToGenEdMap: Record<string, string[][]> = {}
       if (values.transferCredits && values.transferCredits.length > 0) {
         values.transferCredits = values.transferCredits.map(credit => ({
           name: credit.name?.trim() || "",
           courseId: credit.courseId?.trim().toUpperCase() || "",
+          genEds: credit.genEds?.trim().toUpperCase() || "",
         }));
 
         // Validate transfer credits
@@ -127,6 +131,24 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
             errors[index] = "Both course name and ID are required";
           } else if (!credit.courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
             errors[index] = `Invalid course ID format`;
+          }
+
+          // Convert genEds to format expected by backend, add them to map
+          // Format: [["DSHS"], ["DSSP", "DSHU"]]
+          let formattedGenEds = [[]] as string[][];
+          if(credit.genEds && credit.genEds.length > 0) {
+            formattedGenEds = credit.genEds
+              .split("OR")
+              .map(group =>
+                group
+                  .split(",")
+                  .map(s => s.trim())
+                  .filter(Boolean)
+              )
+              .filter(arr => arr.length > 0);
+          }
+          if (formattedGenEds.length > 0) {
+            courseToGenEdMap[credit.courseId] = formattedGenEds;
           }
         });
 
@@ -172,6 +194,32 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                 }
               );
             }
+            // If genEds were provided, validate against the course's genEds
+            if (credit.genEds && courseToGenEdMap[credit.courseId]) {
+              // Get genEds from backend course info
+              const backendGenEds: string[][] = coursesInfo.data?.find((c: any) => c.courseId === credit.courseId)?.genEds || [];
+              const userGenEds: string[][] = courseToGenEdMap[credit.courseId];
+
+              // For each group in userGenEds, at least one value must be present in some group in backendGenEds
+              const allValid = userGenEds.every(userGroup =>
+              backendGenEds.some(backendGroup =>
+                userGroup.every(userGenEd =>
+                backendGroup.includes(userGenEd)
+                )
+              )
+              );
+
+              if (!allValid) {
+              form.setError(
+                `transferCredits.${idx}.genEds` as const,
+                {
+                type: "manual",
+                message: "Gen Eds do not match any available options for this course",
+                }
+              );
+              }
+            }
+
           });
           // If any errors were set, stop submission
           if (Object.keys(form.formState.errors.transferCredits || {}).length > 0) {
@@ -194,9 +242,11 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
           semester: {
             term: "TRANSFER",
             year: -1,
-          }
+          },
+          genEdOverrides: courseToGenEdMap[credit.courseId] as GenEd[][] || [[]],
         })),
       }
+      console.log(submitValues)
 
       const message = await submitOnboardingForm(submitValues);
       toast(
@@ -390,14 +440,15 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                 <FormControl>
                   <div className="border rounded-md bg-card p-2">
                     {/* Header Row */}
-                    <div className="grid grid-cols-[1fr,1fr,2.5rem] pt-2 pl-3 gap-2 font-medium text-sm rounded-lg">
+                    <div className="grid grid-cols-[1fr,1fr,1fr,2.5rem] pt-2 pl-3 gap-2 font-medium text-sm rounded-lg">
                       <div>Course Name</div>
                       <div>Course ID</div>
+                      <div>Gen Eds</div>
                     </div>
 
                     {/* Dynamic Rows */}
                     {fields.map((course, index) => (
-                      <div key={course.id} className="grid grid-cols-[1fr,1fr,2.5rem] py-2 gap-2">
+                      <div key={course.id} className="grid grid-cols-[1fr,1fr,1fr,2.5rem] py-2 gap-2">
                         <FormField
                           control={form.control}
                           name={`transferCredits.${index}.name`}
@@ -424,6 +475,22 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                                   placeholder="e.g. PSYC100"
                                   {...idField}
                                   className={idField.value ? "uppercase" : ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name={`transferCredits.${index}.genEds`}
+                          render={({ field: genEds }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder="e.g. DSHS"
+                                  {...genEds}
                                 />
                               </FormControl>
                               <FormMessage />

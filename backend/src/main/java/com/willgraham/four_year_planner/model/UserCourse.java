@@ -1,5 +1,6 @@
 package com.willgraham.four_year_planner.model;
 
+import com.willgraham.four_year_planner.utils.ListOfListStringConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -30,6 +31,11 @@ public class UserCourse {
 
     private List<String> selectedGenEds;
 
+
     @Column(name = "transfer_credit_name")
     private String transferCreditName;
+
+    @Convert(converter = ListOfListStringConverter.class)
+    @Column(columnDefinition = "TEXT") // Ensure enough space for JSON storage
+    private List<List<String>> transferGenEdsOverride;
 }

@@ -13,6 +13,7 @@ type TransferCreditWithDetails = Omit<
     term: Term | "TRANSFER";
     year: number;
   };
+  genEdOverrides: string[][];
 };
 
 export type SubmitOnboardingFormProps = Omit<OnboardingFormValues, "transferCredits"> & {
