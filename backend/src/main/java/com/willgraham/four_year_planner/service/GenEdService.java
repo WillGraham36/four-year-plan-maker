@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -46,6 +47,7 @@ public class GenEdService {
         // Convert JSON string back to List<List<String>>
         ListOfListStringConverter listConverter = new ListOfListStringConverter();
         List<List<String>> genEds = listConverter.convertToEntityAttribute(projection.getGenEds());
+        List<List<String>> genEdOverrides = listConverter.convertToEntityAttribute(projection.getGenEdOverrides());
 
         // Create Semester object
         Semester semester = new Semester();
