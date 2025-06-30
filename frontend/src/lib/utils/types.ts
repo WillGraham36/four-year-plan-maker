@@ -45,7 +45,7 @@ export type CustomServerResponse<T> =
   | { ok: true; message: string; data: T }
   | { ok: false; message: string; data: null }
 
-export type Term = "FALL" | "SPRING" | "SUMMER" | "WINTER";
+export type Term = "FALL" | "SPRING" | "SUMMER" | "WINTER" | "TRANSFER";
 
 
 export const ACCEPTABLE_ULC_AREAS = [

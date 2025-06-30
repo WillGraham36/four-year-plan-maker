@@ -15,11 +15,15 @@ export function cn(...inputs: ClassValue[]) {
  * @param year 
  * @returns Array of courses for the given semester
  */
-export function extractSemester(semesters: Semesters, term: Term, year: number): Course[] {
-  const courses = semesters[`Semester(term=${term}, year=${year})`] as Course[]
+export function extractSemester(
+  semesters: Semesters,
+  term: Term | "TRANSFER",
+  year: number
+): Course[] {
+  const courses = semesters[`Semester(term=${term}, year=${year})`] as Course[];
 
   if (courses === undefined) {
-    return []
+    return [];
   }
   return courses;
 }

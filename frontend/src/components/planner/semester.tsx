@@ -9,21 +9,27 @@ interface SemesterProps {
   term: Term;
   year: number;
   courses: Course[];
+  disableCourseEditing?: boolean;
+  children?: React.ReactNode;
 }
 
 const Semester = ({
   term,
   year,
   courses,
+  disableCourseEditing,
+  children,
 }: SemesterProps) => {
   const semesterTerm = termYearToString(term, year);
-
+  
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
       <div className="flex flex-col rounded-lg border w-full h-min overflow-hidden bg-card shadow-md">
-        <p className="w-full border-b p-1 px-3 text-sm md:text-base">
-          {semesterTerm}
-        </p>
+        {children ? children : (
+          <p className="w-full border-b p-1 px-3 text-sm md:text-base">
+            {semesterTerm}
+          </p>
+        )}
 
         <div className="grid grid-cols-[1fr,2fr,3.5rem] border-b text-xs md:text-sm text-muted-foreground">
           <p className="w-full px-3 py-1">Course</p>
@@ -31,7 +37,7 @@ const Semester = ({
           <p className="w-full text-center py-1">Credits</p>
         </div>
 
-        <SemesterCourseList initialCourses={courses}  />
+        <SemesterCourseList initialCourses={courses} disableCourseEditing={disableCourseEditing} />
       </div>
     </SemesterProvider>
   )
@@ -41,7 +47,7 @@ const Semester = ({
  * Keeps track of the number of courses and adds additional CourseInput components as needed
  * Shows total credits as well
  */
-const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) => {
+const SemesterCourseList = ({ initialCourses, disableCourseEditing } : { initialCourses?: Course[], disableCourseEditing?: boolean}) => {
   const initialLength = initialCourses?.length ?? 0;
   const { courses } = useSemester();
   const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 5));
@@ -56,10 +62,10 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
   return (
     <>
       {initialCourses?.map((course) => (
-        <CourseInput key={course.courseId} initialCourse={course} />
+        <CourseInput key={course.courseId} initialCourse={course} disabled={disableCourseEditing} />
       ))}
       {[...Array(numCourseInputs - initialLength)].map((_, i) => (
-        <CourseInput key={i} />
+        <CourseInput key={i} disabled={disableCourseEditing} />
       ))}
       <div className="h-8 w-full grid grid-cols-[3fr,3.5rem] text-xs md:text-sm">
         <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
@@ -71,4 +77,13 @@ const SemesterCourseList = ({ initialCourses } : { initialCourses?: Course[]}) =
   )
 }
 
-export default Semester
+const SemesterHeaderText = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <p className="w-full border-b p-1 px-3 text-sm md:text-base">
+      {children}
+    </p>
+  )
+}
+
+
+export { Semester, SemesterHeaderText };

@@ -17,7 +17,7 @@ import { arraysEqual } from '@/lib/utils';
 import { useRequirements } from './requirements-context';
 
 
-const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
+const CourseInput = ({ initialCourse, disabled } : { initialCourse?: Course, disabled?: boolean}) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
   const { refreshGenEds, refreshAllRequirements } = useRequirements();
 
@@ -216,9 +216,10 @@ const CourseInput = ({ initialCourse } : { initialCourse?: Course}) => {
             </Tooltip>
           )}
           <Input 
-            className='p-0 px-3 h-8 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border'
+            className='p-0 px-3 h-8 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border disabled:cursor-default disabled:opacity-100 disabled:text-muted-foreground'
             value={course.courseId} 
             onChange={handleInputChange} 
+            disabled={disabled}
           />
         </div>
 

@@ -1,7 +1,8 @@
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
 import { RequirementsProvider } from '@/components/planner/requirements-context';
-import Semester from '@/components/planner/semester'
+import { Semester } from '@/components/planner/semester'
 import TotalCreditsContainer from '@/components/planner/total-credits-container';
+import TransferCreditsContainer from '@/components/planner/transfer-credits-container';
 import Year from '@/components/planner/year';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses } from '@/lib/api/planner/planner.server';
@@ -50,6 +51,7 @@ const PlannerPage = async () => {
           <TotalCreditsContainer />
           <GenEdsContainer />
           <UpperLevelConcentrationContainer concentration={concentration} />
+          <TransferCreditsContainer courses={extractSemester(semesters, 'TRANSFER', -1)} />
         </div>
       </RequirementsProvider>
     </main>

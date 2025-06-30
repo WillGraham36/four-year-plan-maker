@@ -152,7 +152,7 @@ const GenEdRow = ({
       <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
         {semester}
       </p>
-      </React.Fragment>
+    </React.Fragment>
   )
 }
 
