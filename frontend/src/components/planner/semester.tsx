@@ -69,7 +69,7 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore } : S
     }
   }, [courses, numCourseInputs, isCore]);
 
-  if (isCore) {
+  if (!isCore) {
     if (initialLength === 0) {
       return (
         <div className="p-3 text-muted-foreground text-sm text-center">

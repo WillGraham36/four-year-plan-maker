@@ -9,6 +9,7 @@ const TransferCreditsContainer = ({ courses }: {  courses: Course[]}) => {
       year={-1} 
       courses={courses} 
       disableCourseEditing={true}
+      isCore={false}
       title={
         <SemesterHeaderText>
           Transfer Credits
