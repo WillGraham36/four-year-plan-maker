@@ -258,6 +258,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
           description: "!text-muted-foreground font-semibold",
         }
       });
+      router.push("/planner");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
