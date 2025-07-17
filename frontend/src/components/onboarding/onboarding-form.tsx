@@ -62,7 +62,9 @@ const baseOnboardingFormSchema = z.object({
   })
   .pipe(
     z.array(z.object({
-      name: z.string().refine((val) => val.trim().length > 0, {
+      name: z.string().max(100, {
+        message: "Course name must be 100 characters or less",
+      }).refine((val) => val.trim().length > 0, {
         message: "Course name is required",
       }),
       courseId: z.string().refine((val) => val.trim().length > 0, {

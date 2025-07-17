@@ -146,7 +146,7 @@ const GenEdRow = ({
       <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground ${!isLast ? 'border-b' : ''}`}>
         {genEd}
       </p>
-      <p className={`border-x px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
+      <p className={`border-x px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background break-all ${!isLast ? 'border-b' : ''}`}>
         {course}
       </p>
       <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
