@@ -45,22 +45,27 @@ export const getOnboardingFormValues = async () => {
   }
 
   const sanitizedData = sanitizeTransferCredits(response.data);
-  console.log("Response form data:", response.data.transferCredits[0].genEdOverrides);
 
   const parsed = OnboardingFormInitialValuesSchema.safeParse(sanitizedData);
   if(!parsed.success) {
     console.error("Failed to parse onboarding form data:", parsed.error);
     return null;
   }
+  if(parsed.data.transferCredits?.length === 0) {
+    parsed.data.transferCredits = [
+        { name: "", courseId: "", genEdOverrides: undefined },
+      ];
+  }
   console.log({
     ...parsed.data,
+    minor: parsed.data.minor ?? "",
     startTerm: parsed.data.startTerm.toLowerCase(),
     endTerm: parsed.data.endTerm.toLowerCase(),
     transferCredits: parsed.data.transferCredits?.map((tc) => ({
       ...tc,
       genEds: transformGenEdOverrides(tc.genEdOverrides),
     }))
-  });
+  })
   return {
     ...parsed.data,
     minor: parsed.data.minor ?? "",

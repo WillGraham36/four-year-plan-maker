@@ -37,6 +37,7 @@ import { MajorMinorCombobox } from "./major-minor-combobox"
 import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
 import { ScaleLoader } from "react-spinners";
 import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
+import { useRouter } from "next/navigation"
 
 const baseOnboardingFormSchema = z.object({
   startTerm: z.string(),
@@ -99,6 +100,7 @@ const baseOnboardingFormSchema = z.object({
 export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
 
 export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingFormValues}) {
+  const router = useRouter();
   const form = useForm<z.infer<typeof baseOnboardingFormSchema>> ({
     resolver: zodResolver(baseOnboardingFormSchema),
     defaultValues: formInputs || {
@@ -252,6 +254,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
       toast(
         message
       );
+      // router.push("/planner");
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
