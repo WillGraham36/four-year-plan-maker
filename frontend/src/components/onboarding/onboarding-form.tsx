@@ -251,10 +251,13 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
       console.log(submitValues)
 
       const message = await submitOnboardingForm(submitValues);
-      toast(
-        message
-      );
-      // router.push("/planner");
+      toast.success(message || "Onboarding form submitted successfully", {
+        description: "You can always change this later in the settings",
+        classNames: {
+          title: "font-bold",
+          description: "!text-muted-foreground font-semibold",
+        }
+      });
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");

@@ -51,7 +51,7 @@ public class OnboardingController {
         userService.createOrUpdateUser(userService.buildUserFromDto(onboardingFormRequestDto, userId));
 
         logger.info("Onboarding submit processing finished successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Successfully submitted form"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success("Successfully submitted form", "Successfully submitted onboarding form"));
 
     }
 
