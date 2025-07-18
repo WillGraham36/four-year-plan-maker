@@ -326,3 +326,14 @@ export const ALL_MINORS = [
   "Technology Innovation Leadership Minor",
   "U.S. Latina/o Studies Minor",
 ];
+
+export type SemesterDateDescriptor = {
+  term: Term
+  year: number
+}
+
+export type UserInfo = {
+  startSemester: SemesterDateDescriptor
+  endSemester: SemesterDateDescriptor
+  offSemesters: SemesterDateDescriptor[] | null
+}

@@ -1,7 +1,7 @@
 'use server';
 
-import { CourseInfoSchema, GenEdListSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
-import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS } from "@/lib/utils/types";
+import { CourseInfoSchema, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
+import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS, UserInfo } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
 
@@ -104,7 +104,7 @@ export const getSemesterCourses = async (props: GetSemesterCoursesProps) => {
   console.log(courses.data);
 }
 
-export const getAllSemesters = async () => {
+export const getAllSemesters = async (): Promise<SemesterSchema> => {
   const res = await fetchWithAuth("v1/usercourses");
   const courses = SemestersSchema.safeParse(res.data);
   return courses.data || {};
@@ -237,3 +237,20 @@ export const getMultipleCourseInfos = async (
     };
   }
 };
+
+export const getUserInfo = async (): Promise<CustomServerResponse<UserInfo>> => {
+  const res = await fetchWithAuth("v1/userinfo");
+  if (!res.ok) {
+    return {
+      ok: false,
+      message: `Failed to fetch user info`,
+      data: null,
+    }
+  }
+  const data = await res.data;
+  return {
+    ok: true,
+    message: "Successfully fetched user info",
+    data: data as UserInfo
+  };
+}

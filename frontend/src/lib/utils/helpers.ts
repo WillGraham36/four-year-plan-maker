@@ -1,4 +1,5 @@
 import { OnboardingFormValues } from "@/components/onboarding/onboarding-form";
+import { SemesterDateDescriptor, Term } from "./types";
 
 // Helper to check if onboarding form has all required fields filled out and if transfer credits are valid
 export const isFormValid = (formData: OnboardingFormValues): boolean => {
