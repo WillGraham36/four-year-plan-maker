@@ -1,14 +1,14 @@
 package com.willgraham.four_year_planner.service;
 
+import com.willgraham.four_year_planner.dto.GetUserInfoResponseDto;
 import com.willgraham.four_year_planner.dto.OnboardingFormRequestDto;
 import com.willgraham.four_year_planner.model.Semester;
-import com.willgraham.four_year_planner.model.ULConcentrationAreas;
 import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
+import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -44,8 +44,8 @@ public class UserService {
     }
 
 
-    public User createOrUpdateUser(User newUser) {
-        return userRepository.findById(newUser.getId())
+    public void createOrUpdateUser(User newUser) {
+        userRepository.findById(newUser.getId())
                 .map(existingUser -> {
                     // Update fields you want to allow updating
                     existingUser.setULConcentration(newUser.getULConcentration());
@@ -75,6 +75,17 @@ public class UserService {
                 user.get().getMinor()
         );
         return Optional.of(dto);
+    }
+
+    public GetUserInfoResponseDto getUserInfo(String userId) {
+        Optional<User> user = userRepository.findById(userId);
+
+        return user.map(value -> new GetUserInfoResponseDto(
+                value.getStartSemester(),
+                value.getEndSemester(),
+                List.of(value.getStartSemester())
+            )).orElseGet(GetUserInfoResponseDto::new);
+
     }
 
 }
