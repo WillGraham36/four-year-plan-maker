@@ -1,27 +1,12 @@
 'use client';
 import { SemesterDateDescriptor, UserInfo } from "@/lib/utils/types";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { toast } from "sonner";
 import Year from "./year";
 import { Semester } from "./semester";
 import { extractSemester } from "@/lib/utils";
 import { SemesterSchema } from "@/lib/utils/schemas";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
-  const router = useRouter();
-  useEffect(() => {
-    if(!userInfo || !userInfo.startSemester || !userInfo.endSemester) {
-      toast("Please complete your account setup to view the planner");
-      router.push("/account/setup");
-    }
-  }, [userInfo, router]);
-
-  // prevent flicker of this page if user info is not available
-  if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) {
-    return null; 
-  }
-
+  if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
   const academicYears = generateAcademicYears(userInfo);
 
   return (

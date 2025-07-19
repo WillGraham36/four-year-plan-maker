@@ -25,6 +25,7 @@ const PlannerPage = async () => {
         initialGenEds={genEds} 
         initialULCourses={courses} 
         initialTotalCredits={totalCredits}
+        userInfo={userInfo}
       >
         <div className='flex flex-col w-full mt-2 xl:w-[60%]'>
           <YearsContainer userInfo={userInfo} semesters={semesters} />
