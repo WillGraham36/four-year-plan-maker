@@ -1,46 +1,106 @@
-import { UserButton, useUser } from '@clerk/nextjs'
+import { useClerk, UserButton, useUser } from '@clerk/nextjs'
 import React from 'react'
 import { Button } from '../ui/button';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from 'next/navigation';
+import { LogOut, Settings, User } from 'lucide-react';
+import { toast } from 'sonner';
 
 const AccountButton = () => {
   const { user } = useUser();
+  const { signOut, openUserProfile } = useClerk();
+  const router = useRouter();
 
-  return (
-    <div className="relative inline-block h-10">
-      {/* Invisible full-width UserButton that handles clicks */}
-      <div className="absolute inset-0 z-10 opacity-0">
-        <UserButton
-          appearance={{
-            elements: {
-              rootBox: "h-full w-full rounded-none",
-              userButtonTrigger: "h-full w-full rounded-none p-1"
-            },
-          }}
-        />
-      </div>
+  const handleSetupClick = () => {
+    router.push('/account/setup');
+  };
 
-      {/* Visual presentation */}
-      <Button
-        variant={'secondary'}
-        className="p-0 lg:py-2 lg:px-5 max-lg:!bg-background"
-      >
-        <div className="h-8 w-8 rounded-full overflow-hidden">
-          <Image
-            src={user?.imageUrl || "/default-user.svg"}
-            width={32}
-            height={32}
-            alt="Profile Picture"
-            className="h-full w-full object-cover"
-          />
+  const handleManageAccountClick = () => {
+    openUserProfile();
+  };
+
+  const handleSignOut = () => {
+    router.push('/'); // Redirect to home page after sign out
+    toast.success('You have successfully signed out');
+    signOut();
+  };
+
+ return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant={'secondary'}
+          className="p-0 lg:py-2 lg:px-5 max-lg:!bg-background hover:bg-accent"
+        >
+          <div className="h-8 w-8 rounded-full overflow-hidden">
+            <Image
+              src={user?.imageUrl || "/default-user.svg"}
+              width={32}
+              height={32}
+              alt="Profile Picture"
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <p className='hidden lg:block'>
+            {user?.fullName || user?.username || 'My Account'}
+          </p>
+        </Button>
+      </DropdownMenuTrigger>
+      
+      <DropdownMenuContent align="end" className="w-80">
+        {/* User info header */}
+        <div className="flex items-center gap-3 p-3 border-b">
+          <div className="h-10 w-10 rounded-full overflow-hidden">
+            <Image
+              src={user?.imageUrl || "/default-user.svg"}
+              width={40}
+              height={40}
+              alt="Profile Picture"
+              className="h-full w-full object-cover"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {user?.fullName || user?.username || 'User'}
+            </p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.primaryEmailAddress?.emailAddress || ''}
+            </p>
+          </div>
         </div>
-        <p className='hidden lg:block'>
-          {user?.fullName || user?.username || 'My Account'}
-        </p>
-      </Button>
-    </div>
-  )
+
+        {/* Setup button */}
+        <DropdownMenuItem onClick={handleSetupClick} className="cursor-pointer">
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Account Setup</span>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        {/* Manage account */}
+        <DropdownMenuItem onClick={handleManageAccountClick} className="cursor-pointer">
+          <User className="mr-2 h-4 w-4" />
+          <span>Manage Account</span>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        {/* Sign out */}
+        <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 focus:text-red-600">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sign Out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 export default AccountButton
