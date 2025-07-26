@@ -68,7 +68,11 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
   const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, minNumCourses));
 
   useEffect(() => {
-    if (!isCore && courses.length === numCourseInputs && numCourseInputs < 8) {
+    console.log("Courses updated:", courses);
+    console.log("Current number of course inputs:", numCourseInputs);
+    console.log(courses.length, numCourseInputs, isCore);
+    if (isCore && courses.length === numCourseInputs && numCourseInputs < 8) {
+      console.log("Adding new course input");
       setNumCourseInputs((prevNum) => prevNum + 1);
     }
   }, [courses, numCourseInputs, isCore]);
