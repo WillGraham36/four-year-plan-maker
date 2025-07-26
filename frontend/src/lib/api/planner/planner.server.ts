@@ -254,3 +254,24 @@ export const getUserInfo = async (): Promise<CustomServerResponse<UserInfo>> => 
     data: data as UserInfo
   };
 }
+
+export const createOffTerm = async (term: Term, year: number): Promise<CustomServerResponse<void>> => {
+  const res = await fetchWithAuth("v1/userinfo/offterms", {
+    init: {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ term, year }),
+    }
+  })
+
+  if (!res.ok) {
+    throw new Error("Failed to create off-term");
+  }
+  return {
+    ok: true,
+    message: "Successfully created off-term",
+    data: undefined,
+  };
+}

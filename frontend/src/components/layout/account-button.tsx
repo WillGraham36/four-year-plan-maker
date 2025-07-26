@@ -57,7 +57,7 @@ const AccountButton = () => {
       
       <DropdownMenuContent align="end" className="w-80">
         {/* User info header */}
-        <div className="flex items-center gap-3 p-3 border-b">
+        <div className="flex items-center gap-3 p-3 border-b mb-2">
           <div className="h-10 w-10 rounded-full overflow-hidden">
             <Image
               src={user?.imageUrl || "/default-user.svg"}

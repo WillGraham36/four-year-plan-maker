@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.CourseDto;
+import com.willgraham.four_year_planner.dto.CreateOffTermRequestDto;
 import com.willgraham.four_year_planner.dto.GetUserInfoResponseDto;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.service.UserService;
@@ -10,9 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -32,5 +31,14 @@ public class UserInfoController {
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
 
         return ResponseEntity.ok(ApiResponse.success(userInfo));
+    }
+
+    @PostMapping("/offterms")
+    public ResponseEntity<ApiResponse<String>> createOffTerm(@RequestBody CreateOffTermRequestDto request, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        userService.createOffTerm(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success("Created off term successfully"));
     }
 }

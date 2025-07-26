@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -37,6 +38,18 @@ public class User {
     private Semester endSemester;
     private String major;
     private String minor;
+
+
+    @ElementCollection
+    @CollectionTable(
+            name = "user_off_semesters",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @AttributeOverrides({
+            @AttributeOverride(name = "term", column = @Column(name = "term")),
+            @AttributeOverride(name = "year", column = @Column(name = "year"))
+    })
+    private List<Semester> offSemesters = new ArrayList<>();
 
     public User(String id, Semester startSemester, Semester endSemester, String major, String minor) {
         this.id = id;
