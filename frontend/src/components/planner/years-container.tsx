@@ -38,15 +38,21 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
               key={`${semester.term}-${semester.year}`}
               term={semester.term}
               year={semester.year}
+              minNumCourses={semester.term === 'WINTER' || semester.term === "SUMMER" ? 2 : 5}
               courses={extractSemester(semesters, semester.term, semester.year)}
             />
           ))}
           <DropdownMenu>
-            <DropdownMenuTrigger className="col-span-2 -mt-2.5 -mb-1">
+            <DropdownMenuTrigger 
+            className={`
+              ${yearSemesters.length === 4 ? "hidden" : "block"} 
+              ${yearSemesters.length === 3 ? "col-span-1 h-min mt-0" : "col-span-2"} 
+              -mt-2.5 -mb-1`}
+            >
               <Tooltip delayDuration={1500}>
                 <TooltipTrigger className={cn(
                   buttonVariants({ variant: 'ghost'}),
-                  "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full "
+                  "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full"
                 )}
                 asChild>
                   <Plus className="h-4 w-4 text-muted-foreground/60 group-hover:text-muted-foreground" />
@@ -56,9 +62,10 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                 </TooltipContent>
               </Tooltip>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-48" >
-              <DropdownMenuLabel className="font-bold">Select semester:</DropdownMenuLabel>
-              <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
+            <DropdownMenuContent className="w-64" >
+              <DropdownMenuLabel className="font-bold">Select semester to add:</DropdownMenuLabel>
+              {!yearSemesters.some(sem => sem.term === 'WINTER') && (
+                <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
                 <div 
                   className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
                   onClick={() => createNewSemester('WINTER', year + userInfo.startSemester.year - 1)}
@@ -66,14 +73,17 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                   {`Winter ${year + userInfo.startSemester.year - 1}`}
                 </div>
               </DropdownMenuItem>
-              <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
-                <div 
-                  className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
-                  onClick={() => createNewSemester('SUMMER', year + userInfo.startSemester.year)}
-                >
-                  {`Summer ${year + userInfo.startSemester.year}`}
-                </div>
-              </DropdownMenuItem>
+              )}
+              {!yearSemesters.some(sem => sem.term === 'SUMMER') && (
+                <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
+                  <div 
+                    className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
+                    onClick={() => createNewSemester('SUMMER', year + userInfo.startSemester.year)}
+                  >
+                    {`Summer ${year + userInfo.startSemester.year}`}
+                  </div>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </Year>

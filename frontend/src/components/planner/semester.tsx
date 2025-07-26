@@ -11,6 +11,7 @@ interface SemesterProps {
   courses: Course[];
   disableCourseEditing?: boolean;
   isCore?: boolean; // Used to determine if this is a core semester, or a transfer semester
+  minNumCourses?: number;
   title?: React.ReactNode;
 }
 
@@ -20,6 +21,7 @@ const Semester = ({
   courses,
   disableCourseEditing,
   isCore = true,
+  minNumCourses,
   title,
 }: SemesterProps) => {
   const semesterTerm = termYearToString(term, year);
@@ -43,6 +45,7 @@ const Semester = ({
           initialCourses={courses} 
           disableCourseEditing={disableCourseEditing} 
           isCore={isCore}
+          minNumCourses={minNumCourses}
         />
       </div>
     </SemesterProvider>
@@ -57,11 +60,12 @@ interface SemesterCourseListProps {
   initialCourses?: Course[];
   disableCourseEditing?: boolean;
   isCore?: boolean;
+  minNumCourses?: number;
 }
-const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore } : SemesterCourseListProps) => {
+const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minNumCourses = 5 } : SemesterCourseListProps) => {
   const initialLength = initialCourses?.length ?? 0;
   const { courses } = useSemester();
-  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, 5));
+  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, minNumCourses));
 
   useEffect(() => {
     if (!isCore && courses.length === numCourseInputs && numCourseInputs < 8) {
