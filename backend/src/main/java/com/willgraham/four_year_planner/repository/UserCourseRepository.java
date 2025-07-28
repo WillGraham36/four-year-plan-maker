@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.repository;
 
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
+import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.projection.CourseProjection;
 import jakarta.transaction.Transactional;
@@ -61,4 +62,8 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
         )
         """)
     List<UserCourse> findTransferCreditsByUserId(@Param("userId") String userId);
+
+    @Modifying
+    @Transactional
+    void deleteByUserIdAndSemester_TermAndSemester_Year(String userId, Term term, Integer year);
 }

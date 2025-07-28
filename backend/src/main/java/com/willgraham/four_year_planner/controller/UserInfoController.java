@@ -5,6 +5,7 @@ import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.dto.CreateOffTermRequestDto;
 import com.willgraham.four_year_planner.dto.GetUserInfoResponseDto;
 import com.willgraham.four_year_planner.model.Semester;
+import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
@@ -40,5 +41,14 @@ public class UserInfoController {
         userService.createOffTerm(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success("Created off term successfully"));
+    }
+
+    @DeleteMapping("/offterms")
+    public ResponseEntity<ApiResponse<String>> deleteOffTerm(@RequestParam("term") Term term, @RequestParam("year") Integer year, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        userService.deleteOffTerm(userId, term, year);
+
+        return ResponseEntity.ok(ApiResponse.success("Deleted off term successfully"));
     }
 }

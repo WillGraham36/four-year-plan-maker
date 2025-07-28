@@ -8,6 +8,7 @@ import com.willgraham.four_year_planner.exception.NotFoundException;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.model.User;
+import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import com.willgraham.four_year_planner.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserCourseRepository userCourseRepository;
 
     public User findById(String id) {
         return userRepository.findById(id)
@@ -113,6 +115,30 @@ public class UserService {
 
         // Add the off semester to the user's list
         user.getOffSemesters().add(offSemester);
+
+        // Save the updated user
+        userRepository.save(user);
+    }
+
+    public void deleteOffTerm(String userId, Term term, int year) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
+        Semester offSemester = new Semester(term, year);
+
+        boolean alreadyExists = user.getOffSemesters().stream()
+                .anyMatch(existingSemester -> existingSemester.getTerm() == offSemester.getTerm()
+                        && Objects.equals(existingSemester.getYear(), offSemester.getYear()));
+
+        if (!alreadyExists) {
+            throw new InvalidInputException("No off semester exists for "
+                    + term + " " + year);
+        }
+
+        // Remove the off semester from the user's list
+        user.getOffSemesters().remove(offSemester);
+
+        // Remove all the courses from the user
+        userCourseRepository.deleteByUserIdAndSemester_TermAndSemester_Year(userId, term, year);
 
         // Save the updated user
         userRepository.save(user);
