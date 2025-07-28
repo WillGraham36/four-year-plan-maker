@@ -274,4 +274,31 @@ export const createOffTerm = async (term: Term, year: number): Promise<CustomSer
     message: "Successfully created off-term",
     data: undefined,
   };
+};
+
+export const deleteOffTerm = async (term: Term, year: number): Promise<CustomServerResponse<void>> => {
+  const params = new URLSearchParams({
+    term: term,
+    year: year.toString()
+  });
+  
+  const res = await fetchWithAuth(`v1/userinfo/offterms`, {
+    params,
+    init: {
+      method: "DELETE",
+    }
+  })
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      message: "Failed to delete off-term",
+      data: null,
+    };
+  }
+  return {
+    ok: true,
+    message: "Successfully deleted off-term",
+    data: undefined,
+  };
 }
