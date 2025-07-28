@@ -72,7 +72,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                 <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
                 <div 
                   className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
-                  onClick={() => createNewSemester('WINTER', year + userInfo.startSemester.year - 1)}
+                  onClick={async () => createNewSemester('WINTER', year + userInfo.startSemester.year - 1)}
                 >
                   {`Winter ${year + userInfo.startSemester.year - 1}`}
                 </div>
@@ -82,7 +82,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                 <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
                   <div 
                     className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
-                    onClick={() => createNewSemester('SUMMER', year + userInfo.startSemester.year)}
+                    onClick={async () => createNewSemester('SUMMER', year + userInfo.startSemester.year)}
                   >
                     {`Summer ${year + userInfo.startSemester.year}`}
                   </div>
