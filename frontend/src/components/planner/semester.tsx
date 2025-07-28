@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";
@@ -23,6 +23,8 @@ import { DialogClose } from "@radix-ui/react-dialog";
 import { deleteOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useRequirements } from "./requirements-context";
+import RemoveCourseButton from "./remove-course-button";
 
 interface SemesterProps {
   term: Term;
@@ -46,17 +48,6 @@ const Semester = ({
   removable = false,
 }: SemesterProps) => {
   const semesterTerm = termYearToString(term, year);
-  const router = useRouter();
-
-  const onRemoveSemester = async () => {
-    if(!removable) return;
-    const res = await deleteOffTerm(term, year);
-    if (!res.ok) {
-      toast.error("Failed to remove semester. Please try again");
-      return;
-    }
-    router.refresh();
-  }
   
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
@@ -113,14 +104,7 @@ const Semester = ({
                     </DialogClose>
 
                     <DialogClose asChild>
-                      <Button
-                        size={"sm"}
-                        variant="destructive"
-                        className="mt-4"
-                        onClick={onRemoveSemester}
-                      >
-                        Remove Semester
-                      </Button>
+                      <RemoveCourseButton term={term} year={year} />
                     </DialogClose>
                   </div>
               </DialogHeader>

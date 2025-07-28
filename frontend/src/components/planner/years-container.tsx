@@ -21,19 +21,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
-import { useRequirements } from "./requirements-context";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
   const academicYears = generateAcademicYears(userInfo);
   const router = useRouter();
-  const { refreshAllRequirements } = useRequirements();
 
   const createNewSemester = async (term: "SUMMER" | "WINTER", year: number) => {
-    await Promise.all([
-      createOffTerm(term, year), 
-      refreshAllRequirements()
-    ])
+    await createOffTerm(term, year);
     router.refresh();
   };
 

@@ -10,6 +10,7 @@ interface SemesterContextProps {
   addCourse: (course: Course) => void;
   removeCourse: (courseId: string) => void;
   hasCourse: (courseId: string) => boolean;
+  getTotalCredits: () => number;
 }
 
 const SemesterContext = createContext<SemesterContextProps | undefined>(undefined);
@@ -65,7 +66,8 @@ export const SemesterProvider = ({ children, term, year, initialCourses }: { chi
     removeCourse,
     hasCourse,
     term,
-    year
+    year,
+    getTotalCredits: () => courses.reduce((total, course) => total + (course.credits || 0), 0)
   }), [courses, addCourse, removeCourse, hasCourse, term, year]);
 
   return (
