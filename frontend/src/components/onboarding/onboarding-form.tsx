@@ -289,8 +289,6 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                   <SelectContent>
                     <SelectItem value="fall">Fall</SelectItem>
                     <SelectItem value="spring">Spring</SelectItem>
-                    <SelectItem value="summer">Summer</SelectItem>
-                    <SelectItem value="winter">Winter</SelectItem>
                   </SelectContent>
                 </Select>
                   
@@ -353,8 +351,6 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                   <SelectContent>
                     <SelectItem value="fall">Fall</SelectItem>
                     <SelectItem value="spring">Spring</SelectItem>
-                    <SelectItem value="summer">Summer</SelectItem>
-                    <SelectItem value="winter">Winter</SelectItem>
                   </SelectContent>
                 </Select>
                 {!formInputs && (
