@@ -4,6 +4,12 @@ import React, { useMemo } from 'react'
 import { useRequirements } from '../planner/requirements-context';
 import { GenEdList } from '@/lib/utils/schemas';
 import SatisfiedCheck from '../ui/satisfied-check';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const GenEds = [
   'FSAW',
@@ -78,51 +84,59 @@ const GenEdsContainer = () => {
   );
 
   return (
-    <div className='w-full rounded-lg border bg-card shadow-md h-full'>
-      <div className='flex items-center gap-2 border-b p-2 px-3'>
-        <SatisfiedCheck
-          isSatisfied={allGenEdsSatisfied}
-          message="You need to complete all Gen Eds to satisfy this requirement"
-        />
-        <p className="w-full font-semibold text-lg">
-          Gen Eds
-        </p>
-      </div>
-      <div className='flex flex-col'>
-        <div className='grid grid-cols-[1fr,2fr,7rem] border-b'>
-          <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-            Gen Ed
-          </p>
-          <p className='border-x text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-            Course
-          </p>
-          <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
-            Semester
-          </p>
-        </div>
+    <aside className='w-full rounded-lg border bg-card shadow-md h-full'>
+      <Accordion type="single" collapsible defaultValue='gen-eds'>
+        <AccordionItem value={`gen-eds`} className='border-b-0'>
+          <AccordionTrigger className='flex items-center gap-2 data-[state=open]:border-b p-2 px-3 !no-underline'>
+            <div className='flex items-center gap-2'>
+              <SatisfiedCheck
+                isSatisfied={allGenEdsSatisfied}
+                message="You need to complete all Gen Eds to satisfy this requirement"
+              />
+              <p className="w-full font-semibold text-lg">
+                Gen Eds
+              </p>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className='pb-0 rounded-lg overflow-hidden'>
+              <div className='flex flex-col'>
+                <div className='grid grid-cols-[1fr,2fr,7rem] border-b'>
+                  <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+                    Gen Ed
+                  </p>
+                  <p className='border-x text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+                    Course
+                  </p>
+                  <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
+                    Semester
+                  </p>
+                </div>
 
-        <div className='grid grid-cols-[1fr,2fr,7rem]'>
-          {GenEds.map((genEd, i) => {
-            const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
-            return (
-              <React.Fragment key={i}>
-                <GenEdRow
-                  genEd={genEd}
-                  course={transferCreditName ? `${courseId} | ${transferCreditName}` : courseId}
-                  semester={termYearToString(semesterName)}
-                  isLast={i === GenEds.length - 1}
-                />
-                {/* Add empty row between gen-ed sections */}
-                {/* {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
-                    <div className='bg-border p-0 h-0.5'>
-                    </div>
-                )} */}
-              </React.Fragment>
-            )
-          })}
-        </div>
-      </div>
-    </div>
+                <div className='grid grid-cols-[1fr,2fr,7rem]'>
+                  {GenEds.map((genEd, i) => {
+                    const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
+                    return (
+                      <React.Fragment key={i}>
+                        <GenEdRow
+                          genEd={genEd}
+                          course={transferCreditName ? `${courseId} | ${transferCreditName}` : courseId}
+                          semester={termYearToString(semesterName)}
+                          isLast={i === GenEds.length - 1}
+                        />
+                        {/* Add empty row between gen-ed sections */}
+                        {/* {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
+                            <div className='bg-border p-0 h-0.5'>
+                            </div>
+                        )} */}
+                      </React.Fragment>
+                    )
+                  })}
+                </div>
+              </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </aside>
   )
 }
 
