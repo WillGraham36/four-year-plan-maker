@@ -20,10 +20,6 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "../ui/button";
 import { DialogClose } from "@radix-ui/react-dialog";
-import { deleteOffTerm } from "@/lib/api/planner/planner.server";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useRequirements } from "./requirements-context";
 import RemoveCourseButton from "./remove-course-button";
 
 interface SemesterProps {
@@ -58,7 +54,7 @@ const Semester = ({
           </p>
         )}
 
-        <div className="grid grid-cols-[1fr,2fr,3.5rem] border-b text-xs md:text-sm text-muted-foreground">
+        <div className={`grid grid-cols-[1fr,2fr,${isCore ? "3.5rem" : "7rem"}] border-b text-xs md:text-sm text-muted-foreground`}>
           <p className="w-full px-3 py-1">Course</p>
           <p className="border-x w-full px-3 py-1">GenEd</p>
           <p className="w-full text-center py-1">Credits</p>
