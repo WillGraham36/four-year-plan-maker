@@ -32,12 +32,11 @@ import {
 import { Course, CustomServerResponse, GenEd, termOrder } from "@/lib/utils/types"
 import { Input } from "../ui/input"
 import { Plus, Trash2 } from "lucide-react"
-import { isFormValid } from "@/lib/utils/helpers"
 import { MajorMinorCombobox } from "./major-minor-combobox"
 import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
-import { ScaleLoader } from "react-spinners";
 import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
 import { useRouter } from "next/navigation"
+import LoadingButton from "../ui/loading-button"
 
 const baseOnboardingFormSchema = z.object({
   startTerm: z.string(),
@@ -537,17 +536,15 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
             )
           }}
         />
-        <Button 
+        <LoadingButton 
           type="submit"
           // disabled={!isFormValid(form.watch())}
           disabled={isSubmitting}
           className="flex items-center gap-4"
+          loading={isSubmitting}
         >
           Submit
-          {isSubmitting &&
-            <ScaleLoader speedMultiplier={2} height={15} width={2} barCount={4} color="white"/>
-          }
-        </Button>
+        </LoadingButton>
       </form>
     </Form>
   )
