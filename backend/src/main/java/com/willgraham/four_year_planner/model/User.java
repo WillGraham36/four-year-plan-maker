@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Entity
@@ -50,6 +52,17 @@ public class User {
             @AttributeOverride(name = "year", column = @Column(name = "year"))
     })
     private List<Semester> offSemesters = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(
+            name = "user_completed_semesters",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @AttributeOverrides({
+            @AttributeOverride(name = "term", column = @Column(name = "term")),
+            @AttributeOverride(name = "year", column = @Column(name = "year")),
+    })
+    private List<Semester> completedSemesters = new ArrayList<>();
 
     public User(String id, Semester startSemester, Semester endSemester, String major, String minor) {
         this.id = id;

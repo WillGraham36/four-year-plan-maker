@@ -1,9 +1,6 @@
 package com.willgraham.four_year_planner.controller;
 
-import com.willgraham.four_year_planner.dto.ApiResponse;
-import com.willgraham.four_year_planner.dto.CourseDto;
-import com.willgraham.four_year_planner.dto.CreateOffTermRequestDto;
-import com.willgraham.four_year_planner.dto.GetUserInfoResponseDto;
+import com.willgraham.four_year_planner.dto.*;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.service.UserService;
@@ -50,5 +47,27 @@ public class UserInfoController {
         userService.deleteOffTerm(userId, term, year);
 
         return ResponseEntity.ok(ApiResponse.success("Deleted off term successfully"));
+    }
+
+    @GetMapping("/semesters/completion")
+    public ResponseEntity<ApiResponse<List<Semester>>> getCompletedSemesters(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        List<Semester> completedSemesters = userService.getCompletedSemesters(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(completedSemesters));
+    }
+
+    @PutMapping("/semesters/{term}/{year}/completion")
+    public ResponseEntity<ApiResponse<String>> upsertSemesterCompletion(
+            @PathVariable Term term,
+            @PathVariable Integer year,
+            @RequestBody CompletionRequestDto request,
+            Authentication authentication
+    ) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        userService.updateSemesterCompletion(userId, term, year, request.isCompleted());
+        return ResponseEntity.ok(ApiResponse.success(String.format("Updated %s %d status successfully to %s", term, year, request.isCompleted())));
     }
 }

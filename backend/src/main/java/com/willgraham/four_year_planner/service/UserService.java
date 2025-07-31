@@ -5,14 +5,17 @@ import com.willgraham.four_year_planner.dto.GetUserInfoResponseDto;
 import com.willgraham.four_year_planner.dto.OnboardingFormRequestDto;
 import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.exception.NotFoundException;
+import com.willgraham.four_year_planner.exception.UserNotFoundException;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import com.willgraham.four_year_planner.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -90,7 +93,8 @@ public class UserService {
         return user.map(value -> new GetUserInfoResponseDto(
                 value.getStartSemester(),
                 value.getEndSemester(),
-                value.getOffSemesters()
+                value.getOffSemesters(),
+                value.getCompletedSemesters()
             )).orElseGet(GetUserInfoResponseDto::new);
 
     }
@@ -141,6 +145,31 @@ public class UserService {
         userCourseRepository.deleteByUserIdAndSemester_TermAndSemester_Year(userId, term, year);
 
         // Save the updated user
+        userRepository.save(user);
+    }
+
+    public List<Semester> getCompletedSemesters(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        return new ArrayList<>(user.getCompletedSemesters());
+    }
+
+    @Transactional
+    public void updateSemesterCompletion(String userId, Term term, int year, boolean isComplete) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        // Remove existing entry (if any)
+        user.getCompletedSemesters().removeIf(cs ->
+                cs.getTerm().equals(term) && cs.getYear().equals(year));
+
+        // Add new entry only if completing
+        if (isComplete) {
+            Semester completedSemester = new Semester(term, year);
+            user.getCompletedSemesters().add(completedSemester);
+        }
+
         userRepository.save(user);
     }
 

@@ -15,4 +15,5 @@ public class GetUserInfoResponseDto {
     private Semester endSemester;
 
     private List<Semester> offSemesters;
+    private List<Semester> completedSemesters;
 }
