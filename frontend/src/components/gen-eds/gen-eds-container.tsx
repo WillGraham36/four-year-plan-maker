@@ -90,7 +90,7 @@ const GenEdsContainer = () => {
           <AccordionTrigger className='flex items-center gap-2 data-[state=open]:border-b p-2 px-3 !no-underline'>
             <div className='flex items-center gap-2'>
               <SatisfiedCheck
-                isSatisfied={allGenEdsSatisfied}
+                isChecked={allGenEdsSatisfied}
                 message="You need to complete all Gen Eds to satisfy this requirement"
               />
               <p className="w-full font-semibold text-lg">

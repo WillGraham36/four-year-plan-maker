@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
@@ -28,8 +29,12 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
   const router = useRouter();
 
   const createNewSemester = async (term: "SUMMER" | "WINTER", year: number) => {
-    await createOffTerm(term, year);
-    router.refresh();
+    const res = await createOffTerm(term, year);
+    if (res.ok) {
+      router.refresh();
+    } else {
+      toast.error("Error creating new semester, please try again");
+    }
   };
 
   return (

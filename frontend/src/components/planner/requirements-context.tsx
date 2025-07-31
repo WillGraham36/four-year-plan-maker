@@ -1,7 +1,7 @@
 'use client';
 import { getAllGenEds, getAllULCourses } from "@/lib/api/planner/planner.server";
 import { GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
-import { CourseWithSemester, UserInfo } from "@/lib/utils/types";
+import { CourseWithSemester, SemesterDateDescriptor, UserInfo } from "@/lib/utils/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,8 @@ interface RequirementsContextProps {
 
   totalCredits: number;
   updateTotalCredits: (credits: number, isRemoval?: boolean) => void;
+
+  completedSemesters: SemesterDateDescriptor[];
 }
 
 const RequirementsContext = createContext<RequirementsContextProps | undefined>(undefined);
@@ -30,6 +32,7 @@ interface RequirementsProviderProps {
 }
 
 export const RequirementsProvider = ({ children, initialGenEds, initialULCourses, initialTotalCredits, userInfo }: RequirementsProviderProps) => {
+  const [completedSemesters, setCompletedSemesters] = useState<SemesterDateDescriptor[]>(userInfo?.completedSemesters || []);
   const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
   const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
   const [totalCredits, setTotalCredits] = useState<number>(initialTotalCredits || 0);
@@ -64,8 +67,17 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   const refreshAllRequirements = async () => { await Promise.all([refreshGenEds(), refreshULCourses()]); }
 
   return (
-    <RequirementsContext.Provider 
-      value={{ refreshGenEds, genEds, refreshULCourses, ULCourses, refreshAllRequirements, totalCredits, updateTotalCredits }}
+    <RequirementsContext.Provider
+      value={{ 
+        refreshGenEds, 
+        genEds, 
+        refreshULCourses, 
+        ULCourses, 
+        refreshAllRequirements, 
+        totalCredits, 
+        updateTotalCredits, 
+        completedSemesters 
+      }}
     >
       {children}
     </RequirementsContext.Provider>

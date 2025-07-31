@@ -17,7 +17,7 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function extractSemester(
   semesters: Semesters,
-  term: Term | "TRANSFER",
+  term: Term,
   year: number
 ): Course[] {
   const courses = semesters[`Semester(term=${term}, year=${year})`] as Course[];

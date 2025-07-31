@@ -3,24 +3,7 @@ import { useEffect, useReducer, useState } from "react";
 import CourseInput from "./course-input";
 import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";
-import { termYearToString } from "@/lib/utils";
-import { X } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "../ui/button";
-import { DialogClose } from "@radix-ui/react-dialog";
-import RemoveCourseButton from "./remove-course-button";
+import SemesterHeader from "./semester-header";
 
 interface SemesterProps {
   term: Term;
@@ -43,15 +26,12 @@ const Semester = ({
   title,
   removable = false,
 }: SemesterProps) => {
-  const semesterTerm = termYearToString(term, year);
   
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
       <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md relative">
         {title ? title : (
-          <p className="w-full border-b p-1 px-3 text-sm md:text-base">
-            {semesterTerm}
-          </p>
+          <SemesterHeader term={term} year={year} removable={removable} />
         )}
 
         <div className={`grid grid-cols-[1fr,2fr,${isCore ? "3.5rem" : "7rem"}] border-b text-xs md:text-sm text-muted-foreground`}>
@@ -66,47 +46,6 @@ const Semester = ({
           isCore={isCore}
           minNumCourses={minNumCourses}
         />
-
-        {removable && (
-          <Dialog>
-            <DialogTrigger>
-              <Tooltip delayDuration={750}>
-                <TooltipTrigger 
-                className="rounded-full w-4 h-4 flex items-center justify-center absolute top-2 right-2 bg-secondary hover:bg-red-600 transition-colors opacity-80 p-0.5"
-                asChild
-                >
-                  <X className="h-3 w-3" />
-                </TooltipTrigger>
-                <TooltipContent className="text-sm text-muted-foreground p-1 px-2">
-                  Remove semester | This will delete all courses in this semester
-                </TooltipContent>
-              </Tooltip>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Are you sure you want to remove this semester?</DialogTitle>
-                <DialogDescription>
-                  This action cannot be undone. All courses in this semester will be deleted
-                </DialogDescription>
-                <div className="flex items-center justify-end gap-2">
-                    <DialogClose asChild>
-                      <Button
-                        size={"sm"}
-                        variant={"outline"}
-                        className="mt-4 py-1"
-                      >
-                        Cancel
-                      </Button>
-                    </DialogClose>
-
-                    <DialogClose asChild>
-                      <RemoveCourseButton term={term} year={year} />
-                    </DialogClose>
-                  </div>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
     </SemesterProvider>
   )

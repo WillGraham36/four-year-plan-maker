@@ -9,7 +9,7 @@ const TotalCreditsContainer = () => {
   return (
     <div className='w-full rounded-lg border bg-card shadow-md h-full flex items-center gap-2 p-2 px-3'>
       <SatisfiedCheck
-          isSatisfied={totalCredits >= 120}
+          isChecked={totalCredits >= 120}
           message="You need at least 120 credits"
       />
       <p className="w-full font-semibold text-lg flex items-center">

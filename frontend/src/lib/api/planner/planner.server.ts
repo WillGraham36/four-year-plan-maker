@@ -301,4 +301,29 @@ export const deleteOffTerm = async (term: Term, year: number): Promise<CustomSer
     message: "Successfully deleted off-term",
     data: undefined,
   };
+};
+
+export const updateSemesterCompletion = async (term: Term, year: number, completed: boolean): Promise<CustomServerResponse<string>> => {
+  const res = await fetchWithAuth(`v1/userinfo/semesters/${term}/${year}/completion`, {
+    init: {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ completed }),
+    }
+  });
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      message: "Failed to update semester completion",
+      data: null,
+    };
+  }
+  return {
+    ok: true,
+    message: "Successfully updated semester completion",
+    data: "Semester completion updated successfully",
+  };
 }

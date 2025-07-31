@@ -22,7 +22,7 @@ const UpperLevelConcentrationContainer = ({
       <div className="flex items-center justify-between w-full border-b p-2 px-3">
         <div className="flex items-center gap-2">
           <SatisfiedCheck
-            isSatisfied={ULCourses.reduce((total, course) => total + course.credits, 0) >= 12}
+            isChecked={ULCourses.reduce((total, course) => total + course.credits, 0) >= 12}
             message="You need at least 12 credits of upper-level courses to satisfy this requirement"
           />
           <p className="font-semibold text-lg">

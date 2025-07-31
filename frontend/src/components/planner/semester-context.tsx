@@ -15,7 +15,19 @@ interface SemesterContextProps {
 
 const SemesterContext = createContext<SemesterContextProps | undefined>(undefined);
 
-export const SemesterProvider = ({ children, term, year, initialCourses }: { children: ReactNode, term: Term, year: number, initialCourses: Course[] }) => {
+interface SemesterProviderProps {
+  term: Term;
+  year: number;
+  initialCourses: Course[];
+  children: ReactNode;
+}
+
+export const SemesterProvider = ({ 
+  children, 
+  term, 
+  year, 
+  initialCourses, 
+}: SemesterProviderProps) => {
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const { updateTotalCredits } = useRequirements();
 
@@ -62,11 +74,11 @@ export const SemesterProvider = ({ children, term, year, initialCourses }: { chi
   // Memoize context value to prevent unnecessary rerenders
   const contextValue = useMemo(() => ({
     courses,
+    term,
+    year,
     addCourse,
     removeCourse,
     hasCourse,
-    term,
-    year,
     getTotalCredits: () => courses.reduce((total, course) => total + (course.credits || 0), 0)
   }), [courses, addCourse, removeCourse, hasCourse, term, year]);
 

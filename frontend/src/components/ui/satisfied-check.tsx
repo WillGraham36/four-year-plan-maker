@@ -6,20 +6,35 @@ import {
 } from "@/components/ui/tooltip"
 import { Circle, CircleCheckBig } from "lucide-react"
 
-interface SatisfiedCheckProps {
-  isSatisfied: boolean;
-  message: string;
-}
+type SatisfiedCheckProps =
+  | {
+      isChecked: boolean;
+      canCheck: true;
+      onCheck: () => void;
+      message: string;
+    }
+  | {
+      isChecked: boolean;
+      canCheck?: false | undefined;
+      onCheck?: undefined;
+      message: string;
+    };
 
 const SatisfiedCheck = ({
-  isSatisfied,
+  isChecked,
+  canCheck = false,
+  onCheck,
   message,
 }: SatisfiedCheckProps) => {
   return (
     <Tooltip delayDuration={1000}>
-      <TooltipTrigger className='text-secondary flex items-center gap-1 cursor-default' asChild>
+      <TooltipTrigger 
+        className={`text-secondary flex items-center gap-1 ${canCheck ? 'cursor-pointer' : 'cursor-default'}`} 
+        asChild
+        onClick={canCheck ? onCheck : undefined}
+      >
         <span>
-          {isSatisfied ? (
+          {isChecked ? (
             <CircleCheckBig size={16} className='inline text-green-500' />
           ) : (
             <Circle size={16} className='inline' />
@@ -27,7 +42,7 @@ const SatisfiedCheck = ({
         </span>
       </TooltipTrigger>
       <TooltipContent className='text-center'>
-        {isSatisfied ? "Requirement satisfied" : message}
+        {isChecked ? "Requirement satisfied" : message}
       </TooltipContent>
     </Tooltip>
   )
