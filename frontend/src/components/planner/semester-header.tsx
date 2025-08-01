@@ -28,12 +28,11 @@ interface SemesterHeaderProps {
   term: Term;
   year: number;
   removable?: boolean;
+  completed: boolean;
+  setCompleted: (completed: boolean) => void;
 }
-const SemesterHeader = ({ term, year, removable }: SemesterHeaderProps) => {
+const SemesterHeader = ({ term, year, removable, completed, setCompleted }: SemesterHeaderProps) => {
   const semesterTerm = termYearToString(term, year);
-  
-  const { completedSemesters } = useRequirements();
-  const [completed, setCompleted] = useState(completedSemesters.some(sem => sem.term === term && sem.year === year));
   const [isUpdating, setIsUpdating] = useState(false);
 
   const toggleCompletion = async () => {
@@ -70,7 +69,7 @@ const SemesterHeader = ({ term, year, removable }: SemesterHeaderProps) => {
         />
         {removable && (
           <Dialog>
-            <DialogTrigger>
+            <DialogTrigger className='z-40'>
               <Tooltip delayDuration={750}>
                 <TooltipTrigger 
                 className="rounded-full w-4 h-4 flex items-center justify-center bg-secondary hover:bg-red-600 transition-colors opacity-80 p-0.5"

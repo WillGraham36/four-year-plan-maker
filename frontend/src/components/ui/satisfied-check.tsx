@@ -29,7 +29,7 @@ const SatisfiedCheck = ({
   return (
     <Tooltip delayDuration={1000}>
       <TooltipTrigger 
-        className={`text-secondary flex items-center gap-1 ${canCheck ? 'cursor-pointer' : 'cursor-default'}`} 
+        className={`text-secondary flex items-center gap-1 z-40 ${canCheck ? 'cursor-pointer' : 'cursor-default'}`} 
         asChild
         onClick={canCheck ? onCheck : undefined}
       >
