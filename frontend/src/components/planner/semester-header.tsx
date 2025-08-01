@@ -32,6 +32,7 @@ interface SemesterHeaderProps {
   setCompleted: (completed: boolean) => void;
 }
 const SemesterHeader = ({ term, year, removable, completed, setCompleted }: SemesterHeaderProps) => {
+  const { updateCompletedSemesters } = useRequirements();
   const semesterTerm = termYearToString(term, year);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -42,6 +43,7 @@ const SemesterHeader = ({ term, year, removable, completed, setCompleted }: Seme
     const newState = !completed;
     
     setCompleted(newState);
+    updateCompletedSemesters({ term, year });
     setIsUpdating(true);
     
     try {
@@ -50,6 +52,7 @@ const SemesterHeader = ({ term, year, removable, completed, setCompleted }: Seme
     } catch (error) {
       toast.error("Error updating semester completion, please try again");
       setCompleted(previousState);
+      updateCompletedSemesters({ term, year });
     } finally {
       setIsUpdating(false);
     }
@@ -72,7 +75,7 @@ const SemesterHeader = ({ term, year, removable, completed, setCompleted }: Seme
             <DialogTrigger className='z-40'>
               <Tooltip delayDuration={750}>
                 <TooltipTrigger 
-                className="rounded-full w-4 h-4 flex items-center justify-center bg-secondary hover:bg-red-600 transition-colors opacity-80 p-0.5"
+                className="rounded-full w-4 h-4 flex items-center justify-center bg-secondary hover:bg-red-600 opacity-80 p-0.5 hover:text-white transition-all duration-200"
                 asChild
                 >
                   <X className="h-3 w-3" />

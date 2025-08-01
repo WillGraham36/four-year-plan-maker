@@ -36,7 +36,7 @@ const GenEds = [
 
 const GenEdsContainer = () => {
 
-  const { genEds } = useRequirements();
+  const { genEds, completedSemesters } = useRequirements();
 
   // Create a local copy of genEds to work with when filtering and rendering
   const localGenEds = useMemo(() => [...genEds], [genEds]);
@@ -115,6 +115,7 @@ const GenEdsContainer = () => {
                 <div className='grid grid-cols-[1fr,2fr,7rem]'>
                   {GenEds.map((genEd, i) => {
                     const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
+                    const [term, year] = semesterName.split(' ');
                     return (
                       <React.Fragment key={i}>
                         <GenEdRow
@@ -122,6 +123,7 @@ const GenEdsContainer = () => {
                           course={transferCreditName ? `${courseId} | ${transferCreditName}` : courseId}
                           semester={termYearToString(semesterName)}
                           isLast={i === GenEds.length - 1}
+                          completed={completedSemesters.some(sem => sem.term === term && sem.year === parseInt(year))}
                         />
                         {/* Add empty row between gen-ed sections */}
                         {/* {((GenEds[i+1]?.charAt(0) !== genEd.charAt(0)) && i !== GenEds.length - 1) && (
@@ -141,12 +143,15 @@ const GenEdsContainer = () => {
 }
 
 
+const getSharedClasses = (isLast: boolean, completed: boolean) => 
+  `px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background transition-all duration-200 ${!isLast ? 'border-b' : ''} ${completed ? 'bg-green-500/15 dark:bg-green-800/15' : ''}`;
 interface GenEdRowProps {
   genEd: string
   course?: string
   semester?: string
   alternateBg?: boolean
   isLast?: boolean
+  completed?: boolean;
 }
 
 const GenEdRow = ({
@@ -154,16 +159,18 @@ const GenEdRow = ({
   course,
   semester,
   isLast = false,
+  completed = false
 }: GenEdRowProps) => {
+  
   return (
     <React.Fragment>
-      <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground ${!isLast ? 'border-b' : ''}`}>
+      <p className={getSharedClasses(isLast, completed)}>
         {genEd}
       </p>
-      <p className={`border-x px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background break-all ${!isLast ? 'border-b' : ''}`}>
+      <p className={`${getSharedClasses(isLast, completed)} border-x break-all`}>
         {course}
       </p>
-      <p className={`px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background ${!isLast ? 'border-b' : ''}`}>
+      <p className={getSharedClasses(isLast, completed)}>
         {semester}
       </p>
     </React.Fragment>

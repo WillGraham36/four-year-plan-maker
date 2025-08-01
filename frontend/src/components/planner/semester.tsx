@@ -32,7 +32,7 @@ const Semester = ({
   
   return (
     <SemesterProvider term={term} year={year} initialCourses={courses}>
-      <div className={`flex flex-col rounded-lg border w-full h-min bg-card shadow-md transition-opacity duration-100`}>
+      <div className={`flex flex-col rounded-lg border w-full h-min bg-card shadow-md`}>
         {title ? title : (
           <SemesterHeader 
             term={term}
@@ -57,9 +57,7 @@ const Semester = ({
             minNumCourses={minNumCourses}
           />
 
-          {completed && (
-            <div className={`absolute inset-0 bg-muted/40 rounded-lg pointer-events-none transition-opacity duration-300 ${completed ? 'opacity-100' : 'opacity-0'}`} />
-          )}
+          <div className={`absolute inset-0 bg-muted/50 rounded-lg pointer-events-none transition-opacity duration-200 ${completed ? 'opacity-100' : 'opacity-0'}`} />
         </div>
       </div>
     </SemesterProvider>

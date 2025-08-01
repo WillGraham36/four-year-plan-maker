@@ -42,7 +42,7 @@ const SatisfiedCheck = ({
         </span>
       </TooltipTrigger>
       <TooltipContent className='text-center'>
-        {isChecked ? "Requirement satisfied" : message}
+        {isChecked ? "Click to mark as incomplete" : message}
       </TooltipContent>
     </Tooltip>
   )

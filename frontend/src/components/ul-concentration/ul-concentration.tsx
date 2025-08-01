@@ -15,7 +15,7 @@ const UpperLevelConcentrationContainer = ({
   concentration: initialConcentration = "",
 }: ULCProps) => {
   const [concentration, setConcentration] = useState<string>(initialConcentration);
-  const { ULCourses, refreshULCourses } = useRequirements();
+  const { ULCourses, refreshULCourses, completedSemesters } = useRequirements();
 
   return (
     <div className="flex flex-col rounded-lg border w-full h-min overflow-hidden bg-card shadow-md">
@@ -45,19 +45,22 @@ const UpperLevelConcentrationContainer = ({
       </div>
 
       <div className="grid grid-cols-[1fr,2fr,7rem] text-xs md:text-sm text-muted-foreground items-center">
-        {ULCourses.map((course, i) => (
-          <Fragment key={i}>
-            <p className={`w-full px-3 py-1 ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {course.courseId}
-            </p>
-            <p className={`border-x w-full h-full flex items-center px-3 py-1 bg-background ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {termYearToString(course.semester.term, course.semester.year)}
-            </p>
-            <p className={`w-full py-1 h-full flex items-center justify-center bg-background ${i !== ULCourses.length - 1 ? "border-b" : ""}`}>
-              {course.credits}
-            </p>
-          </Fragment>
-        ))}
+        {ULCourses.map((course, i) => {
+          const isCompleted = completedSemesters.some(sem => sem.term === course.semester.term && sem.year === course.semester.year);
+          return (
+            <Fragment key={i}>
+              <p className={`w-full px-3 py-1 ${i !== ULCourses.length - 1 ? "border-b" : ""} ${isCompleted ? "bg-green-500/15 dark:bg-green-800/15" : ""}`}>
+                {course.courseId}
+              </p>
+              <p className={`border-x w-full h-full flex items-center px-3 py-1 bg-background ${i !== ULCourses.length - 1 ? "border-b" : ""} ${isCompleted ? "bg-green-500/15 dark:bg-green-800/15" : ""}`}>
+                {termYearToString(course.semester.term, course.semester.year)}
+              </p>
+              <p className={`w-full py-1 h-full flex items-center justify-center bg-background ${i !== ULCourses.length - 1 ? "border-b" : ""} ${isCompleted ? "bg-green-500/15 dark:bg-green-800/15" : ""}`}>
+                {course.credits}
+              </p>
+            </Fragment>
+          )
+        })}
 
         {ULCourses.length === 0 && (
           <p className="col-span-3 text-center py-2">No courses found for this concentration</p>
