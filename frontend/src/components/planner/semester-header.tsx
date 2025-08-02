@@ -64,12 +64,17 @@ const SemesterHeader = ({ term, year, removable, completed, setCompleted }: Seme
         {semesterTerm}
       </p>
       <div className='flex items-center gap-2'>
-        <SatisfiedCheck
-          isChecked={completed}
-          canCheck={true}
-          onCheck={toggleCompletion}
-          message={completed ? "Click to mark as incomplete" : "Click to mark as complete"}
-        />
+        <span className='flex items-center gap-1'>
+          <p className="text-xs text-muted-foreground">
+            Completed:
+          </p>
+          <SatisfiedCheck
+            isChecked={completed}
+            canCheck={true}
+            onCheck={toggleCompletion}
+            message={completed ? "Click to mark as incomplete" : "Click to mark as complete"}
+          />
+        </span>
         {removable && (
           <Dialog>
             <DialogTrigger className='z-40'>
