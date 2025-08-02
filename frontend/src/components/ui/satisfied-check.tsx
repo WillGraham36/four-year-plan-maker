@@ -29,15 +29,15 @@ const SatisfiedCheck = ({
   return (
     <Tooltip delayDuration={1000}>
       <TooltipTrigger 
-        className={`text-secondary flex items-center gap-1 z-40 ${canCheck ? 'cursor-pointer' : 'cursor-default'}`} 
-        asChild
+        className={`text-secondary flex items-center gap-1 z-40 rounded-full ${canCheck ? 'cursor-pointer' : 'cursor-default'}`} 
+        asChild={!canCheck}
         onClick={canCheck ? onCheck : undefined}
       >
-        <span>
+        <span className="flex items-center">
           {isChecked ? (
-            <CircleCheckBig size={16} className='inline text-green-500' />
+            <CircleCheckBig size={16} className='text-green-500' />
           ) : (
-            <Circle size={16} className='inline' />
+            <Circle size={16} />
           )}
         </span>
       </TooltipTrigger>

@@ -57,7 +57,7 @@ const Semester = ({
             minNumCourses={minNumCourses}
           />
 
-          <div className={`absolute inset-0 bg-muted/50 rounded-lg pointer-events-none transition-opacity duration-200 ${completed ? 'opacity-100' : 'opacity-0'}`} />
+          <div className={`absolute inset-0 bg-muted/50 rounded-lg transition-opacity duration-200 z-40 ${completed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
         </div>
       </div>
     </SemesterProvider>
