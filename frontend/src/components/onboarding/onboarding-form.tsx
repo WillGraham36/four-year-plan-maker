@@ -266,6 +266,11 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
     }
   }
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "transferCredits",
+  });
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10">
@@ -430,11 +435,6 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
           control={form.control}
           name="transferCredits"
           render={({ field }) => {
-            const { fields, append, remove } = useFieldArray({
-              control: form.control,
-              name: "transferCredits",
-            });
-
             return (
               <FormItem>
                 <FormLabel>Transfer Credits</FormLabel>

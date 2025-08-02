@@ -24,9 +24,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
+  const router = useRouter();
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
   const academicYears = generateAcademicYears(userInfo);
-  const router = useRouter();
 
   const createNewSemester = async (term: "SUMMER" | "WINTER", year: number) => {
     const res = await createOffTerm(term, year);
