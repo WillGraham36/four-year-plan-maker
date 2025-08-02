@@ -34,12 +34,25 @@ const CourseInput = ({ initialCourse, disabled, isCore = true } : { initialCours
     const updatedCourse = courses.find(c => c.courseId === verifiedCourseId.current);
     if (updatedCourse) {
       setCourse(prev => {
-        // Only update if something actually changed
-        const changed =
-          JSON.stringify(prev.selectedGenEds) !== JSON.stringify(updatedCourse.selectedGenEds) ||
-          JSON.stringify(prev.genEds) !== JSON.stringify(updatedCourse.genEds);
-  
-        return changed ? updatedCourse : prev;
+        // Check if the course data has actually changed
+        const genEdsChanged = JSON.stringify(prev.genEds) !== JSON.stringify(updatedCourse.genEds);
+        const selectedGenEdsChanged = JSON.stringify(prev.selectedGenEds) !== JSON.stringify(updatedCourse.selectedGenEds);
+        const nameChanged = prev.name !== updatedCourse.name;
+        const creditsChanged = prev.credits !== updatedCourse.credits;
+        
+        // If anything changed, return the updated course
+        if (genEdsChanged || selectedGenEdsChanged || nameChanged || creditsChanged) {
+          return {
+            ...updatedCourse,
+            // Ensure selectedGenEds is properly set
+            selectedGenEds: updatedCourse.selectedGenEds || 
+              (updatedCourse.genEds[0].some(genEd => genEd.includes("|"))
+                ? updatedCourse.genEds[1] || updatedCourse.genEds[0]
+                : updatedCourse.genEds[0])
+          };
+        }
+        
+        return prev;
       });
     }
   }, [courses]);

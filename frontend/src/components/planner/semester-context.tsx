@@ -42,30 +42,44 @@ export const SemesterProvider = ({
     updateTotalCredits(course.credits); // Update total credits when adding a course
   }, []);
 
-  const removeCourse = useCallback((courseId: string) => {
-    setCourses(prevCourses => {
-      // Remove the course with the given courseId
-      const filteredCourses = prevCourses.filter(c => c.courseId !== courseId);
+const removeCourse = useCallback((courseId: string) => {
+  setCourses(prevCourses => {
+    const courseToRemove = prevCourses.find(c => c.courseId === courseId);
+    if (!courseToRemove) return prevCourses;
+    
+    // Remove the course with the given courseId
+    const filteredCourses = prevCourses.filter(c => c.courseId !== courseId);
 
-      // Then check if this course is a dependency for any other courses AND that dependency is selected
-      // If it is, update the selectedGenEds of those courses to the non dependent ones
-      const updatedCourses = filteredCourses.map((c) => {
-        if(c.selectedGenEds 
-          && c.selectedGenEds.length > 0 
-          && c.selectedGenEds.some(genEd => genEd.includes("|") && genEd.split("|")[1] === courseId
-        )) {
-          return {
-            ...c,
-            selectedGenEds: c.genEds[1] || c.genEds[0] // Fallback to first gen ed group if second is not available
-          }
-        } else {
-          return c;
-        }
-      })
-      return (updatedCourses);
+    // Then check if this course is a dependency for any other courses AND that dependency is selected
+    // If it is, update the selectedGenEds of those courses to the non dependent ones
+    const updatedCourses = filteredCourses.map((c) => {
+      if(c.selectedGenEds 
+        && c.selectedGenEds.length > 0 
+        && c.selectedGenEds.some(genEd => genEd.includes("|") && genEd.split("|")[1] === courseId)
+      ) {
+        // Find the first non-dependent gen ed group
+        const nonDependentGenEds = c.genEds.find(genEdGroup => 
+          !genEdGroup.some(genEd => genEd.includes("|"))
+        ) || c.genEds[0];
+        
+        return {
+          ...c,
+          selectedGenEds: nonDependentGenEds
+        };
+      } else {
+        return c;
+      }
     });
-    updateTotalCredits(courses.find(c => c.courseId === courseId)?.credits || 0, true); // Update total credits when removing a course
-  }, []);
+    
+    return updatedCourses;
+  });
+  
+  // Update total credits when removing a course
+  const courseToRemove = courses.find(c => c.courseId === courseId);
+  if (courseToRemove) {
+    updateTotalCredits(courseToRemove.credits || 0, true);
+  }
+}, [courses, updateTotalCredits]);
 
   const hasCourse = useCallback((courseId: string) => {
     return courses.some(c => c.courseId === courseId);

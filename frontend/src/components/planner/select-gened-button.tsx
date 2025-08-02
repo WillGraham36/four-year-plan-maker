@@ -23,7 +23,8 @@ const SelectGenEdButton = ({
   isFirstInGroup = false,
 }: SelectGenEdButtonProps) => {
   const selectButton = (
-    <Button 
+    <Button
+      tabIndex={-1}
       variant={"blank"} 
       className={`!py-0.5 !px-2 !h-auto font-normal 
         ${selected ? "bg-accent" : ""} 
@@ -37,7 +38,7 @@ const SelectGenEdButton = ({
   if(selected) {
     return (
       <Tooltip delayDuration={1000}>
-        <TooltipTrigger className='cursor-pointer' asChild>
+        <TooltipTrigger className='cursor-pointer' asChild tabIndex={-1}>
           {selectButton}
         </TooltipTrigger>
         <TooltipContent className='text-center'>
