@@ -11,7 +11,7 @@ const TransferCreditsContainer = ({ courses }: {  courses: Course[]}) => {
       disableCourseEditing={true}
       isCore={false}
       title={
-        <SemesterHeaderText>
+        <SemesterHeaderText key={'transfer-credits-header'}>
           Transfer Credits
         </SemesterHeaderText>
       }

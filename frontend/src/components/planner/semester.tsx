@@ -95,8 +95,12 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
     }
     return (
       <>
-        {initialCourses?.map((course) => (
-          <CourseInput key={course.courseId} initialCourse={course} disabled={disableCourseEditing} />
+        {initialCourses?.map((course, index) => (
+          <CourseInput 
+            key={course.courseId}
+            initialCourse={course} 
+            disabled={disableCourseEditing} 
+          />
         ))}
         <div className="h-8 w-full grid grid-cols-[3fr,3.5rem] text-xs md:text-sm">
           <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
