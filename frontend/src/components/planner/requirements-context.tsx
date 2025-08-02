@@ -19,7 +19,7 @@ interface RequirementsContextProps {
   updateTotalCredits: (credits: number, isRemoval?: boolean) => void;
 
   completedSemesters: SemesterDateDescriptor[];
-  updateCompletedSemesters: (semesters: SemesterDateDescriptor) => void;
+  updateCompletedSemesters: (semesters: SemesterDateDescriptor, isRemoval?: boolean) => void;
 }
 
 const RequirementsContext = createContext<RequirementsContextProps | undefined>(undefined);
@@ -65,10 +65,10 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
     setTotalCredits(prev => isRemoval ? prev - credits : prev + credits);
   }
 
-  const updateCompletedSemesters = (semester: SemesterDateDescriptor) => {
+  const updateCompletedSemesters = (semester: SemesterDateDescriptor, isRemoval?: boolean) => {
     setCompletedSemesters(prev => {
       const existingIndex = prev.findIndex(s => s.term === semester.term && s.year === semester.year);
-      if (existingIndex !== -1) {
+      if (existingIndex !== -1 || isRemoval) {
         // If it exists, remove it
         return prev.filter((_, idx) => idx !== existingIndex);
       }

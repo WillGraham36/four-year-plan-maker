@@ -7,12 +7,11 @@ import { Term } from '@/lib/utils/types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSemester } from './semester-context';
-import { LoaderCircleIcon } from 'lucide-react';
 import LoadingButton from '../ui/loading-button';
 
 const RemoveCourseButton = ({ term, year }: { term: Term, year: number }) => {
   const [loading, setLoading] = React.useState(false);
-  const { refreshAllRequirements, updateTotalCredits } = useRequirements();
+  const { refreshAllRequirements, updateTotalCredits, updateCompletedSemesters } = useRequirements();
   const { getTotalCredits } = useSemester();
   const router = useRouter();
 
@@ -29,6 +28,7 @@ const RemoveCourseButton = ({ term, year }: { term: Term, year: number }) => {
       refreshAllRequirements(),
       updateTotalCredits(numCreditsRemoved, true),
     ]);
+    updateCompletedSemesters({ term, year }, true);
     router.refresh();
     setLoading(false);
   }

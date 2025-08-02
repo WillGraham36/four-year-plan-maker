@@ -141,6 +141,10 @@ public class UserService {
         // Remove the off semester from the user's list
         user.getOffSemesters().remove(offSemester);
 
+        // Remove the term from completed semesters if it exists
+        user.getCompletedSemesters().removeIf(cs ->
+                cs.getTerm().equals(term) && cs.getYear().equals(year));
+
         // Remove all the courses from the user
         userCourseRepository.deleteByUserIdAndSemester_TermAndSemester_Year(userId, term, year);
 
