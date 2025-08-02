@@ -38,13 +38,13 @@ const UpperLevelConcentrationContainer = ({
         }}/>
       </div>
 
-      <div className="grid grid-cols-[1fr,2fr,7rem] border-b text-xs md:text-sm text-muted-foreground">
+      <div className="grid grid-cols-[1fr_2fr_7rem] border-b text-xs md:text-sm text-muted-foreground">
         <p className="w-full px-3 py-1">Course</p>
         <p className="border-x w-full px-3 py-1">Term Completed</p>
         <p className="w-full text-center py-1">Credits</p>
       </div>
 
-      <div className="grid grid-cols-[1fr,2fr,7rem] text-xs md:text-sm text-muted-foreground items-center">
+      <div className="grid grid-cols-[1fr_2fr_7rem] text-xs md:text-sm text-muted-foreground items-center">
         {ULCourses.map((course, i) => {
           const isCompleted = completedSemesters.some(sem => sem.term === course.semester.term && sem.year === course.semester.year);
           return (
@@ -67,7 +67,7 @@ const UpperLevelConcentrationContainer = ({
         )}
       </div>
 
-      <div className="grid grid-cols-[3fr,7rem] border-t text-xs md:text-sm text-muted-foreground">
+      <div className="grid grid-cols-[3fr_7rem] border-t text-xs md:text-sm text-muted-foreground">
         <p className="w-full px-3 py-1">Total Credits</p>
         <p className="w-full text-center py-1 border-l">
           {ULCourses.reduce((total, course) => total + course.credits, 0)}

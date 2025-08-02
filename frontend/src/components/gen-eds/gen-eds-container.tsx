@@ -100,7 +100,7 @@ const GenEdsContainer = () => {
           </AccordionTrigger>
           <AccordionContent className='pb-0 rounded-lg overflow-hidden'>
               <div className='flex flex-col'>
-                <div className='grid grid-cols-[1fr,2fr,7rem] border-b'>
+                <div className='grid grid-cols-[1fr_2fr_7rem] border-b'>
                   <p className='text-left px-3 py-1 font-normal text-sm md:text-sm text-muted-foreground'>
                     Gen Ed
                   </p>
@@ -112,7 +112,7 @@ const GenEdsContainer = () => {
                   </p>
                 </div>
 
-                <div className='grid grid-cols-[1fr,2fr,7rem]'>
+                <div className='grid grid-cols-[1fr_2fr_7rem]'>
                   {GenEds.map((genEd, i) => {
                     const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
                     const [term, year] = semesterName.split(' ');

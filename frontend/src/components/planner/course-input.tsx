@@ -216,7 +216,7 @@ const CourseInput = ({ initialCourse, disabled, isCore = true } : { initialCours
 
   return (
     <div className="flex flex-col">
-      <div className={`grid grid-cols-[1fr,2fr,${isCore ? "3.5rem" : "7rem"}] relative`}>
+      <div className={`grid ${isCore ? 'grid-cols-[1fr_2fr_3.5rem]' : 'grid-cols-[1fr_2fr_7rem]'} relative`}>
         <div className='flex flex-row items-center'>
           {errorMessage.length > 0 && (
             <Tooltip>

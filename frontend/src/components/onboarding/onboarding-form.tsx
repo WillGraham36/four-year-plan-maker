@@ -444,7 +444,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                 <FormControl>
                   <div className="border rounded-md bg-card p-2">
                     {/* Header Row */}
-                    <div className="grid grid-cols-[1fr,1fr,1fr,2.5rem] pt-2 pl-3 gap-2 font-medium text-sm rounded-lg">
+                    <div className="grid grid-cols-[1fr_1fr_1fr_2.5rem] pt-2 pl-3 gap-2 font-medium text-sm rounded-lg">
                       <div>Course Name</div>
                       <div>Course ID</div>
                       <div>Gen Eds</div>
@@ -452,7 +452,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
 
                     {/* Dynamic Rows */}
                     {fields.map((course, index) => (
-                      <div key={course.id} className="grid grid-cols-[1fr,1fr,1fr,2.5rem] py-2 gap-2">
+                      <div key={course.id} className="grid grid-cols-[1fr_1fr_1fr_2.5rem] py-2 gap-2">
                         <FormField
                           control={form.control}
                           name={`transferCredits.${index}.name`}

@@ -43,8 +43,8 @@ const Semester = ({
           />
         )}
 
-        <div className="relative">
-          <div className={`grid grid-cols-[1fr,2fr,${isCore ? "3.5rem" : "7rem"}] border-b text-xs md:text-sm text-muted-foreground`}>
+        <div className="relative w-full">
+          <div className={`grid ${isCore ? 'grid-cols-[1fr_2fr_3.5rem]' : 'grid-cols-[1fr_2fr_7rem]'} border-b text-xs md:text-sm text-muted-foreground`}>
             <p className="w-full px-3 py-1">Course</p>
             <p className="border-x w-full px-3 py-1">GenEd</p>
             <p className="w-full text-center py-1">Credits</p>
@@ -103,7 +103,7 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
             isCore={isCore}
           />
         ))}
-        <div className="h-8 w-full grid grid-cols-[3fr,7rem] text-xs md:text-sm">
+        <div className="h-8 w-full grid grid-cols-[3fr_7rem] text-xs md:text-sm">
           <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
           <p className="w-full flex items-center justify-center">
             {courses.reduce((total, course) => total + (course.credits || 0), 0)}
@@ -121,7 +121,7 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
       {[...Array(numCourseInputs - initialLength)].map((_, i) => (
         <CourseInput key={i} disabled={disableCourseEditing} />
       ))}
-      <div className="h-8 w-full grid grid-cols-[3fr,3.5rem] text-xs md:text-sm">
+      <div className="h-8 w-full grid grid-cols-[3fr_3.5rem] text-xs md:text-sm">
         <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
         <p className="w-full flex items-center justify-center">
           {courses.reduce((total, course) => total + (course.credits || 0), 0)}
