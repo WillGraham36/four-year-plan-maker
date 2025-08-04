@@ -1,6 +1,5 @@
 import React from 'react'
 import { ThemeProvider } from '../theme-provider';
-import Navbar from './navbar';
 import { TooltipProvider } from '../ui/tooltip';
 import CustomClerkProvider from './clerk-provider';
 
@@ -20,7 +19,6 @@ export default function Providers({
     >
       <CustomClerkProvider>
         <UIProviders>
-          <Navbar />
           {children}
         </UIProviders>
       </CustomClerkProvider>

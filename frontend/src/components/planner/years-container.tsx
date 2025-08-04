@@ -69,16 +69,16 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
               `}
             >
               <Tooltip delayDuration={1500}>
-              <TooltipTrigger className={cn(
-                buttonVariants({ variant: 'ghost'}),
-                "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full"
-              )}
-              asChild>
-                <Plus className="h-4 w-4 text-muted-foreground/60 group-hover:text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent className="text-sm text-muted-foreground p-1 px-2">
-                Add Summer / Winter Semester
-              </TooltipContent>
+                <TooltipTrigger className={cn(
+                  buttonVariants({ variant: 'ghost'}),
+                  "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full"
+                )}
+                asChild>
+                  <Plus className="h-4 w-4 text-muted-foreground/60 group-hover:text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent className="text-sm text-muted-foreground p-1 px-2">
+                  Add Summer / Winter Semester
+                </TooltipContent>
               </Tooltip>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-64" >
