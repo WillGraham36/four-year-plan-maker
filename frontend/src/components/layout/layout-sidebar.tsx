@@ -58,13 +58,13 @@ function LayoutSidebar() {
             <SidebarLink link={{ 
               label: "Account Setup", 
               href: "/account/setup", 
-              icon: <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> }} 
+              icon: <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> }} 
             />
             <SideBarClickableItem
               label="Manage Account" 
               onClickAction={handleManageAccountClick}
             >
-              <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
             </SideBarClickableItem>
           </div>
         </div>

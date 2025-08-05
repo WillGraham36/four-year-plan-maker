@@ -79,7 +79,7 @@ const AccountButton = () => {
 
         {/* Setup button */}
         <DropdownMenuItem onClick={handleSetupClick} className="cursor-pointer">
-          <Settings className="mr-2 h-4 w-4" />
+          <User className="mr-2 h-4 w-4" />
           <span>Account Setup</span>
         </DropdownMenuItem>
 
@@ -87,7 +87,7 @@ const AccountButton = () => {
 
         {/* Manage account */}
         <DropdownMenuItem onClick={handleManageAccountClick} className="cursor-pointer">
-          <User className="mr-2 h-4 w-4" />
+          <Settings className="mr-2 h-4 w-4" />
           <span>Manage Account</span>
         </DropdownMenuItem>
 

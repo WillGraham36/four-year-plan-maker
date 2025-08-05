@@ -77,7 +77,7 @@ export const MobileSidebar = ({
               )}
               onClick={() => setOpen(false)}
             >
-              <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
               <p>Account Setup</p>
             </Link>
             <div 
@@ -88,7 +88,7 @@ export const MobileSidebar = ({
               )}
               onClick={handleManageAccountClick}
             >
-              <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
               <p>Manage Account</p>
             </div>
           </div>
