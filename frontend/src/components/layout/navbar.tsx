@@ -4,6 +4,7 @@ import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import AccountButton from "./account-button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { MobileSidebar } from "../ui/mobile-sidebar";
 
 const Navbar = () => {
   const pathName = usePathname();
@@ -59,6 +60,7 @@ const Navbar = () => {
         </SignedOut>
 
         <SignedIn>
+          <MobileSidebar />
           <AccountButton />
         </SignedIn>
       </div>

@@ -10,7 +10,7 @@ import { ThemeToggleIcon } from "../toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 
-const links = [
+export const navbarLinks = [
   {
     label: "Planner",
     href: "/planner",
@@ -45,7 +45,7 @@ function LayoutSidebar() {
         <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto max-h-max" onClick={() => setOpen((prev) => !prev)}>
           <Logo />
           <div className="mt-8 flex flex-col gap-2">
-            {links.map((link, idx) => (
+            {navbarLinks.map((link, idx) => (
               <SidebarLink key={idx} link={link} />
             ))}
             <hr />
