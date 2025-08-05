@@ -8,9 +8,9 @@ export default function AuthedLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="md:flex">
+    <div className="md:flex w-full">
       <LayoutSidebar />
-      <main>
+      <main className="flex-1 w-full">
         <Navbar />
         {children}
       </main>

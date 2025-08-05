@@ -2,7 +2,9 @@
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
-import { ArrowLeft, BookDashed, Settings, User } from "lucide-react";
+import { ArrowLeft, BookDashed, PanelLeft, Settings, User } from "lucide-react";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 function LayoutSidebar() {
   const links = [
@@ -71,19 +73,24 @@ function LayoutSidebar() {
 }
 export const Logo = () => {
   return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium whitespace-pre text-black dark:text-white"
+    <div className="flex items-center justify-between">
+      <Link
+        href="#"
+        className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
       >
-        Acet Labs
-      </motion.span>
-    </a>
+        <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="font-medium whitespace-pre text-black dark:text-white"
+        >
+          Acet Labs
+        </motion.span>
+      </Link>
+      <Button variant="ghost" className="p-2 h-8 w-8 z-20">
+        <PanelLeft size={20} />
+      </Button>
+    </div>
   );
 };
 export const LogoIcon = () => {

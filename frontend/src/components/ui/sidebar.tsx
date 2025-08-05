@@ -2,8 +2,9 @@
 import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Menu, X } from "lucide-react";
+import { Menu, PanelLeft, X } from "lucide-react";
 import Link from "next/link";
+import { Button } from "./button";
 
 interface Links {
   label: string;
@@ -72,7 +73,7 @@ export const Sidebar = ({
 
 export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
   return (
-    <DesktopSidebar {...props} />
+    <DesktopSidebar {...(props as React.ComponentProps<typeof motion.div> & { children?: React.ReactNode })} />
   );
 };
 
@@ -80,23 +81,41 @@ export const DesktopSidebar = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof motion.div>) => {
+}: React.ComponentProps<typeof motion.div> & { children?: React.ReactNode }) => {
   const { open, setOpenAction, animate } = useSidebar();
   return (
     <>
       <motion.aside
         className={cn(
-          "h-full px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[60px] shrink-0",
+          "h-full px-4 py-4 hidden md:flex relative md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[60px] shrink-0",
           className
         )}
         animate={{
           width: animate ? (open ? "200px" : "60px") : "60px",
         }}
-        onMouseEnter={() => setOpenAction(true)}
-        onMouseLeave={() => setOpenAction(false)}
+        onMouseDown={() => setOpenAction(() => !open)}
+        // onMouseLeave={() => setOpenAction(false)}
         {...props}
       >
-        {children}
+        {children as React.ReactNode}
+        {/* <AnimatePresence>
+          {open && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                delay: animate ? 0.2 : 0, // Delay to wait for width animation
+                duration: 0.2 
+              }}
+              className="absolute top-4 right-4 flex"
+            >
+              <Button variant="ghost" className="p-2 h-8 w-8 z-20">
+                <PanelLeft size={20} />
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence> */}
       </motion.aside>
     </>
   );
