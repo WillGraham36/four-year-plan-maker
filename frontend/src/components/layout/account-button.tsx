@@ -36,11 +36,11 @@ const AccountButton = () => {
  return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant={'secondary'}
+        {/* <Button
+          variant={'outline'}
           className="p-0 lg:py-2 lg:px-5 max-lg:!bg-background hover:bg-accent"
-        >
-          <div className="h-8 w-8 rounded-full overflow-hidden">
+        > */}
+          <div className="h-9 w-9 rounded-full overflow-hidden cursor-pointer">
             <Image
               src={user?.imageUrl || "/default-user.svg"}
               width={32}
@@ -49,10 +49,10 @@ const AccountButton = () => {
               className="h-full w-full object-cover"
             />
           </div>
-          <p className='hidden lg:block'>
+          {/* <p className='hidden lg:block'>
             {user?.fullName || user?.username || 'My Account'}
-          </p>
-        </Button>
+          </p> */}
+        {/* </Button> */}
       </DropdownMenuTrigger>
       
       <DropdownMenuContent align="end" className="w-80">

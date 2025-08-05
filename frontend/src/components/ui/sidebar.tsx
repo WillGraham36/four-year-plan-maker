@@ -4,7 +4,7 @@ import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Menu, PanelLeft, X } from "lucide-react";
 import Link from "next/link";
-import { Button } from "./button";
+import { buttonVariants } from "./button";
 
 interface Links {
   label: string;
@@ -83,39 +83,28 @@ export const DesktopSidebar = ({
   ...props
 }: React.ComponentProps<typeof motion.div> & { children?: React.ReactNode }) => {
   const { open, setOpenAction, animate } = useSidebar();
+
+  const handleSidebarClick = (e: React.MouseEvent) => {
+    // Only toggle if clicking directly on the sidebar, not on links
+    if (e.target === e.currentTarget) {
+      setOpenAction(() => !open);
+    }
+  };
   return (
     <>
       <motion.aside
         className={cn(
-          "h-full px-4 py-4 hidden md:flex relative md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[60px] shrink-0",
+          "h-full px-3 py-4 hidden md:flex relative md:flex-col bg-popover w-[60px] shrink-0",
           className
         )}
         animate={{
           width: animate ? (open ? "200px" : "60px") : "60px",
         }}
-        onMouseDown={() => setOpenAction(() => !open)}
+        onMouseDown={handleSidebarClick}
         // onMouseLeave={() => setOpenAction(false)}
         {...props}
       >
         {children as React.ReactNode}
-        {/* <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ 
-                delay: animate ? 0.2 : 0, // Delay to wait for width animation
-                duration: 0.2 
-              }}
-              className="absolute top-4 right-4 flex"
-            >
-              <Button variant="ghost" className="p-2 h-8 w-8 z-20">
-                <PanelLeft size={20} />
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence> */}
       </motion.aside>
     </>
   );
@@ -180,17 +169,23 @@ export const SidebarLink = ({
   className?: string;
 }) => {
   const { open, animate } = useSidebar();
+  const handleLinkClick = (e: React.MouseEvent) => {
+    // Prevent the click from bubbling up to the sidebar
+    e.stopPropagation();
+  };
+
   return (
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2  group/sidebar py-2",
+        buttonVariants({ variant: "ghost" }),
+        "flex items-center justify-start gap-2 group/sidebar py-1.5 px-2 pl-2.5",
         className
       )}
+      onClick={handleLinkClick}
       {...props}
     >
       {link.icon}
-
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
@@ -201,5 +196,48 @@ export const SidebarLink = ({
         {link.label}
       </motion.span>
     </Link>
+  );
+};
+
+export const SideBarClickableItem = ({
+  className,
+  label,
+  children,
+  onClickAction,
+  ...props
+}: {
+  className?: string;
+  label: string;
+  children: React.ReactNode;
+  onClickAction?: (e: React.MouseEvent) => void;
+}) => {
+  const { open, animate } = useSidebar();
+  
+  const handleLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClickAction?.(e);
+  };
+
+  return (
+    <div
+      className={cn(
+        buttonVariants({ variant: "ghost" }),
+        "flex items-center justify-start gap-2 group/sidebar py-1.5 px-2 pl-2.5 cursor-pointer",
+        className
+      )}
+      onClick={handleLinkClick}
+      {...props}
+    >
+      {children}
+      <motion.span
+        animate={{
+          display: animate ? (open ? "inline-block" : "none") : "inline-block",
+          opacity: animate ? (open ? 1 : 0) : 1,
+        }}
+        className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+      >
+        {label}
+      </motion.span>
+    </div>
   );
 };

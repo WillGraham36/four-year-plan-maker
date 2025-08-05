@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "../ui/button";
-import { ModeToggle } from "../toggle";
 import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs'
 import AccountButton from "./account-button";
 import { usePathname } from "next/navigation";
@@ -62,7 +61,6 @@ const Navbar = () => {
         <SignedIn>
           <AccountButton />
         </SignedIn>
-        <ModeToggle />
       </div>
     </nav>
   );
