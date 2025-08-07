@@ -1,6 +1,6 @@
 'use client';
 import { termYearToString } from "@/lib/utils";
-import { useRequirements } from "../planner/requirements-context";
+import { useRequirements } from "../context/requirements-context";
 import { ULCCombobox } from "./concentration-combobox";
 import { Fragment, useState } from "react";
 import { updateULConcentration } from "@/lib/api/planner/planner.server";

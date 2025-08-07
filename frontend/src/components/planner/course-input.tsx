@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/tooltip"
 
 import { CircleAlert, Info } from 'lucide-react';
-import { useSemester } from './semester-context';
 import { saveCourse } from '@/lib/api/planner/planner.server';
 import SelectGenEdButton from './select-gened-button';
 import { arraysEqual } from '@/lib/utils';
-import { useRequirements } from './requirements-context';
+import { useRequirements } from '../context/requirements-context';
+import { useSemester } from '../context/semester-context';
 
 
 type CourseInputProps = {

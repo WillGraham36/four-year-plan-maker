@@ -1,13 +1,13 @@
 'use client'
 import React from 'react'
 import { Button } from '../ui/button'
-import { useRequirements } from './requirements-context';
+import { useRequirements } from '../context/requirements-context';
 import { deleteOffTerm } from '@/lib/api/planner/planner.server';
 import { Term } from '@/lib/utils/types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { useSemester } from './semester-context';
 import LoadingButton from '../ui/loading-button';
+import { useSemester } from '../context/semester-context';
 
 const RemoveCourseButton = ({ term, year }: { term: Term, year: number }) => {
   const [loading, setLoading] = React.useState(false);

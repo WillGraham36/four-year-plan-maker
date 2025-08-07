@@ -1,5 +1,5 @@
 import React from 'react'
-import { ThemeProvider } from '../theme-provider';
+import { ThemeProvider } from '../context/theme-provider';
 import { TooltipProvider } from '../ui/tooltip';
 import CustomClerkProvider from './clerk-provider';
 

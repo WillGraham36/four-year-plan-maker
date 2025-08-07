@@ -13,7 +13,7 @@ import { buttonVariants } from "./button";
 import { navbarLinks } from "../layout/layout-sidebar";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ThemeToggleIcon } from "../toggle";
+import { ThemeToggleIcon } from "./toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 

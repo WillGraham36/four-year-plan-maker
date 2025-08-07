@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import CourseInput from "./course-input";
-import { SemesterProvider, useSemester } from "./semester-context";
 import { Course, Term } from "@/lib/utils/types";
 import SemesterHeader from "./semester-header";
-import { useRequirements } from "./requirements-context";
+import { useRequirements } from "../context/requirements-context";
+import { SemesterProvider, useSemester } from "../context/semester-context";
 
 interface SemesterProps {
   term: Term;

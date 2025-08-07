@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import SatisfiedCheck from '../ui/satisfied-check'
-import { useRequirements } from './requirements-context'
+import { useRequirements } from '../context/requirements-context'
 
 const TotalCreditsContainer = () => {
   const { totalCredits } = useRequirements();

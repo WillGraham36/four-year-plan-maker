@@ -20,7 +20,7 @@ import RemoveCourseButton from "./remove-course-button";
 import { Term } from '@/lib/utils/types';
 import { termYearToString } from '@/lib/utils';
 import { useState } from 'react';
-import { useRequirements } from './requirements-context';
+import { useRequirements } from '../context/requirements-context';
 import { updateSemesterCompletion } from '@/lib/api/planner/planner.server';
 import { toast } from 'sonner';
 

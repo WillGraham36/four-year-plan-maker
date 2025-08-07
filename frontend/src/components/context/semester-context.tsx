@@ -1,7 +1,7 @@
 "use client";
 import { Course, Term } from "@/lib/utils/types";
 import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
-import { useRequirements } from "./requirements-context";
+import { useRequirements } from "../context/requirements-context";
 
 interface SemesterContextProps {
   term: Term;

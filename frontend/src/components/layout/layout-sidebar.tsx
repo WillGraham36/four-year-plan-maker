@@ -6,7 +6,7 @@ import { ArrowLeft, BookDashed, CalendarCheck2, ChartSpline, PanelLeft, Settings
 import { Button } from "../ui/button";
 import Link from "next/link";
 import AccountButton from "./account-button";
-import { ThemeToggleIcon } from "../toggle";
+import { ThemeToggleIcon } from "../ui/toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 

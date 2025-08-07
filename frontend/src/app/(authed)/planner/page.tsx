@@ -1,5 +1,5 @@
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
-import { RequirementsProvider } from '@/components/planner/requirements-context';
+import { RequirementsProvider } from '@/components/context/requirements-context';
 import TotalCreditsContainer from '@/components/planner/total-credits-container';
 import TransferCreditsContainer from '@/components/planner/transfer-credits-container';
 import YearsContainer from '@/components/planner/years-container';

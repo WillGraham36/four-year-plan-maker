@@ -1,7 +1,7 @@
 'use client';
 import { termYearToString } from '@/lib/utils'
 import React, { useMemo } from 'react'
-import { useRequirements } from '../planner/requirements-context';
+import { useRequirements } from '../context/requirements-context';
 import { GenEdList } from '@/lib/utils/schemas';
 import SatisfiedCheck from '../ui/satisfied-check';
 import {
