@@ -19,7 +19,6 @@ export const saveCourse = async (course: Course, term: Term, year: number, index
     },
     index: index,
   }]);
-  console.log("Saving course:", body);
   const res = await fetchWithAuth("v1/usercourses", {
     init: { 
       method: "POST",
