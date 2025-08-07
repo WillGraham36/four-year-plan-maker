@@ -15,8 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -38,6 +40,18 @@ public class ULConcentrationController {
 
         //Filter out courses that are not 3 or 400 level
         courses = courses.stream().filter(c -> c.getCourseId().charAt(4) == '3' || c.getCourseId().charAt(4) == '4').toList();
+
+        // Remove duplicate courses
+        courses = courses.stream()
+                .collect(Collectors.toMap(
+                        UserCourse::getCourseId,
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        LinkedHashMap::new))
+                .values()
+                .stream()
+                .toList();
+
 
         List<ULCourseInfoDTO> coursesDTO = courses.stream()
                 .map(c -> new ULCourseInfoDTO(
