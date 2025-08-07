@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import UseYearAccordian from '@/lib/hooks/use-year-accordion';
+import DefaultOpenAccordion from '../ui/default-open-accordion';
 
 const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
   const { isYearOpen, toggleYear, isLoaded } = UseYearAccordian();
@@ -16,20 +17,33 @@ const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
   }
 
   return (
-    <Accordion 
-      type="single" 
-      collapsible 
-      defaultValue={`year-${year}`}
-      value={shouldBeOpen ? `year-${year}` : ""}
-      onValueChange={handleValueChange}
-    >
-      <AccordionItem value={`year-${year}`} >
-        <AccordionTrigger className='py-2'>Year {year}</AccordionTrigger>
-        <AccordionContent className='flex flex-col md:grid md:grid-cols-2 gap-3 pb-2 pt-1'>
+    <DefaultOpenAccordion
+    itemClassName='border-b-1'
+      triggerClassName='py-2'
+      trigger={
+        <>
+          Year {year}
+        </>
+      }
+      contentClassName='flex flex-col md:grid md:grid-cols-2 gap-3 pb-2 pt-1'
+      content={
+        <>
           {children}
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+        </>
+      }
+      accordion={
+        <Accordion
+          type="single" 
+          collapsible 
+          defaultValue={`year-${year}`}
+          value={shouldBeOpen ? `year-${year}` : ""}
+          onValueChange={handleValueChange}
+        >
+          <AccordionItem value={`year-${year}`} >
+          </AccordionItem>
+        </Accordion>
+      }
+    />
   )
 }
 
