@@ -1,6 +1,7 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
+import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
@@ -107,6 +108,11 @@ public class UserCourseController {
         userCourse.setUserId(userId);  // Set only the userId
         userCourse.setCourseId(course.getCourseId());  // Set only the courseId
         userCourse.setSemester(requestDto.getSemester());
+        userCourse.setIndex(requestDto.getIndex());
+
+        if(requestDto.getIndex() < 0) {
+            throw new InvalidInputException("Course index cannot be negative");
+        }
 
         // Set the selectedGenEds to the first set if it exists
         List<List<String>> requestGenEds = requestDto.getCourse().getGenEds();

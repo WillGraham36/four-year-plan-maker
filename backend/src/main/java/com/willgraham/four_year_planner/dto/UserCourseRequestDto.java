@@ -8,4 +8,5 @@ import lombok.Data;
 public class UserCourseRequestDto {
     private Course course;
     private Semester semester;
+    private Integer index;
 }

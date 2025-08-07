@@ -20,6 +20,7 @@ public class CourseDto {
     private List<String> selectedGenEds;
     private String description;
     private Semester semester;
+    private Integer index;
 
     public static CourseDto fromUserCourse(UserCourse userCourse) {
         CourseDto dto = new CourseDto();
@@ -30,6 +31,7 @@ public class CourseDto {
         dto.setGenEds(userCourse.getCourse().getGenEds());
         dto.setSelectedGenEds(userCourse.getSelectedGenEds());
         dto.setSemester(userCourse.getSemester());
+        dto.setIndex(userCourse.getIndex());
         return dto;
     }
 

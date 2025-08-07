@@ -38,4 +38,6 @@ public class UserCourse {
     @Convert(converter = ListOfListStringConverter.class)
     @Column(columnDefinition = "TEXT") // Ensure enough space for JSON storage
     private List<List<String>> transferGenEdsOverride;
+
+    private Integer index;
 }
