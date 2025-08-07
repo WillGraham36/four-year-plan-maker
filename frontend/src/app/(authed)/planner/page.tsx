@@ -1,9 +1,7 @@
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
 import { RequirementsProvider } from '@/components/planner/requirements-context';
-import { Semester } from '@/components/planner/semester'
 import TotalCreditsContainer from '@/components/planner/total-credits-container';
 import TransferCreditsContainer from '@/components/planner/transfer-credits-container';
-import Year from '@/components/planner/year';
 import YearsContainer from '@/components/planner/years-container';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
