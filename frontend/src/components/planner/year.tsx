@@ -5,12 +5,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import UseYearAccordian from '@/lib/hooks/use-year-accordion';
+import UseYearAccordian from '@/components/hooks/use-year-accordion';
 import DefaultOpenAccordion from '../ui/default-open-accordion';
+import { useAccordionContext } from '../context/accordion-context';
 
 const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
-  const { isYearOpen, toggleYear, isLoaded } = UseYearAccordian();
-  const shouldBeOpen = isYearOpen(year);
+  const { isYearOpen, toggleYear } = useAccordionContext()
+  const shouldBeOpen = isYearOpen(year)
   const handleValueChange = (value: string | undefined) => {
     const isOpening = value === `year-${year}`
     toggleYear(year, isOpening)

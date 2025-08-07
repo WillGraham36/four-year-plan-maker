@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const UseYearAccordian = () => {
+const UseYearAccordion = () => {
   const [closedYears, setClosedYears] = useState<Set<number>>(new Set())
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -14,20 +14,35 @@ const UseYearAccordian = () => {
       } catch (error) {
         console.error('Failed to parse saved accordion state:', error)
       }
+    } else {
+      setClosedYears(new Set())
+      localStorage.setItem('closed-years', JSON.stringify([]))
     }
     setIsLoaded(true)
   }, [])
 
+  // Separate effect to sync closedYears to localStorage
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('closed-years', JSON.stringify([...closedYears]))
+    }
+  }, [closedYears, isLoaded])
+
   const toggleYear = (year: number, isOpen: boolean) => {
+    const currentlyOpen = !closedYears.has(year)
+    
+    // Don't do anything if state isn't actually changing
+    if (currentlyOpen === isOpen) return
+    
     setClosedYears(prev => {
       const newClosedYears = new Set(prev)
+      console.log('Before toggle:', newClosedYears)
       if (isOpen) {
         newClosedYears.delete(year)
       } else {
         newClosedYears.add(year)
       }
-      
-      localStorage.setItem('closed-years', JSON.stringify([...newClosedYears]))
+      console.log('after toggle:', newClosedYears)
       return newClosedYears
     })
   }
@@ -43,4 +58,4 @@ const UseYearAccordian = () => {
   return { isYearOpen, toggleYear, isLoaded }  
 }
 
-export default UseYearAccordian;
+export default UseYearAccordion

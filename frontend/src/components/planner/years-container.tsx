@@ -22,6 +22,7 @@ import {
 import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AccordionProvider } from "../context/accordion-context";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
   };
 
   return (
-    <>
+    <AccordionProvider>
       {academicYears.map(({ year, semesters: yearSemesters }) => (
         <Year key={year} year={year}>
           {yearSemesters.map(semester => (
@@ -147,7 +148,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
           </DropdownMenu>
         </Year>
       ))}
-    </>
+    </AccordionProvider>
   )
 };
 // Generate all semesters between start and end, grouped by academic year
