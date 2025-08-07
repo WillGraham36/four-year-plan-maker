@@ -16,6 +16,7 @@ export const CourseSchema = z.object({
   credits: z.number(),
   genEds: z.array(z.array(z.string())),
   selectedGenEds: z.array(z.string()).optional().nullable(),
+  index: z.number().optional(),
 });
 
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));

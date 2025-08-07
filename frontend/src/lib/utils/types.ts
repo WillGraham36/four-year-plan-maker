@@ -15,6 +15,7 @@ export type Course = {
   // Each seperate inner array represents the OR relationship between the gen-eds
   genEds: GenEd[][]
   selectedGenEds?: GenEd[]
+  index?: number // Used to track the order of courses in a semester
 }
 
 export type CourseWithSemester = {

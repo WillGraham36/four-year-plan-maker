@@ -17,7 +17,19 @@ import { arraysEqual } from '@/lib/utils';
 import { useRequirements } from './requirements-context';
 
 
-const CourseInput = ({ initialCourse, disabled, isCore = true } : { initialCourse?: Course, disabled?: boolean, isCore?: boolean}) => {
+type CourseInputProps = {
+  initialCourse?: Course;
+  disabled?: boolean;
+  isCore?: boolean;
+  index: number;
+};
+
+const CourseInput = ({
+  initialCourse,
+  disabled,
+  isCore = true,
+  index,
+}: CourseInputProps) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
   const { refreshGenEds, refreshAllRequirements } = useRequirements();
 
@@ -120,12 +132,12 @@ const CourseInput = ({ initialCourse, disabled, isCore = true } : { initialCours
         // Avoid extra call to update ULConcentration if courseId is not 3 or 400 level
         if(courseInfo.data.courseId.charAt(4) === "3" || courseInfo.data.courseId.charAt(4) === "4") {
           await Promise.all([
-            saveCourse(courseInfo.data, term, year),
+            saveCourse(courseInfo.data, term, year, index),
             refreshAllRequirements()
           ]);
         } else {
           await Promise.all([
-            saveCourse(courseInfo.data, term, year),
+            saveCourse({...courseInfo.data }, term, year, index),
             refreshGenEds()
           ]);
 

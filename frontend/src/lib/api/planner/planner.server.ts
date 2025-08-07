@@ -5,7 +5,7 @@ import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS, UserIn
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
 
-export const saveCourse = async (course: Course, term: Term, year: number) => {
+export const saveCourse = async (course: Course, term: Term, year: number, index: number) => {
   const body = JSON.stringify([{
     course: {
       courseId: course.courseId,
@@ -16,8 +16,10 @@ export const saveCourse = async (course: Course, term: Term, year: number) => {
     semester: {
       term: term,
       year: year,
-    }
+    },
+    index: index,
   }]);
+  console.log("Saving course:", body);
   const res = await fetchWithAuth("v1/usercourses", {
     init: { 
       method: "POST",

@@ -41,7 +41,7 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   const router = useRouter();
   useEffect(() => {
     if(!userInfo || !userInfo.startSemester || !userInfo.endSemester) {
-      toast("Please complete your account setup to view the planner");
+      toast.message("Please complete your account setup to view the planner");
       router.push("/account/setup");
     }
   }, [userInfo, router]);

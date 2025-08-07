@@ -75,9 +75,22 @@ interface SemesterCourseListProps {
   minNumCourses?: number;
 }
 const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minNumCourses = 5 }: SemesterCourseListProps) => {
-  const initialLength = initialCourses?.length ?? 0;
   const { courses } = useSemester();
-  const [numCourseInputs, setNumCourseInputs] = useState<number>(Math.max(initialLength, minNumCourses));
+  const maxInitialIndex = (initialCourses?.length ?? 0) > 0 
+    ? Math.max(...(initialCourses ?? []).map(course => course.index ?? 0))
+    : -1;
+  
+  const minSlotsForIndices = maxInitialIndex + 1;
+  const totalSlots = Math.max(minNumCourses, minSlotsForIndices);
+
+  const coursesByIndex = new Map();
+  initialCourses?.forEach(course => {
+    const index = course.index ?? 0;
+    coursesByIndex.set(index, course);
+  });
+
+  const [numCourseInputs, setNumCourseInputs] = useState<number>(totalSlots);
+
 
   useEffect(() => {
     if (isCore && courses.length === numCourseInputs && numCourseInputs < 8) {
@@ -86,7 +99,7 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
   }, [courses, numCourseInputs, isCore]);
 
   if (!isCore) {
-    if (initialLength === 0) {
+    if (initialCourses?.length === 0) {
       return (
         <div className="p-3 text-muted-foreground text-sm text-center">
           No transfer courses available
@@ -95,14 +108,25 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
     }
     return (
       <>
-        {initialCourses?.map((course) => (
-          <CourseInput 
-            key={course.courseId}
-            initialCourse={course} 
-            disabled={disableCourseEditing} 
-            isCore={isCore}
-          />
-        ))}
+        {Array.from({ length: totalSlots }, (_, index) => {
+          const course = coursesByIndex.get(index);
+          return course ? (
+            <CourseInput 
+              key={course.courseId}
+              initialCourse={course} 
+              disabled={disableCourseEditing} 
+              isCore={isCore}
+              index={index}
+            />
+          ) : (
+            <CourseInput 
+              key={`empty-${index}`}
+              disabled={disableCourseEditing} 
+              isCore={isCore}
+              index={index}
+            />
+          );
+        })}
         <div className="h-8 w-full grid grid-cols-[3fr_7rem] text-xs md:text-sm">
           <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
           <p className="w-full flex items-center justify-center">
@@ -115,12 +139,23 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
 
   return (
     <>
-      {initialCourses?.map((course) => (
-        <CourseInput key={course.courseId} initialCourse={course} disabled={disableCourseEditing} />
-      ))}
-      {[...Array(numCourseInputs - initialLength)].map((_, i) => (
-        <CourseInput key={i} disabled={disableCourseEditing} />
-      ))}
+      {Array.from({ length: numCourseInputs }, (_, index) => {
+        const course = coursesByIndex.get(index);
+        return course ? (
+          <CourseInput 
+            key={course.courseId}
+            initialCourse={course} 
+            disabled={disableCourseEditing} 
+            index={index}
+          />
+        ) : (
+          <CourseInput 
+            key={`empty-${index}`}
+            disabled={disableCourseEditing} 
+            index={index}
+          />
+        );
+      })}
       <div className="h-8 w-full grid grid-cols-[3fr_3.5rem] text-xs md:text-sm">
         <p className="w-full flex items-center px-3 text-muted-foreground">Total Credits</p>
         <p className="w-full flex items-center justify-center">
