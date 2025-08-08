@@ -42,6 +42,23 @@ export type GenEd =
   | "DVUP"
   | "DVCC"
 
+export const ALL_GEN_EDS: GenEd[] = [
+  "NONE",
+  "FSAW",
+  "FSPW",
+  "FSMA",
+  "FSOC",
+  "FSAR",
+  "DSNL",
+  "DSNS",
+  "DSHS",
+  "DSHU",
+  "DSSP",
+  "SCIS",
+  "DVUP",
+  "DVCC"
+];
+
 export type CustomServerResponse<T> =
   | { ok: true; message: string; data: T }
   | { ok: false; message: string; data: null }
