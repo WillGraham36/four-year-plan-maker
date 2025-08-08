@@ -100,7 +100,7 @@ const baseOnboardingFormSchema = z.object({
 
 export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
 
-export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingFormValues}) {
+export default function OnboardingForm({ formInputs, backButton }: {formInputs?: OnboardingFormValues, backButton?: React.ReactNode}) {
   const router = useRouter();
   const form = useForm<z.infer<typeof baseOnboardingFormSchema>> ({
     resolver: zodResolver(baseOnboardingFormSchema),
@@ -273,7 +273,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10 px-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl mx-auto py-10 px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -358,9 +358,6 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                     <SelectItem value="spring">Spring</SelectItem>
                   </SelectContent>
                 </Select>
-                {!formInputs && (
-                  <FormDescription>You can always change this later</FormDescription>
-                )}
                 <FormMessage />
               </FormItem>
             )}
@@ -411,9 +408,9 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                   <span className="sr-only">(required)</span>
                 </FormLabel>
                 <MajorMinorCombobox type="major" value={field.value} setValueStateAction={field.onChange} />
-                {field.value !== "Computer Science" && (
+                {/* {field.value !== "Computer Science" && (
                   <FormDescription><span className="font-bold">Note:</span> This site is designed with CS majors in mind (for now), all other majors can still use this site but some info might be inaccurate</FormDescription>
-                )}
+                )} */}
               <FormMessage />
             </FormItem>
           )}
@@ -520,7 +517,7 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
                       type="button"
                       variant="outline"
                       onClick={() => append({ name: "", courseId: "" })}
-                      className="w-full"
+                      className="w-full "
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Transfer Credit
@@ -532,15 +529,17 @@ export default function OnboardingForm({ formInputs }: {formInputs?: OnboardingF
             )
           }}
         />
-        <LoadingButton 
-          type="submit"
-          // disabled={!isFormValid(form.watch())}
-          disabled={isSubmitting}
-          className="flex items-center gap-4"
-          loading={isSubmitting}
-        >
-          Submit
-        </LoadingButton>
+        <div className={`w-full flex -mt-3 ${backButton ? "justify-between" : "justify-end"}`}>
+          {backButton ? backButton : null}
+          <LoadingButton 
+            type="submit"
+            disabled={isSubmitting}
+            className="flex items-center gap-4 w-30"
+            loading={isSubmitting}
+          >
+            Submit
+          </LoadingButton>
+        </div>
       </form>
     </Form>
   )

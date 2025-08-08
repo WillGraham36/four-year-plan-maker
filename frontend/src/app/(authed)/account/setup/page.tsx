@@ -1,21 +1,18 @@
+import MultiStageOnboardingForm from "@/components/onboarding/multi-onboarding-form";
 import OnboardingForm from "@/components/onboarding/onboarding-form";
-import TranscriptInput from "@/components/onboarding/transcript-input";
 import { getOnboardingFormValues } from "@/lib/api/forms/onboarding-form.server";
 
 const OnboardingPage = async () => {
   const initialValues = await getOnboardingFormValues();
   if(initialValues === null || initialValues === undefined) {
     return (
-      <>
-        <TranscriptInput />
-        <OnboardingForm />
-      </>
+      <MultiStageOnboardingForm />
     )
   }
 
+  // If user already has onboarding data, skip transcript upload
   return (
     <>
-      <TranscriptInput />
       <OnboardingForm formInputs={initialValues} />
     </>
   )

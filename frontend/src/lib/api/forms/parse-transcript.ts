@@ -3,10 +3,8 @@
 import { ALL_GEN_EDS, ALL_MAJORS, GenEd, Term } from '@/lib/utils/types'
 import { PdfReader } from 'pdfreader'
 
-export async function parsePdfFile(formData: FormData) {
+export async function parseTranscript(file: File) {
   try {
-    const file = formData.get('file') as File
-    
     if(!file) {
       return { error: 'No file provided' }
     }
@@ -27,6 +25,23 @@ export async function parsePdfFile(formData: FormData) {
     // Parse PDF and extract text
     const text = await extractTextFromPdf(buffer)
 
+    // Check for key identifying phrases
+    const requiredPhrases = [
+      "UNIVERSITY OF MARYLAND",
+      "COLLEGE PARK", 
+      "Office of the Registrar",
+      "UNOFFICIAL TRANSCRIPT",
+      "FOR ADVISING PURPOSES ONLY",
+    ];
+
+    const isValidTranscript = requiredPhrases.every(phrase => 
+      text.includes(phrase)
+    );
+
+    if (!isValidTranscript) {
+      return { error: 'Invalid transcript format' }
+    }
+
     const parsed = getValuesFromText(text)
 
     
@@ -38,7 +53,6 @@ export async function parsePdfFile(formData: FormData) {
     }
     
   } catch (error) {
-    console.error('PDF parsing error:', error)
     return { 
       error: 'Failed to parse PDF file',
       details: error instanceof Error ? error.message : String(error)
@@ -70,14 +84,14 @@ function extractTextFromPdf(buffer: Buffer): Promise<string> {
   })
 }
 
-type ExtractedTextValues = {
+export type ExtractedTextValues = {
   major: string | null;
   startTerm: Term | null;
   startYear: number | null;
   endTerm: Term | null;
   endYear: number | null;
   transferCredits: {
-    courseName: string;
+    name: string;
     courseId: string;
     genEds: string;
   }[];
@@ -98,7 +112,7 @@ function getValuesFromText(text: string): ExtractedTextValues {
   }
 
   // Extract transfer credits
-  const transferCredits: { courseName: string; courseId: string; genEds: string; }[] = [];
+  const transferCredits: { name: string; courseId: string; genEds: string; }[] = [];
 
   // Look for transfer credit section - only get the section before Historic Course Information
   const transferSection = text.match(/\*\* Transfer Credit Information \*\*([\s\S]*?)(?=(Fall|Spring|Summer)\s+\d{4})/);
@@ -108,8 +122,7 @@ function getValuesFromText(text: string): ExtractedTextValues {
     
     // Normalize whitespace and remove newlines within course entries
     const normalizedTransferText = transferText.replace(/\s{2,}/g, ' ').replace(/\n/g, ' ');
-    console.log("Normalized Transfer Text:", normalizedTransferText);
-
+    
     // Improved regex to capture course entries with GenEds
     const courseEntryRegex = /([A-Z][A-Z\s\/\d]+\/SCR\s+\d+|[A-Z\s]+)\s+(P|A|B|C|D|F|NC)[+-]?\s+[\d.]+\s+([A-Z]{4}\d{3})(?:\s+([A-Z]+(?:,\s*[A-Z]+)*(?:\s+or\s+[A-Z]+)*))?(?=\s|$)/g;
 
@@ -150,7 +163,7 @@ function getValuesFromText(text: string): ExtractedTextValues {
 
       if (courseName && courseId) {
         transferCredits.push({
-          courseName,
+          name: courseName,
           courseId,
           genEds
         });
