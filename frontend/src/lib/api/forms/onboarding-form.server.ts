@@ -56,16 +56,6 @@ export const getOnboardingFormValues = async () => {
         { name: "", courseId: "", genEdOverrides: undefined },
       ];
   }
-  console.log({
-    ...parsed.data,
-    minor: parsed.data.minor ?? "",
-    startTerm: parsed.data.startTerm.toLowerCase(),
-    endTerm: parsed.data.endTerm.toLowerCase(),
-    transferCredits: parsed.data.transferCredits?.map((tc) => ({
-      ...tc,
-      genEds: transformGenEdOverrides(tc.genEdOverrides),
-    }))
-  })
   return {
     ...parsed.data,
     minor: parsed.data.minor ?? "",

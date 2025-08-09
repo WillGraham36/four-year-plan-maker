@@ -146,7 +146,6 @@ const CourseInput = ({
         verifiedCourseId.current = courseId;
       } catch (e) {
         setErrorMessage("Error fetching course information");
-        console.log(e);
       }
     }
   };

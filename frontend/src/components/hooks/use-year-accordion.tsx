@@ -36,13 +36,11 @@ const UseYearAccordion = () => {
     
     setClosedYears(prev => {
       const newClosedYears = new Set(prev)
-      console.log('Before toggle:', newClosedYears)
       if (isOpen) {
         newClosedYears.delete(year)
       } else {
         newClosedYears.add(year)
       }
-      console.log('after toggle:', newClosedYears)
       return newClosedYears
     })
   }

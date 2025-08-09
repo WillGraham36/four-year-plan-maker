@@ -73,7 +73,6 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
             });
           }
         });
-        console.log(Array.from(semesterMap.values()));
 
         // Convert to array and save all semesters using Promise.all
         const semesterPromises = Array.from(semesterMap.values()).map(semester => 
@@ -82,7 +81,6 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
         
         try {
           await Promise.all(semesterPromises);
-          console.log('All semesters saved successfully');
         } catch (error) {
           console.error('Error saving semesters:', error);
           // Handle the error as needed

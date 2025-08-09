@@ -102,7 +102,6 @@ interface GetSemesterCoursesProps {
 
 export const getSemesterCourses = async (props: GetSemesterCoursesProps) => {
   const courses = await fetchWithAuth("v1/usercourses");
-  console.log(courses.data);
 }
 
 export const getAllSemesters = async (): Promise<SemesterSchema> => {
@@ -127,7 +126,6 @@ export const getAllULCourses = async () => {
 }
 
 export const updateULConcentration = async (concentration: string) => {
-  console.log("Updating upper level concentration to:", concentration);
   const res = await fetchWithAuth('v1/ulconcentration', {
     init: {
       method: "PATCH",
