@@ -7,10 +7,6 @@ import {
   StepperSeparator,
   StepperTitle
 } from "@/components/ui/stepper"
-import { AlertCircleIcon, Check, ImageUpIcon, LoaderCircleIcon, XIcon } from "lucide-react"
-import { FileWithPreview, useFileUpload } from "@/hooks/use-file-upload"
-import { ExtractedTextValues, parseTranscript } from "@/lib/api/forms/parse-transcript";
-import Link from "next/link";
 import { Button } from "../ui/button";
 import TranscriptUpload, { ExtractedCompletedCourse } from "./transcript-upload";
 import OnboardingForm, { OnboardingFormValues } from "./onboarding-form";
@@ -26,9 +22,9 @@ const steps = [
   },
 ];
 
-const MultiStageOnboardingForm = () => {
-  const [step, setStep] = useState(1);
-  const [transcriptValues, setTranscriptValues] = useState<OnboardingFormValues | undefined>(undefined);
+const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormValues | null}) => {
+  const [step, setStep] = useState<number>(formInputs ? 2 : 1);
+  const [transcriptValues, setTranscriptValues] = useState<OnboardingFormValues | undefined>(formInputs || undefined);
   const [completedCourses, setCompletedCourses] = useState<ExtractedCompletedCourse[]>([]);
 
   return (
