@@ -95,8 +95,9 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
     const [numCourseInputs, setNumCourseInputs] = useState<number>(totalSlots);
 
     useEffect(() => {
+      console.log("length ", courses.length, " inputs ", numCourseInputs, " courses: ", courses, " numCourseinputs ", numCourseInputs);
       if (courses.length === numCourseInputs && numCourseInputs < 8) {
-        setNumCourseInputs((prevNum) => prevNum + 1);
+        setNumCourseInputs((prevNum) => courses.length + 1);
       }
     }, [courses, numCourseInputs]);
 
