@@ -169,16 +169,23 @@ const GenEdRow = ({
   isLast = false,
   completed = false
 }: GenEdRowProps) => {
-  
   return (
     <React.Fragment>
-      <p className={getSharedClasses(isLast, completed)}>
+      <p className={getSharedClasses(isLast, (completed || semester === "Transfer"))}>
         {genEd}
       </p>
-      <p className={`${getSharedClasses(isLast, completed)} border-x break-all`}>
-        {course}
+      <p className={`${getSharedClasses(isLast, (completed || semester === "Transfer"))} border-x break-all`}>
+        {course?.includes("|") ? (
+          <>
+            <span className="w-20 inline-block">{course.split("|")[0]}</span>
+            <span className='pr-2'>|</span>
+            {course.slice(course.indexOf("|") + 1)}
+          </>
+        ) : (
+          <span className="font-normal">{course}</span>
+        )}
       </p>
-      <p className={getSharedClasses(isLast, completed)}>
+      <p className={getSharedClasses(isLast, (completed || semester === "Transfer"))}>
         {semester}
       </p>
     </React.Fragment>
