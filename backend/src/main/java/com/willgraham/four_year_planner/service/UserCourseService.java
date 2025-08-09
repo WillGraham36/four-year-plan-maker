@@ -7,6 +7,7 @@ import com.willgraham.four_year_planner.dto.TransferCreditDto;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.GenEd;
+import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import lombok.AllArgsConstructor;
@@ -39,8 +40,16 @@ public class UserCourseService {
         return userCourseRepository.save(userCourse);
     }
 
-    public List<UserCourse> getAllCoursesForUser(String userId) {
-        return userCourseRepository.findByUserIdOrderBySemesterAsc(userId);
+    public Map<Semester, List<CourseDto>> getAllCoursesForUser(String userId) {
+        List<UserCourse> courses =  userCourseRepository.findByUserIdOrderBySemesterAsc(userId);
+
+        // Transform DTOs
+        List<CourseDto> courseDtos = courses.stream()
+                .map(CourseDto::fromUserCourse)
+                .toList();
+
+        // Group by semester
+        return courseDtos.stream().collect(Collectors.groupingBy(CourseDto::getSemester));
     }
 
     public int deleteUserCoursesByIdentifiers(String userId, List<CourseIdentifierDto> courseIdentifiers) {

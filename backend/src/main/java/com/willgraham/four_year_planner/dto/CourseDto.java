@@ -18,7 +18,6 @@ public class CourseDto {
     private Integer credits;
     private List<List<String>> genEds;
     private List<String> selectedGenEds;
-    private String description;
     private Semester semester;
     private Integer index;
 
@@ -28,7 +27,11 @@ public class CourseDto {
         dto.setCourseId(userCourse.getCourseId());
         dto.setName(userCourse.getCourse().getName());
         dto.setCredits(userCourse.getCourse().getCredits());
-        dto.setGenEds(userCourse.getCourse().getGenEds());
+        if(!userCourse.getTransferGenEdsOverride().isEmpty()) {
+            dto.setGenEds(userCourse.getTransferGenEdsOverride());
+        } else {
+            dto.setGenEds(userCourse.getCourse().getGenEds());
+        }
         dto.setSelectedGenEds(userCourse.getSelectedGenEds());
         dto.setSemester(userCourse.getSemester());
         dto.setIndex(userCourse.getIndex());

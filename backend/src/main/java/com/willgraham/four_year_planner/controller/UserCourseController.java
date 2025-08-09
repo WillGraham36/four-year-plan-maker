@@ -65,18 +65,9 @@ public class UserCourseController {
     @GetMapping
     public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        List<UserCourse> courses = userCourseService.getAllCoursesForUser(userId);
+        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
 
-        // Transform DTOs
-        List<CourseDto> courseDtos = courses.stream()
-                .map(CourseDto::fromUserCourse)
-                .toList();
-
-        // Group by semester
-        Map<Semester, List<CourseDto>> coursesBySemester = courseDtos.stream()
-                .collect(Collectors.groupingBy(CourseDto::getSemester));
-
-        return ResponseEntity.ok(ApiResponse.success(coursesBySemester));
+        return ResponseEntity.ok(ApiResponse.success(courses));
     }
 
     @DeleteMapping

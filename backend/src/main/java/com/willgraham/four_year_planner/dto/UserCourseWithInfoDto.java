@@ -4,6 +4,7 @@ import com.willgraham.four_year_planner.model.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Optional;
@@ -16,4 +17,5 @@ public class UserCourseWithInfoDto {
     private Semester semester;
     private List<String> selectedGenEds;
     private String transferCreditName = "";
+    private List<List<String>> transferGenEdsOverride = new ArrayList<>();
 }
