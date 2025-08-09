@@ -31,10 +31,8 @@ const UpperLevelConcentrationContainer = ({
         </div>
         <ULCCombobox value={concentration} setValueStateAction={async (newConcentration) => {
           setConcentration(newConcentration);
-          await Promise.all([
-            refreshULCourses(),
-            updateULConcentration(newConcentration.toString()),
-          ]);
+          await updateULConcentration(newConcentration.toString()); 
+          await refreshULCourses();
         }}/>
       </div>
 
