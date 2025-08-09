@@ -249,7 +249,6 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
           genEdOverrides: courseToGenEdMap[credit.courseId] as GenEd[][] || [[]],
         })),
       }
-      console.log(submitValues)
 
       const message = await submitOnboardingForm(submitValues);
       toast.success(message || "Onboarding form submitted successfully", {
