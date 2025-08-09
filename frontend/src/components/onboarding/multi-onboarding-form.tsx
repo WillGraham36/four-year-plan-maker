@@ -8,7 +8,7 @@ import {
   StepperTitle
 } from "@/components/ui/stepper"
 import { Button } from "../ui/button";
-import TranscriptUpload, { ExtractedCompletedCourse } from "./transcript-upload";
+import TranscriptUpload from "./transcript-upload";
 import OnboardingForm, { OnboardingFormValues } from "./onboarding-form";
 
 const steps = [
@@ -25,7 +25,6 @@ const steps = [
 const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormValues | null}) => {
   const [step, setStep] = useState<number>(formInputs ? 2 : 1);
   const [transcriptValues, setTranscriptValues] = useState<OnboardingFormValues | undefined>(formInputs || undefined);
-  const [completedCourses, setCompletedCourses] = useState<ExtractedCompletedCourse[]>([]);
 
   return (
     <main className="max-w-3xl mx-auto py-5 px-4">
@@ -49,7 +48,6 @@ const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormVa
         <TranscriptUpload 
           incrementStep={() => setStep(step + 1)} 
           setTranscriptValues={setTranscriptValues}
-          setCompletedCourses={setCompletedCourses}
         />
       )}
       {step == 2 && (

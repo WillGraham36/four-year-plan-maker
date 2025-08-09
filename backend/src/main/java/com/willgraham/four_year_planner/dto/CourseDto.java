@@ -27,7 +27,7 @@ public class CourseDto {
         dto.setCourseId(userCourse.getCourseId());
         dto.setName(userCourse.getCourse().getName());
         dto.setCredits(userCourse.getCourse().getCredits());
-        if(!userCourse.getTransferGenEdsOverride().isEmpty()) {
+        if(userCourse.getTransferGenEdsOverride() != null && !userCourse.getTransferGenEdsOverride().isEmpty()) {
             dto.setGenEds(userCourse.getTransferGenEdsOverride());
         } else {
             dto.setGenEds(userCourse.getCourse().getGenEds());

@@ -17,5 +17,4 @@ public class UserCourseWithInfoDto {
     private Semester semester;
     private List<String> selectedGenEds;
     private String transferCreditName = "";
-    private List<List<String>> transferGenEdsOverride = new ArrayList<>();
 }

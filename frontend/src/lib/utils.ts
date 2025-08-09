@@ -28,7 +28,7 @@ export function extractSemester(
   return courses;
 }
 
-export function courseAndSemesterToDto(course: Course, term: Term, year: number) {
+export function courseAndSemesterToDto(course: Course, term: Term, year: number, index: number) {
   return {
     course: {
       courseId: course.courseId,
@@ -37,9 +37,10 @@ export function courseAndSemesterToDto(course: Course, term: Term, year: number)
       genEds: course.genEds,
     },
     semester: {
-      term: { term },
-      year: { year },
+      term,
+      year,
     },
+    index,
   };
 }
 

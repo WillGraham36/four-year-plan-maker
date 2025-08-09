@@ -33,9 +33,9 @@ export const saveCourse = async (course: Course, term: Term, year: number, index
 }
 
 
-export const saveSemester = async (courses: Course[], term: Term, year: number) => {
+export const saveSemester = async (courses: (Course & { index?: number })[], term: Term, year: number) => {
   const body = JSON.stringify(
-    courses.map((course) => courseAndSemesterToDto(course, term, year))
+    courses.map((course, idx) => courseAndSemesterToDto(course, term, year, idx))
   );
 
   const res = await fetchWithAuth("v1/usercourses", {
