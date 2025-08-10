@@ -70,6 +70,16 @@ export default async function fillPDFForm({ userInfo, semesters, totalCredits, g
     form.getTextField(januaryHeaderField).setText((academicYear.year + userInfo.startSemester.year).toString());
   });
 
+  type SemesterKey =
+    | "FALL-1" | "FALL-2" | "FALL-3" | "FALL-4"
+    | "SPRING-1" | "SPRING-2" | "SPRING-3" | "SPRING-4"
+    | "WINTER-1" | "WINTER-2" | "WINTER-3" | "WINTER-4"
+    | "SUMMER-1" | "SUMMER-2" | "SUMMER-3" | "SUMMER-4";
+  type SemesterKeyNoWinter =
+    | "FALL-1" | "FALL-2" | "FALL-3" | "FALL-4"
+    | "SPRING-1" | "SPRING-2" | "SPRING-3" | "SPRING-4"
+    | "SUMMER-1" | "SUMMER-2" | "SUMMER-3" | "SUMMER-4";
+
   // format of array: [startCourse, startGenEd, startCredit]
   const startIndicesForSemester = {
     "FALL-1": [0, 0, 0],
@@ -112,7 +122,7 @@ export default async function fillPDFForm({ userInfo, semesters, totalCredits, g
 
   academicYears.forEach((academicYear, yearIndex) => {
     academicYear.semesters.forEach((semester) => {
-      const semesterKey = `${semester.term}-${yearIndex + 1}`;
+      const semesterKey = `${semester.term}-${yearIndex + 1}` as SemesterKey;
       const courses = extractSemester(semesters, semester.term, semester.year);
       
       if (courses.length === 0) return;
@@ -144,7 +154,7 @@ export default async function fillPDFForm({ userInfo, semesters, totalCredits, g
         // Fill total credits for this semester (only for FALL, SPRING, SUMMER)
         if (['FALL', 'SPRING', 'SUMMER'].includes(semester.term)) {
           const totalCredits = courses.reduce((sum, c) => sum + c.credits, 0);
-          const creditIndex = indicesForTotalCreditsPerSemester[semesterKey];
+          const creditIndex = indicesForTotalCreditsPerSemester[semesterKey as SemesterKeyNoWinter];
           if (typeof creditIndex !== 'undefined') {
             form.getTextField(`Cr_${creditIndex + 1}`).setText(totalCredits.toString());
           }
