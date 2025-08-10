@@ -31,27 +31,21 @@ export default async function fillPDFForm({ userInfo, semesters, totalCredits, g
   const form = pdfDoc.getForm();
   
   // Fill in the basic info fields
-  try {
-    // TODO FIX THIS 
-    // if (userInfo?.name) {
-    //   form.getTextField('Name').setText(userInfo.name); 
-    // }
-    // if (userInfo?.uid) {
-    //   form.getTextField('UID').setText(userInfo.uid);
-    // }
-    form.getTextField('Name').setText("will graham");
-    form.getTextField('UID').setText("123456789");
-    form.getTextField('Date').setText(new Date().toLocaleDateString());
-    
-    // Fill in anticipated graduation date in Text4, Text5, Text6 fields
-    if (userInfo?.endSemester) {
-      form.getTextField('Text5').setText(`${userInfo.endSemester.term} ${userInfo.endSemester.year}`);
-    }
-  } catch (error) {
-    console.log('Error filling basic info:', error);
+  // TODO FIX THIS 
+  // if (userInfo?.name) {
+  //   form.getTextField('Name').setText(userInfo.name); 
+  // }
+  // if (userInfo?.uid) {
+  //   form.getTextField('UID').setText(userInfo.uid);
+  // }
+  form.getTextField('Name').setText("will graham");
+  form.getTextField('UID').setText("123456789");
+  form.getTextField('Date').setText(new Date().toLocaleDateString());
+  
+  // Fill in anticipated graduation date in Text4, Text5, Text6 fields
+  if (userInfo?.endSemester) {
+    form.getTextField('Text5').setText(`${userInfo.endSemester.term} ${userInfo.endSemester.year}`);
   }
-
-  const currentCourseIndex = 1;
 
   academicYears.forEach((academicYear, index) => {
     const fallHeaderField = index === 0 ? 'FALL' : `FALL_${index+1}`;
