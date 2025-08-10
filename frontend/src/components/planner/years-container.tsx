@@ -23,7 +23,8 @@ import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AccordionProvider } from "../context/accordion-context";
-import DownloadPDFButton from "./download-pdf-button";
+import { inspectPDFFields } from "./inspect";
+import FillPDFButton from "./fill-pdf";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
   const router = useRouter();
@@ -41,7 +42,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
 
   return (
     <div>
-      <DownloadPDFButton semesters={semesters} academicYears={academicYears} />
+      <button onClick={async () => console.log([...await inspectPDFFields()])}>inspect </button>
       <AccordionProvider>
         {academicYears.map(({ year, semesters: yearSemesters }) => (
           <Year key={year} year={year}>
@@ -156,7 +157,7 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
   )
 };
 // Generate all semesters between start and end, grouped by academic year
-const generateAcademicYears = (userInfo: UserInfo): { year: number; semesters: SemesterDateDescriptor[] }[] => {
+export const generateAcademicYears = (userInfo: UserInfo): { year: number; semesters: SemesterDateDescriptor[] }[] => {
   const academicYears: { year: number; semesters: SemesterDateDescriptor[] }[] = [];
   let currentSemester = { ...userInfo.startSemester };
   let academicYearNumber = 1;

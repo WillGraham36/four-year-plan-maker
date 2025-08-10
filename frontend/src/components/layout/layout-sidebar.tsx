@@ -2,13 +2,16 @@
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SideBarClickableItem, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
-import { ArrowLeft, BookDashed, CalendarCheck2, ChartSpline, PanelLeft, Settings, User } from "lucide-react";
+import { ArrowLeft, BookDashed, CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, User } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import AccountButton from "./account-button";
 import { ThemeToggleIcon } from "../ui/toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
+import fillPDFForm from "../planner/fill-pdf";
+import { getAllGenEds, getAllSemesters, getUserInfo } from "@/lib/api/planner/planner.server";
+import { toast } from "sonner";
 
 export const navbarLinks = [
   {
@@ -31,12 +34,35 @@ function LayoutSidebar() {
   const [open, setOpen] = useState(false);
   const { setTheme, theme } = useTheme();
   const { openUserProfile } = useClerk();
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   const handleThemeToggle = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
   const handleManageAccountClick = () => {
     openUserProfile();
+  };
+  const handleDownloadClick = async () => {
+    setGeneratingPdf(true);
+    try {
+      const [userInfo, semesters, genEds] = await Promise.all([
+        getUserInfo(),
+        getAllSemesters(),
+        getAllGenEds(),
+      ]);
+      const userData = userInfo.data;
+      if(!userData) throw new Error("User data not found");
+      if(!semesters) throw new Error("Semesters not found");
+
+      const totalCredits = Object.values(semesters)
+        .flat()
+        .reduce((sum, course) => sum + course.credits, 0);
+      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEds });
+    } catch (error) {
+      toast.error("Failed to generate PDF");
+    } finally {
+      setGeneratingPdf(false);
+    }
   };
 
   return (
@@ -50,10 +76,17 @@ function LayoutSidebar() {
             ))}
             <hr />
             <SideBarClickableItem
-              label="Toggle Theme" 
-              onClickAction={handleThemeToggle}
+              label={generatingPdf ? "Generating PDF..." : "Download Grad Plan"}
+              onClickAction={handleDownloadClick}
             >
-              <ThemeToggleIcon />
+              {generatingPdf ? (
+               <LoaderCircleIcon
+                  className="animate-spin h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200"
+                  aria-hidden="true"
+                /> 
+              ) : (
+                <Download className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              )}
             </SideBarClickableItem>
             <SidebarLink link={{ 
               label: "Account Setup", 
@@ -65,6 +98,12 @@ function LayoutSidebar() {
               onClickAction={handleManageAccountClick}
             >
               <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+            </SideBarClickableItem>
+            <SideBarClickableItem
+              label="Toggle Theme" 
+              onClickAction={handleThemeToggle}
+            >
+              <ThemeToggleIcon />
             </SideBarClickableItem>
           </div>
         </div>

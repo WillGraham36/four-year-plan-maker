@@ -153,12 +153,14 @@ export const SideBarClickableItem = ({
   className,
   label,
   children,
+  disabled = false,
   onClickAction,
   ...props
 }: {
   className?: string;
   label: string;
   children: React.ReactNode;
+  disabled?: boolean;
   onClickAction?: (e: React.MouseEvent) => void;
 }) => {
   const { open, animate } = useSidebar();
@@ -173,9 +175,10 @@ export const SideBarClickableItem = ({
       className={cn(
         buttonVariants({ variant: "ghost" }),
         "flex items-center justify-start gap-2 group/sidebar py-1.5 px-2 pl-2.5 cursor-pointer",
+        disabled && "opacity-50 cursor-not-allowed",
         className
       )}
-      onClick={handleLinkClick}
+      onClick={!disabled ? handleLinkClick : undefined}
       {...props}
     >
       {children}

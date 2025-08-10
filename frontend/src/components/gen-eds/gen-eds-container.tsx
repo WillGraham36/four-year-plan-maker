@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/accordion"
 import DefaultOpenAccordion from '../ui/default-open-accordion';
 
-const GenEds = [
+export const GenEdListForRendering = [
   'FSAW',
   'FSPW',
   'FSMA',
@@ -35,6 +35,43 @@ const GenEds = [
   'DVUP or DVCC',
 ]
 
+export const assignGenEdsToRequirements = (genEds: GenEdList) => {
+  const assignments: GenEdList = [];
+  const usedCourses = new Set(); // Track which courses have been used for each requirement
+  
+  // For each course, check if it satisfies any of the GenEd requirements
+  GenEdListForRendering.forEach(requiredGenEd => {
+    let availableCourse: GenEdList[number] | undefined = undefined;
+    if(requiredGenEd.includes('or')) {
+      const [firstGenEd, secondGenEd] = requiredGenEd.split(' or ');
+      availableCourse = genEds.find(genEdCourse => 
+        (genEdCourse.genEd === firstGenEd || genEdCourse.genEd === secondGenEd) && 
+        !usedCourses.has(`${genEdCourse.courseId}-${firstGenEd}`) &&
+        !usedCourses.has(`${genEdCourse.courseId}-${secondGenEd}`)
+      );
+    } else {
+      availableCourse = genEds.find(genEdCourse => 
+        genEdCourse.genEd === requiredGenEd && 
+        !usedCourses.has(`${genEdCourse.courseId}-${requiredGenEd}`)
+      );  
+    }      
+    if (availableCourse) {
+      // Mark this specific course-requirement pair as used
+      usedCourses.add(`${availableCourse.courseId}-${requiredGenEd}`);
+      assignments.push(availableCourse);
+    } else {
+      // No available course for this requirement
+      assignments.push({ 
+        genEd: requiredGenEd, 
+        courseId: '', 
+        semesterName: '' 
+      });
+    }
+  });
+  
+  return assignments;
+}
+
 const GenEdsContainer = () => {
 
   const { genEds, completedSemesters } = useRequirements();
@@ -43,44 +80,11 @@ const GenEdsContainer = () => {
   const localGenEds = useMemo(() => [...genEds], [genEds]);
 
   // Create a mapping of GenEds to their courses
-  const assignGenEdsToRequirements = useMemo(() => {
-    const assignments: GenEdList = [];
-    const usedCourses = new Set(); // Track which courses have been used for each requirement
-    
-    // For each course, check if it satisfies any of the GenEd requirements
-    GenEds.forEach(requiredGenEd => {
-      let availableCourse: GenEdList[number] | undefined = undefined;
-      if(requiredGenEd.includes('or')) {
-        const [firstGenEd, secondGenEd] = requiredGenEd.split(' or ');
-        availableCourse = localGenEds.find(genEdCourse => 
-          (genEdCourse.genEd === firstGenEd || genEdCourse.genEd === secondGenEd) && 
-          !usedCourses.has(`${genEdCourse.courseId}-${firstGenEd}`) &&
-          !usedCourses.has(`${genEdCourse.courseId}-${secondGenEd}`)
-        );
-      } else {
-        availableCourse = localGenEds.find(genEdCourse => 
-          genEdCourse.genEd === requiredGenEd && 
-          !usedCourses.has(`${genEdCourse.courseId}-${requiredGenEd}`)
-        );  
-      }      
-      if (availableCourse) {
-        // Mark this specific course-requirement pair as used
-        usedCourses.add(`${availableCourse.courseId}-${requiredGenEd}`);
-        assignments.push(availableCourse);
-      } else {
-        // No available course for this requirement
-        assignments.push({ 
-          genEd: requiredGenEd, 
-          courseId: '', 
-          semesterName: '' 
-        });
-      }
-    });
-    
-    return assignments;
+  const assignGenEdsToRequirementsMemoized = useMemo(() => {
+    return assignGenEdsToRequirements(localGenEds);
   }, [localGenEds]);
 
-  const allGenEdsSatisfied = assignGenEdsToRequirements.every(
+  const allGenEdsSatisfied = assignGenEdsToRequirementsMemoized.every(
     ({ courseId }) => courseId && courseId.trim() !== ""
   );
 
@@ -116,8 +120,8 @@ const GenEdsContainer = () => {
               </div>
 
               <div className='grid grid-cols-[1fr_2fr_7rem]'>
-                {GenEds.map((genEd, i) => {
-                  const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirements[i];
+                {GenEdListForRendering.map((genEd, i) => {
+                  const { courseId, semesterName, transferCreditName } = assignGenEdsToRequirementsMemoized[i];
                   const [term, year] = semesterName.split(' ');
                   return (
                     <React.Fragment key={i}>
@@ -125,7 +129,7 @@ const GenEdsContainer = () => {
                         genEd={genEd}
                         course={transferCreditName ? `${courseId} | ${transferCreditName}` : courseId}
                         semester={termYearToString(semesterName)}
-                        isLast={i === GenEds.length - 1}
+                        isLast={i === GenEdListForRendering.length - 1}
                         completed={completedSemesters.some(sem => sem.term === term && sem.year === parseInt(year))}
                       />
                       {/* Add empty row between gen-ed sections */}
