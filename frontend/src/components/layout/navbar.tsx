@@ -14,11 +14,11 @@ const Navbar = () => {
   switch (pathName) {
     case "/planner":
       headerTitle = "Planner";
-      headerSubtitle = "Plan your courses effectively";
+      headerSubtitle = "Plan your courses effectively and see if you can graduate on time";
       break;
     case "/audit":
       headerTitle = "Audit";
-      headerSubtitle = "Audit your course selections";
+      headerSubtitle = "See if you meet the detailed degree requirements";
       break;
     default:
       headerTitle = "4 Year Planner";
