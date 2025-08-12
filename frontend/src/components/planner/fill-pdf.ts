@@ -9,13 +9,14 @@ interface FillPDFFormParams {
   semesters: SemesterSchema;
   totalCredits: number;
   genEds: GenEdList;
+  fullName: string | undefined | null;
 }
 
 /**
  * Can throw error if fails, make sure to try catch
  * Has no toasts, even on success
  */
-export default async function fillPDFForm({ userInfo, semesters, totalCredits, genEds }: FillPDFFormParams) {
+export default async function fillPDFForm({ userInfo, semesters, totalCredits, genEds, fullName }: FillPDFFormParams) {
   const academicYears = generateAcademicYears(userInfo);
 
   // Dynamic import of PDF-lib
@@ -31,15 +32,9 @@ export default async function fillPDFForm({ userInfo, semesters, totalCredits, g
   const form = pdfDoc.getForm();
   
   // Fill in the basic info fields
-  // TODO FIX THIS 
-  // if (userInfo?.name) {
-  //   form.getTextField('Name').setText(userInfo.name); 
-  // }
-  // if (userInfo?.uid) {
-  //   form.getTextField('UID').setText(userInfo.uid);
-  // }
-  form.getTextField('Name').setText("will graham");
-  form.getTextField('UID').setText("123456789");
+  if (fullName) {
+    form.getTextField('Name').setText(fullName);
+  }
   form.getTextField('Date').setText(new Date().toLocaleDateString());
   
   // Fill in anticipated graduation date in Text4, Text5, Text6 fields

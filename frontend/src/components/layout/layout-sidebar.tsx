@@ -33,8 +33,9 @@ export const navbarLinks = [
 function LayoutSidebar() {
   const [open, setOpen] = useState(false);
   const { setTheme, theme } = useTheme();
-  const { openUserProfile } = useClerk();
+  const { openUserProfile, user } = useClerk();
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const fullName = user?.fullName;
 
   const handleThemeToggle = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -57,7 +58,7 @@ function LayoutSidebar() {
       const totalCredits = Object.values(semesters)
         .flat()
         .reduce((sum, course) => sum + course.credits, 0);
-      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEds });
+      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEds, fullName });
     } catch (error) {
       toast.error("Failed to generate PDF");
     } finally {
