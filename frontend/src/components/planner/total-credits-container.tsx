@@ -13,7 +13,7 @@ const TotalCreditsContainer = () => {
           message="You need at least 120 credits"
       />
       <p className="w-full font-semibold text-lg flex items-center">
-        Total Credits: <span className='pl-2'> {totalCredits}</span>
+        Total Credits: <span className='pl-2 pr-1 font-bold'> {totalCredits}</span>{" "} / 120
       </p>
     </div>
   )
