@@ -97,11 +97,11 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                         const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
                         const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
                         
-                        const winterYear = fallSemester ? fallSemester.year : 
+                        const winterYear = fallSemester ? fallSemester.year + 1 : 
                           // If no Fall semester, calculate based on Spring semester
-                          springSemester ? springSemester.year - 1 : 
+                          springSemester ? springSemester.year : 
                           // Fallback calculation
-                          year + userInfo.startSemester.year - 1;
+                          year + userInfo.startSemester.year;
                         
                         createNewSemester('WINTER', winterYear);
                       }}
@@ -110,9 +110,9 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                         const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
                         const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
                         
-                        const winterYear = fallSemester ? fallSemester.year : 
-                          springSemester ? springSemester.year - 1 : 
-                          year + userInfo.startSemester.year - 1;
+                        const winterYear = fallSemester ? fallSemester.year + 1 : 
+                          springSemester ? springSemester.year : 
+                          year + userInfo.startSemester.year;
                         return `Winter ${winterYear}`;
                       })()}
                     </div>
@@ -170,12 +170,12 @@ export const generateAcademicYears = (userInfo: UserInfo): { year: number; semes
   
   // Helper function to add off semesters for a given academic year
   const addOffSemestersForYear = (fallYear: number) => {
-    const winterKey = `WINTER_${fallYear}`;
+    const winterKey = `WINTER_${fallYear + 1}`;
     const summerKey = `SUMMER_${fallYear + 1}`;
     
     // Add winter semester if it exists in off semesters
     if (offSemesterSet.has(winterKey)) {
-      currentAcademicYear.push({ term: 'WINTER', year: fallYear });
+      currentAcademicYear.push({ term: 'WINTER', year: fallYear + 1 });
     }
     
     // Add summer semester if it exists in off semesters
