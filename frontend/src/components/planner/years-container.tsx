@@ -23,8 +23,6 @@ import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AccordionProvider } from "../context/accordion-context";
-import { inspectPDFFields } from "./inspect";
-import FillPDFButton from "./fill-pdf";
 
 const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, semesters: SemesterSchema }) => {
   const router = useRouter();
@@ -42,7 +40,6 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
 
   return (
     <div>
-      <button onClick={async () => console.log([...await inspectPDFFields()])}>inspect </button>
       <AccordionProvider>
         {academicYears.map(({ year, semesters: yearSemesters }) => (
           <Year key={year} year={year}>
