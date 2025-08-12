@@ -326,3 +326,29 @@ export const updateSemesterCompletion = async (term: Term, year: number, complet
     data: "Semester completion updated successfully",
   };
 }
+
+
+export const updateUserNote = async (note: string): Promise<CustomServerResponse<string>> => {
+  const res = await fetchWithAuth("v1/userinfo/notes", {
+    init: {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ note }),
+    }
+  });
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      message: "Failed to update user note",
+      data: null,
+    };
+  }
+  return {
+    ok: true,
+    message: "Successfully updated user note",
+    data: "User note updated successfully",
+  };
+}

@@ -6,6 +6,7 @@ import YearsContainer from '@/components/planner/years-container';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
 import { extractSemester } from '@/lib/utils';
+import Notes from '@/components/planner/notes';
 
 const PlannerPage = async () => {
   const [semesters, genEds, { concentration, courses }, { data: userInfo }] = await Promise.all([
@@ -17,6 +18,7 @@ const PlannerPage = async () => {
   const totalCredits = Object.values(semesters)
     .flat()
     .reduce((sum, course) => sum + course.credits, 0);
+    console.log(userInfo?.note);
   return (
     <main className='flex flex-col xl:flex-row items-center xl:items-start justify-between gap-4 mx-4'>
       <RequirementsProvider 
@@ -33,6 +35,7 @@ const PlannerPage = async () => {
           <TotalCreditsContainer />
           <GenEdsContainer />
           <UpperLevelConcentrationContainer concentration={concentration} />
+          <Notes note={userInfo?.note} />
           <TransferCreditsContainer courses={extractSemester(semesters, 'TRANSFER', -1)} />
         </div>
       </RequirementsProvider>

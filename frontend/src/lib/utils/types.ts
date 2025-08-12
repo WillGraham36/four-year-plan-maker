@@ -355,4 +355,5 @@ export type UserInfo = {
   endSemester: SemesterDateDescriptor
   offSemesters: SemesterDateDescriptor[] | null
   completedSemesters: SemesterDateDescriptor[] | null
+  note: string | null
 }
