@@ -51,9 +51,10 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
                 key={`${semester.term}-${semester.year}`}
                 term={semester.term}
                 year={semester.year}
-                minNumCourses={semester.term === 'WINTER' || semester.term === "SUMMER" ? 2 : 5}
+                minNumCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 3 : 5}
                 courses={extractSemester(semesters, semester.term, semester.year)}
                 removable={semester.term === 'WINTER' || semester.term === "SUMMER"}
+                maxCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 3 : 8}
               />
             ))}
             <DropdownMenu>

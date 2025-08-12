@@ -15,6 +15,7 @@ interface SemesterProps {
   minNumCourses?: number;
   title?: React.ReactNode;
   removable?: boolean;
+  maxCourses?: number;
 }
 
 const Semester = ({
@@ -26,6 +27,7 @@ const Semester = ({
   minNumCourses,
   title,
   removable = false,
+  maxCourses
 }: SemesterProps) => {
   const { completedSemesters } = useRequirements();
   const [completed, setCompleted] = useState(completedSemesters.some(sem => sem.term === term && sem.year === year));
@@ -55,6 +57,7 @@ const Semester = ({
             disableCourseEditing={disableCourseEditing || completed} 
             isCore={isCore}
             minNumCourses={minNumCourses}
+            maxCourses={maxCourses}
           />
 
           <div className={`absolute inset-0 bg-muted/50 rounded-lg transition-opacity duration-200 z-40 ${completed ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} />
@@ -73,9 +76,11 @@ interface SemesterCourseListProps {
   disableCourseEditing?: boolean;
   isCore?: boolean;
   minNumCourses?: number;
+  maxCourses?: number;
 }
-const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minNumCourses = 5 }: SemesterCourseListProps) => {
+const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minNumCourses = 5, maxCourses }: SemesterCourseListProps) => {
   const { courses } = useSemester();
+  const maxNumCourses = maxCourses ?? 8;
 
   // Handle core semesters (with index-based ordering)
   if (isCore) {
@@ -95,7 +100,7 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
     const [numCourseInputs, setNumCourseInputs] = useState<number>(totalSlots);
 
     useEffect(() => {
-      if (courses.length === numCourseInputs && numCourseInputs < 8) {
+      if (courses.length === numCourseInputs && numCourseInputs < maxNumCourses) {
         setNumCourseInputs((prevNum) => courses.length + 1);
       }
     }, [courses, numCourseInputs]);
