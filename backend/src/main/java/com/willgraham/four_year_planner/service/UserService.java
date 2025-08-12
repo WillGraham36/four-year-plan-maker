@@ -94,7 +94,8 @@ public class UserService {
                 value.getStartSemester(),
                 value.getEndSemester(),
                 value.getOffSemesters(),
-                value.getCompletedSemesters()
+                value.getCompletedSemesters(),
+                value.getNote()
             )).orElseGet(GetUserInfoResponseDto::new);
 
     }
@@ -173,6 +174,20 @@ public class UserService {
             Semester completedSemester = new Semester(term, year);
             user.getCompletedSemesters().add(completedSemester);
         }
+
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateUserNote(String userId, String note) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        if(note.length() > 1000) throw new InvalidInputException("Note cannot be longer than 1000 characters");
+        note = note.trim();
+
+
+        user.setNote(note);
 
         userRepository.save(user);
     }

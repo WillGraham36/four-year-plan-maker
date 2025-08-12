@@ -64,6 +64,8 @@ public class User {
     })
     private List<Semester> completedSemesters = new ArrayList<>();
 
+    private String note = "";
+
     public User(String id, Semester startSemester, Semester endSemester, String major, String minor) {
         this.id = id;
         this.startSemester = startSemester;

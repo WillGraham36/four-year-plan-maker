@@ -16,4 +16,5 @@ public class GetUserInfoResponseDto {
 
     private List<Semester> offSemesters;
     private List<Semester> completedSemesters;
+    private String note;
 }

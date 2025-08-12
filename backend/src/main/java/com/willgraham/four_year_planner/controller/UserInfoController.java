@@ -70,4 +70,16 @@ public class UserInfoController {
         userService.updateSemesterCompletion(userId, term, year, request.isCompleted());
         return ResponseEntity.ok(ApiResponse.success(String.format("Updated %s %d status successfully to %s", term, year, request.isCompleted())));
     }
+
+    @PutMapping("/notes")
+    public ResponseEntity<ApiResponse<String>> upsertNote(@RequestBody UpdateNoteDto dto, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        if (dto.getNote() == null) {
+            dto.setNote("");
+        }
+
+        userService.updateUserNote(userId, dto.getNote());
+        return ResponseEntity.ok(ApiResponse.success("Updated user note successfully"));
+    }
 }
