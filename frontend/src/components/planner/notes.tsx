@@ -16,10 +16,7 @@ const Notes = ({ note }: { note: string | null | undefined}) => {
     
     const updateNote = async () => {
       const res = await updateUserNote(debouncedNoteText);
-      if (res.ok) {
-        console.log("Note saved successfully");
-      } else {
-        console.error("Failed to update note");
+      if (!res.ok) {
         toast.error("Failed to update note");
       }
     };
