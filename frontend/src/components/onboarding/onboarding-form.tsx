@@ -38,12 +38,28 @@ import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms
 import { useRouter } from "next/navigation"
 import LoadingButton from "../ui/loading-button"
 
+export type CsSpecializations = 
+  | "GENERAL"
+  | "DATA_SCIENCE"
+  | "QUANTUM"
+  | "CYBERSECURITY"
+  | "ML";
+
+const csSpecializationOptions: { value: CsSpecializations; label: string }[] = [
+  { value: "GENERAL", label: "General Track" },
+  { value: "DATA_SCIENCE", label: "Data Science" },
+  { value: "QUANTUM", label: "Quantum Information" },
+  { value: "CYBERSECURITY", label: "Cybersecurity" },
+  { value: "ML", label: "Machine Learning" },
+];
+
 const baseOnboardingFormSchema = z.object({
   startTerm: z.string(),
   startYear: z.string(),
   endTerm: z.string(),
   endYear: z.string(),
   major: z.string(),
+  csSpecialization: z.string().optional(),
   minor: z.string().optional(),
   transferCredits: z.array(z.object({
     name: z.string().optional(),
@@ -96,6 +112,16 @@ const baseOnboardingFormSchema = z.object({
 }, {
   message: "",
   path: ["endYear"],
+})
+.refine((data) => {
+  // CS specialization is required if major is Computer Science
+  if (data.major === "Computer Science" && !data.csSpecialization) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Computer Science specialization is required",
+  path: ["csSpecialization"],
 });
 
 export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
@@ -112,6 +138,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
   });
 
   const { isSubmitting } = form.formState;
+  const watchedMajor = form.watch("major");
 
   async function onSubmit(values:z.infer<typeof baseOnboardingFormSchema >) {
     try {
@@ -237,6 +264,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
       // All validation passed
       const submitValues: SubmitOnboardingFormProps = {
         ...values,
+        track: values.csSpecialization as CsSpecializations || null,
         startTerm: values.startTerm.toUpperCase(),
         endTerm: values.endTerm.toUpperCase(),
         transferCredits: values.transferCredits.map(credit => ({
@@ -249,16 +277,19 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
           genEdOverrides: courseToGenEdMap[credit.courseId] as GenEd[][] || [[]],
         })),
       }
-
-      const message = await submitOnboardingForm(submitValues);
-      toast.success(message || "Onboarding form submitted successfully", {
-        description: "You can always change this later in the settings",
-        classNames: {
-          title: "font-bold",
-          description: "!text-muted-foreground font-semibold",
-        }
-      });
-      router.push("/planner");
+      const res = await submitOnboardingForm(submitValues);
+      if (!res.ok) {
+        toast.error(res.message || "Failed to submit the form. Please try again");
+      } else {
+        toast.success(res.message || "Onboarding form submitted successfully", {
+          description: "You can always change this later in the settings",
+          classNames: {
+            title: "font-bold",
+            description: "!text-muted-foreground font-semibold",
+          }
+        });
+        router.push("/planner");
+      }
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -414,6 +445,37 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
             </FormItem>
           )}
         />
+
+        {watchedMajor === "Computer Science" && (
+          <FormField
+            control={form.control}
+            name="csSpecialization"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Specialization{" "}
+                  <span aria-hidden="true" className="text-red-600">*</span>
+                  <span className="sr-only">(required)</span>
+                </FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select specialization..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {csSpecializationOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         
         <FormField
           control={form.control}

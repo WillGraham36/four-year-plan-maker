@@ -18,7 +18,6 @@ const PlannerPage = async () => {
   const totalCredits = Object.values(semesters)
     .flat()
     .reduce((sum, course) => sum + course.credits, 0);
-    console.log(userInfo?.note);
   return (
     <main className='flex flex-col xl:flex-row items-center xl:items-start justify-between gap-4 mx-4'>
       <RequirementsProvider 

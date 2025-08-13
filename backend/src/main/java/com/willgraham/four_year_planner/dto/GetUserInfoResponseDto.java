@@ -1,5 +1,6 @@
 package com.willgraham.four_year_planner.dto;
 
+import com.willgraham.four_year_planner.model.CsTrack;
 import com.willgraham.four_year_planner.model.Semester;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +18,5 @@ public class GetUserInfoResponseDto {
     private List<Semester> offSemesters;
     private List<Semester> completedSemesters;
     private String note;
+    private CsTrack track;
 }

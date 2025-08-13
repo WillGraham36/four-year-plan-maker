@@ -65,12 +65,14 @@ public class User {
     private List<Semester> completedSemesters = new ArrayList<>();
 
     private String note = "";
+    private CsTrack track;
 
-    public User(String id, Semester startSemester, Semester endSemester, String major, String minor) {
+    public User(String id, Semester startSemester, Semester endSemester, String major, String minor, CsTrack track) {
         this.id = id;
         this.startSemester = startSemester;
         this.endSemester = endSemester;
         this.major = major;
         this.minor = minor;
+        this.track = track;
     }
 }

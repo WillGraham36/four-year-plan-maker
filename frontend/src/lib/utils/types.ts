@@ -356,4 +356,12 @@ export type UserInfo = {
   offSemesters: SemesterDateDescriptor[] | null
   completedSemesters: SemesterDateDescriptor[] | null
   note: string | null
+  track: CsSpecializations | undefined
 }
+
+export type CsSpecializations = 
+  | "GENERAL"
+  | "DATA_SCIENCE"
+  | "QUANTUM"
+  | "CYBERSECURITY"
+  | "ML";

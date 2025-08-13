@@ -1,6 +1,6 @@
 'use server';
-import { OnboardingFormValues } from "@/components/onboarding/onboarding-form"
-import { Course, Term } from "@/lib/utils/types";
+import { CsSpecializations, OnboardingFormValues } from "@/components/onboarding/onboarding-form"
+import { Course, CustomServerResponse, Term } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { OnboardingFormInitialValuesSchema } from "@/lib/utils/schemas";
 
@@ -18,9 +18,10 @@ type TransferCreditWithDetails = Omit<
 
 export type SubmitOnboardingFormProps = Omit<OnboardingFormValues, "transferCredits"> & {
   transferCredits: TransferCreditWithDetails[];
+  track: CsSpecializations | undefined;
 };
 
-export const submitOnboardingForm = async (formData: SubmitOnboardingFormProps) => {
+export const submitOnboardingForm = async (formData: SubmitOnboardingFormProps): Promise<CustomServerResponse<string>> => {
   const response = await fetchWithAuth("v1/onboarding", {
     init: {
       method: "POST",
@@ -32,10 +33,17 @@ export const submitOnboardingForm = async (formData: SubmitOnboardingFormProps) 
   })
 
   if (!response.ok) {
-    return ("Failed to submit onboarding form");
+    return {
+      ok: false,
+      message: "Failed to submit onboarding form",
+      data: null,
+    };
   }
-
-  return response.message;
+  return {
+    ok: true,
+    message: "Successfully submitted onboarding form",
+    data: "Successfully submitted onboarding form",
+  };
 }
 
 export const getOnboardingFormValues = async () => {
@@ -43,10 +51,9 @@ export const getOnboardingFormValues = async () => {
   if(response.data === null || response.data === undefined || !response.ok) {
     return null;
   }
-
   const sanitizedData = sanitizeTransferCredits(response.data);
-
-  const parsed = OnboardingFormInitialValuesSchema.safeParse(sanitizedData);
+  
+  const parsed = OnboardingFormInitialValuesSchema.safeParse({...sanitizedData, csSpecialization: sanitizedData.track});
   if(!parsed.success) {
     console.error("Failed to parse onboarding form data:", parsed.error);
     return null;

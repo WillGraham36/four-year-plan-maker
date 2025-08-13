@@ -44,12 +44,17 @@ public class UserService {
         Semester startSemester = new Semester(dto.getStartTerm(), dto.getStartYear());
         Semester endSemester = new Semester(dto.getEndTerm(), dto.getEndYear());
 
+        if(dto.getMajor().equals("Computer Science") && dto.getTrack() == null) {
+            throw new InvalidInputException("CS students must select a track");
+        }
+
         return new User(
                 userId,
                 startSemester,
                 endSemester,
                 dto.getMajor(),
-                dto.getMinor()
+                dto.getMinor(),
+                dto.getTrack()
         );
     }
 
@@ -63,6 +68,7 @@ public class UserService {
                     existingUser.setEndSemester(newUser.getEndSemester());
                     existingUser.setMajor(newUser.getMajor());
                     existingUser.setMinor(newUser.getMinor());
+                    existingUser.setTrack(newUser.getTrack());
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> userRepository.save(newUser));
@@ -82,7 +88,8 @@ public class UserService {
                 user.get().getEndSemester().getTerm(),
                 user.get().getEndSemester().getYear(),
                 user.get().getMajor(),
-                user.get().getMinor()
+                user.get().getMinor(),
+                user.get().getTrack()
         );
         return Optional.of(dto);
     }
@@ -95,7 +102,8 @@ public class UserService {
                 value.getEndSemester(),
                 value.getOffSemesters(),
                 value.getCompletedSemesters(),
-                value.getNote()
+                value.getNote(),
+                value.getTrack()
             )).orElseGet(GetUserInfoResponseDto::new);
 
     }
