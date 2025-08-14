@@ -31,7 +31,7 @@ const Notes = ({ note }: { note: string | null | undefined}) => {
       </SemesterHeaderText>
       <Textarea 
         className='rounded-t-none border-0 focus-visible:ring-0 max-h-56' 
-        placeholder='Add any notes here...' 
+        placeholder='Add any notes about the courses you want to take here...' 
         value={noteText}
         onChange={(e) => setNoteText(e.target.value)} 
       />
