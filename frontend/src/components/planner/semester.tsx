@@ -5,6 +5,7 @@ import { Course, Term } from "@/lib/utils/types";
 import SemesterHeader from "./semester-header";
 import { useRequirements } from "../context/requirements-context";
 import { SemesterProvider, useSemester } from "../context/semester-context";
+import { cn } from "@/lib/utils";
 
 interface SemesterProps {
   term: Term;
@@ -164,11 +165,11 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
   );
 }
 
-const SemesterHeaderText = ({ children }: { children: React.ReactNode }) => {
+const SemesterHeaderText = ({ children, className }: { children: React.ReactNode, className?: string }) => {
   return (
-    <p className="w-full border-b p-1 px-3 text-sm md:text-base">
+    <span className={cn("w-full border-b p-1 px-3 text-sm md:text-base", className)}>
       {children}
-    </p>
+    </span>
   )
 }
 

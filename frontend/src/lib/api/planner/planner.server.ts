@@ -107,7 +107,7 @@ export const getSemesterCourses = async (props: GetSemesterCoursesProps) => {
 export const getAllSemesters = async (): Promise<SemesterSchema> => {
   const res = await fetchWithAuth("v1/usercourses");
   const courses = SemestersSchema.safeParse(res.data);
-  return courses.data || {};
+  return courses.data || {} as SemesterSchema;
 }
 
 export const getAllGenEds = async () => {

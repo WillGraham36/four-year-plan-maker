@@ -97,7 +97,8 @@ const GenEdsContainer = () => {
             <div className='flex items-center gap-2'>
               <SatisfiedCheck
                 isChecked={allGenEdsSatisfied}
-                message="You need to complete all Gen Eds to satisfy this requirement"
+                uncheckedMessage="You need to complete all Gen Eds to satisfy this requirement"
+                checkedMessage="You meet the Gen Ed requirements!"
               />
               <p className="w-full font-semibold text-lg">
                 Gen Eds

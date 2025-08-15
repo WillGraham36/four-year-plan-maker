@@ -72,7 +72,8 @@ const SemesterHeader = ({ term, year, removable, completed, setCompleted }: Seme
             isChecked={completed}
             canCheck={true}
             onCheck={toggleCompletion}
-            message={completed ? "Click to mark as incomplete" : "Click to mark as complete"}
+            uncheckedMessage="Click to mark as complete"
+            checkedMessage="Click to mark as incomplete"
           />
         </span>
         {removable && (

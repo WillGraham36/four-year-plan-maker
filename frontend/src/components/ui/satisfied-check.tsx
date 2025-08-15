@@ -11,20 +11,23 @@ type SatisfiedCheckProps =
       isChecked: boolean;
       canCheck: true;
       onCheck: () => void;
-      message: string;
+      uncheckedMessage: string;
+      checkedMessage: string;
     }
   | {
       isChecked: boolean;
       canCheck?: false | undefined;
       onCheck?: undefined;
-      message: string;
+      uncheckedMessage: string;
+      checkedMessage: string;
     };
 
 const SatisfiedCheck = ({
   isChecked,
   canCheck = false,
   onCheck,
-  message,
+  uncheckedMessage,
+  checkedMessage, 
 }: SatisfiedCheckProps) => {
   return (
     <Tooltip delayDuration={1000}>
@@ -42,7 +45,7 @@ const SatisfiedCheck = ({
         </span>
       </TooltipTrigger>
       <TooltipContent className='text-center'>
-        {isChecked ? "Click to mark as incomplete" : message}
+        {isChecked ? checkedMessage : uncheckedMessage}
       </TooltipContent>
     </Tooltip>
   )
