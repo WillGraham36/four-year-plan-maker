@@ -1,5 +1,7 @@
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
-import { getAllSemesters } from '@/lib/api/planner/planner.server'
+import { RequirementsProvider } from '@/components/context/requirements-context';
+import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
+import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
 import React from 'react'
 
@@ -20,15 +22,32 @@ const formatSemester = (semesterName: string): string => {
 };
 
 const AuditPage = async () => {
-  const semesters = await getAllSemesters();
+  const [semesters, genEds, { concentration, courses }, { data: userInfo }] = await Promise.all([
+    getAllSemesters(),
+    getAllGenEds(),
+    getAllULCourses(),
+    getUserInfo()
+  ]);
   const allCourses = Object.entries(semesters)
   .flatMap(([semesterName, courses]) => 
     courses.map(course => ({ ...course, semester: formatSemester(semesterName) }))
   ) as (Course & { semester: string })[];
 
+  const totalCredits = Object.values(semesters)
+    .flat()
+    .reduce((sum, course) => sum + course.credits, 0);
+
   return (
     <main>
-      <LowerLevelRequirements courses={allCourses} />
+      <RequirementsProvider 
+        initialGenEds={genEds} 
+        initialULCourses={courses} 
+        initialTotalCredits={totalCredits}
+        userInfo={userInfo}
+      >
+        <LowerLevelRequirements courses={allCourses} />
+        <UpperLevelConcentrationContainer concentration={concentration} />
+      </RequirementsProvider>
     </main>
   )
 }
