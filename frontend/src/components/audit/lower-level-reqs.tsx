@@ -63,7 +63,7 @@ const stat4xxCourses = courses.filter(course => course.courseId.startsWith("STAT
   );
 
   return (
-   <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md mx-auto max-w-xl">
+   <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md mx-auto max-w-xl overflow-hidden">
       <SemesterHeaderText className="flex items-center gap-2">
         <SatisfiedCheck
           isChecked={allRequirementsMet}

@@ -1,3 +1,4 @@
+import DegreeRequirements from '@/components/audit/degree-requirements';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
@@ -38,7 +39,7 @@ const AuditPage = async () => {
     .reduce((sum, course) => sum + course.credits, 0);
 
   return (
-    <main>
+    <main className='mb-96'>
       <RequirementsProvider 
         initialGenEds={genEds} 
         initialULCourses={courses} 
@@ -47,6 +48,7 @@ const AuditPage = async () => {
       >
         <LowerLevelRequirements courses={allCourses} />
         <UpperLevelConcentrationContainer concentration={concentration} />
+        <DegreeRequirements track={userInfo?.track} courses={allCourses} />
       </RequirementsProvider>
     </main>
   )

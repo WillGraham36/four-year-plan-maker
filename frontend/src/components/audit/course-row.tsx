@@ -14,20 +14,22 @@ interface CourseRowProps {
 const CourseRow = ({ firstCol, secondCol, isLast = false, completed = false, headerRow = false }: CourseRowProps) => {
   return (
     <React.Fragment>
-      <p className={getSharedClasses(isLast, completed, headerRow)}>
+      <p className={`${getSharedClasses(isLast, completed, headerRow)} ${secondCol === "" ? "col-span-2" : ""}`}>
         {firstCol}
       </p>
-      <p className={`${getSharedClasses(isLast, completed, headerRow)} ${secondCol === "" ? "border-r" : "border-x"} break-all`}>
-        {secondCol?.includes("|") ? (
-          <>
-            <span className="w-20 inline-block">{secondCol.split("|")[0]}</span>
-            <span className='pr-2'>|</span>
-            {secondCol.slice(secondCol.indexOf("|") + 1)}
-          </>
-        ) : (
-          <span className="font-normal">{secondCol}</span>
-        )}
-      </p>
+      {secondCol !== "" && (
+        <p className={`${getSharedClasses(isLast, completed, headerRow)} ${secondCol === "" ? "" : "border-l"} break-all`}>
+          {secondCol?.includes("|") ? (
+            <>
+              <span className="w-20 inline-block">{secondCol.split("|")[0]}</span>
+              <span className='pr-2'>|</span>
+              {secondCol.slice(secondCol.indexOf("|") + 1)}
+            </>
+          ) : (
+            <span className="font-normal">{secondCol}</span>
+          )}
+        </p>
+      )}
     </React.Fragment>
   )
 }

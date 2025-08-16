@@ -19,7 +19,7 @@ const UpperLevelConcentrationContainer = ({
 
   return (
     <div className="flex flex-col rounded-lg border w-full h-min overflow-hidden bg-card shadow-md">
-      <div className="flex items-center justify-between w-full border-b p-2 px-3">
+      <div className="flex items-center justify-between w-full border-b h-13 px-3">
         <div className="flex items-center gap-2">
           <SatisfiedCheck
             isChecked={ULCourses.reduce((total, course) => total + course.credits, 0) >= 12}

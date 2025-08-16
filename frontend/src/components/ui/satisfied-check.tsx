@@ -38,7 +38,7 @@ const SatisfiedCheck = ({
       >
         <span className="flex items-center">
           {isChecked ? (
-            <CircleCheckBig size={16} className='text-green-500' />
+            <CircleCheckBig size={16} className='text-green-600' />
           ) : (
             <Circle size={16} />
           )}
