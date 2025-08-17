@@ -63,7 +63,7 @@ const stat4xxCourses = courses.filter(course => course.courseId.startsWith("STAT
   );
 
   return (
-   <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md mx-auto max-w-xl overflow-hidden">
+   <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md overflow-hidden">
       <SemesterHeaderText className="flex items-center gap-2">
         <SatisfiedCheck
           isChecked={allRequirementsMet}
@@ -75,8 +75,10 @@ const stat4xxCourses = courses.filter(course => course.courseId.startsWith("STAT
       <div className='grid grid-cols-[1fr_1fr]'>
         <CourseRow
           key={"MathHeader"}
-          firstCol={"Required Math Courses"}
-          secondCol={"Semester Planned"}
+          columns={[
+            <span>Required Math Courses</span>,
+            <span>Semester Planned</span>
+          ]}
           headerRow={true}
         />
         {LowerLevelMathRequirements.map((courseName) => {
@@ -84,23 +86,28 @@ const stat4xxCourses = courses.filter(course => course.courseId.startsWith("STAT
           return (
             <CourseRow
               key={courseName}
-              firstCol={status.displayName}
-              secondCol={status.course?.semester || ''}
+              columns={[
+                <span>{status.displayName}</span>,
+                <span>{status.course?.semester || ''}</span>
+              ]}
               completed={status.found}
             />
           );
         })}
         <CourseRow
           key={"CourseHeader"}
-          firstCol={"Required CS Course"}
-          secondCol={""}
+          columns={[
+            <span>Required CS Course</span>
+          ]}
           headerRow={true}
         />
         {LowerLevelCSRequirements.map((courseName) => (
           <CourseRow
           key={courseName}
-          firstCol={courseName}
-          secondCol={courses.find(c => c.courseId === courseName)?.semester || ''}
+          columns={[
+            <span>{courseName}</span>,
+            <span>{courses.find(c => c.courseId === courseName)?.semester || ''}</span>
+          ]}
           isLast={courseName === LowerLevelCSRequirements[LowerLevelCSRequirements.length - 1]}
           completed={courses.some(c => c.courseId === courseName) || false}
           />

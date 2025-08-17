@@ -1,37 +1,59 @@
-import React from 'react'
+
+import { cn } from '@/lib/utils';
+import React, { ReactNode } from 'react';
 
 const getSharedClasses = (isLast: boolean, completed: boolean, headerRow: boolean) => 
-  `px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background transition-all duration-200 ${!isLast ? 'border-b' : ''} ${completed ? 'bg-green-500/15 dark:bg-green-800/15' : ''} ${headerRow ? ' bg-card' : ''}`;
+  `px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background transition-all duration-200 flex items-center ${
+    !isLast ? 'border-b' : ''
+  } ${
+    completed ? 'bg-green-500/15 dark:bg-green-800/15' : ''
+  } ${
+    headerRow ? 'bg-card' : ''
+  }`;
 
 interface CourseRowProps {
-  firstCol: string
-  secondCol: string
-  isLast?: boolean
-  completed?: boolean
-  headerRow?: boolean
+  columns: (string | ReactNode)[];
+  isLast?: boolean;
+  completed?: boolean;
+  headerRow?: boolean;
+  className?: string;
 }
 
-const CourseRow = ({ firstCol, secondCol, isLast = false, completed = false, headerRow = false }: CourseRowProps) => {
+const CourseRow = ({ 
+  columns, 
+  isLast = false, 
+  completed = false, 
+  headerRow = false,
+  className = ""
+}: CourseRowProps) => {
   return (
-    <React.Fragment>
-      <p className={`${getSharedClasses(isLast, completed, headerRow)} ${secondCol === "" ? "col-span-2" : ""}`}>
-        {firstCol}
-      </p>
-      {secondCol !== "" && (
-        <p className={`${getSharedClasses(isLast, completed, headerRow)} ${secondCol === "" ? "" : "border-l"} break-all`}>
-          {secondCol?.includes("|") ? (
-            <>
-              <span className="w-20 inline-block">{secondCol.split("|")[0]}</span>
-              <span className='pr-2'>|</span>
-              {secondCol.slice(secondCol.indexOf("|") + 1)}
-            </>
-          ) : (
-            <span className="font-normal">{secondCol}</span>
+    <>
+      {columns.map((column, index) => (
+        <div
+          key={index}
+          className={cn(
+            getSharedClasses(isLast, completed, headerRow),
+            index > 0 ? "border-l" : "",
+            "break-words",
+            columns.length === 1 ? "col-span-2" : "",
+            className
           )}
-        </p>
-      )}
-    </React.Fragment>
-  )
-}
+        >
+          {typeof column === "string" && column.includes("|") ? (
+            <>
+              <span className="w-20 inline-block">{column.split("|")[0]}</span>
+              <span className="pr-2">|</span>
+              {column.slice(column.indexOf("|") + 1)}
+            </>
+          ) : typeof column === "string" ? (
+            <span className="font-normal">{column}</span>
+          ) : (
+            column
+          )}
+        </div>
+      ))}
+    </>
+  );
+};
 
-export default CourseRow
+export default CourseRow;

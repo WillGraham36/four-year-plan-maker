@@ -5,8 +5,7 @@ import SatisfiedCheck from '../ui/satisfied-check';
 import CourseRow from './course-row';
 import { courseAreas } from './course-areas';
 
-interface DegreeRequirementsProps {
-  track: CsSpecializations | undefined;
+interface AreaRequirementsProps {
   courses: (Course & { semester: string; })[];
 }
 
@@ -27,7 +26,7 @@ const mapAreaNumToString = (areaNum: number): string => {
   }
 };
 
-const DegreeRequirements = ({ track, courses }: DegreeRequirementsProps) => {
+const AreaRequirements = ({ courses }: AreaRequirementsProps) => {
   const upperLevelCSCourses = courses.filter(
     (course) =>
       (course.courseId.startsWith('CMSC3') || course.courseId.startsWith('CMSC4')) &&
@@ -82,7 +81,7 @@ const DegreeRequirements = ({ track, courses }: DegreeRequirementsProps) => {
   let foundFirstArea = 0;
 
   return (
-    <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md mx-auto max-w-4xl overflow-hidden">
+    <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md overflow-hidden">
       <SemesterHeaderText className="flex items-center gap-2">
         <SatisfiedCheck
           isChecked={degreeReqsSatisfied}
@@ -90,7 +89,7 @@ const DegreeRequirements = ({ track, courses }: DegreeRequirementsProps) => {
           checkedMessage="You have courses from at least 3 areas!"
         />
         <p className="font-semibold text-lg">
-          Area Requirements ({areaSet.size} / 3 areas satisfied)
+          Area Requirements <span className="text-muted-foreground text-base ml-1">({areaCourseCount} / 3 areas satisfied)</span>
         </p>
       </SemesterHeaderText>
 
@@ -110,15 +109,19 @@ const DegreeRequirements = ({ track, courses }: DegreeRequirementsProps) => {
               <React.Fragment key={areaNum}>
                 <CourseRow
                   key={`header-${areaNum}`}
-                  firstCol={num !== 0 ? `Area ${num} : ${mapAreaNumToString(num)}` : 'Electives'}
-                  secondCol={foundFirstArea === 1 ? 'Semester Planned' : ''}
+                  columns={[
+                    <span>{num !== 0 ? `Area ${num} : ${mapAreaNumToString(num)}` : 'Electives'}</span>,
+                    <span>{foundFirstArea === 1 ? 'Semester Planned' : ''}</span>
+                  ]}
                   headerRow={true}
                 />
                 {coursesInArea.map((course) => (
                   <CourseRow
                     key={course.courseId}
-                    firstCol={course.courseId}
-                    secondCol={course.semester || ''}
+                    columns={[
+                      <span>{course.courseId}</span>,
+                      <span>{course.semester || ''}</span>
+                    ]}
                     completed={degreeReqsSatisfied}
                     isLast={index === Object.keys(areaAssignments).length - 1 && coursesInArea.indexOf(course) === coursesInArea.length - 1}
                   />
@@ -131,4 +134,4 @@ const DegreeRequirements = ({ track, courses }: DegreeRequirementsProps) => {
   );
 };
 
-export default DegreeRequirements;
+export default AreaRequirements;

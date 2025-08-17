@@ -1,5 +1,5 @@
 "use client"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { CheckIcon, ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -52,12 +52,12 @@ export function ULCCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="text-sm"
+          className={`text-sm ${(value && ACCEPTABLE_ULC_AREAS_SET[value]) ? "" : "text-muted-foreground"}`}
         >
           {value
             ? (ACCEPTABLE_ULC_AREAS_SET[value] && value)
             : "Select area..."}
-          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-52 mr-7 p-0 border-border">

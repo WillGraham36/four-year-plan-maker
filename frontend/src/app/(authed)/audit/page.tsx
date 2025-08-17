@@ -1,5 +1,6 @@
-import DegreeRequirements from '@/components/audit/degree-requirements';
+import AreaRequirements from '@/components/audit/area-requirements';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
+import TrackRequirements from '@/components/audit/track-requirements';
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
@@ -39,16 +40,21 @@ const AuditPage = async () => {
     .reduce((sum, course) => sum + course.credits, 0);
 
   return (
-    <main className='mb-96'>
+    <main className='mx-4 flex flex-row gap-4 mt-4'>
       <RequirementsProvider 
         initialGenEds={genEds} 
         initialULCourses={courses} 
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
       >
-        <LowerLevelRequirements courses={allCourses} />
-        <UpperLevelConcentrationContainer concentration={concentration} />
-        <DegreeRequirements track={userInfo?.track} courses={allCourses} />
+        <section className='flex flex-col gap-4 flex-1'>
+          <LowerLevelRequirements courses={allCourses} />
+          <AreaRequirements courses={allCourses} />
+        </section>
+        <section className='flex flex-col gap-4 flex-1'>
+          <UpperLevelConcentrationContainer concentration={concentration} />
+          <TrackRequirements track={userInfo?.track} courses={allCourses} />
+        </section>
       </RequirementsProvider>
     </main>
   )

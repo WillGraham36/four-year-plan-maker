@@ -16,18 +16,19 @@ const UpperLevelConcentrationContainer = ({
 }: ULCProps) => {
   const [concentration, setConcentration] = useState<string>(initialConcentration);
   const { ULCourses, refreshULCourses, completedSemesters } = useRequirements();
+  const totalCredits = ULCourses.reduce((total, course) => total + course.credits, 0);
 
   return (
     <div className="flex flex-col rounded-lg border w-full h-min overflow-hidden bg-card shadow-md">
-      <div className="flex items-center justify-between w-full border-b h-13 px-3">
+      <div className="flex items-center justify-between w-full border-b py-1.5 px-3">
         <div className="flex items-center gap-2">
           <SatisfiedCheck
-            isChecked={ULCourses.reduce((total, course) => total + course.credits, 0) >= 12}
+            isChecked={totalCredits >= 12}
             uncheckedMessage="You need at least 12 credits of upper-level courses to satisfy this requirement"
             checkedMessage="You met the upper-level concentration requirements!"
           />
           <p className="font-semibold text-lg">
-            Upper Level Concentration
+            Upper Level Concentration <span className="text-muted-foreground text-base ml-1">({totalCredits} / 12 credits)</span>
           </p>
         </div>
         <ULCCombobox value={concentration} setValueStateAction={async (newConcentration) => {
