@@ -6,6 +6,7 @@ import com.willgraham.four_year_planner.dto.OnboardingFormRequestDto;
 import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.exception.NotFoundException;
 import com.willgraham.four_year_planner.exception.UserNotFoundException;
+import com.willgraham.four_year_planner.model.CsTrack;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.model.User;
@@ -197,6 +198,17 @@ public class UserService {
 
         user.setNote(note);
 
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void updateUserTrack(String userId, CsTrack track) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        if(!user.getMajor().equals("Computer Science")) {
+            throw new InvalidInputException("User must be a Computer Science major to update their track");
+        }
+        user.setTrack(track);
         userRepository.save(user);
     }
 

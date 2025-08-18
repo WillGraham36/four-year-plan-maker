@@ -1,6 +1,7 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
+import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.service.UserService;
@@ -81,5 +82,16 @@ public class UserInfoController {
 
         userService.updateUserNote(userId, dto.getNote());
         return ResponseEntity.ok(ApiResponse.success("Updated user note successfully"));
+    }
+
+    @PutMapping("/track")
+    public ResponseEntity<ApiResponse<String>> updateUserTrack(@RequestBody UpdateTrackDto track, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        if(track.getTrack() == null) {
+            throw new InvalidInputException("User must have one of the 5 tracks");
+        }
+        userService.updateUserTrack(userId, track.getTrack());
+        return ResponseEntity.ok(ApiResponse.success("Updated user track successfully to " + track.getTrack().toString()));
     }
 }
