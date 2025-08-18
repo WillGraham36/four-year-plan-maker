@@ -64,7 +64,6 @@ public class UserService {
         userRepository.findById(newUser.getId())
                 .map(existingUser -> {
                     // Update fields you want to allow updating
-                    existingUser.setULConcentration(newUser.getULConcentration());
                     existingUser.setStartSemester(newUser.getStartSemester());
                     existingUser.setEndSemester(newUser.getEndSemester());
                     existingUser.setMajor(newUser.getMajor());
