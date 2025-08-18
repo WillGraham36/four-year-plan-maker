@@ -71,7 +71,8 @@ export function ULCCombobox({
                   key={area}
                   value={area}
                   onSelect={(currentValue) => {
-                    setValueStateAction(currentValue === value ? "" : currentValue)
+                    if(currentValue === value) return;
+                    setValueStateAction(currentValue)
                     setOpen(false)
                   }}
                 >
