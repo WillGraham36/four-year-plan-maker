@@ -14,6 +14,7 @@ import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CybersecurityTrackRequirements, DataScienceTrackRequirements, GeneralTrackRequirements, MachineLearningTrackRequirements, QuantumTrackRequirements, tracks } from "./all-track-requirements";
+import { updateUserTrack } from "@/lib/api/planner/planner.server";
 
 
 interface TrackRequirementProps {
@@ -24,6 +25,15 @@ interface TrackRequirementProps {
 const TrackRequirements = ({ track, courses }: TrackRequirementProps) => {
   const [selectedTrack, setSelectedTrack] = useState<CsSpecializations | undefined>(track);
   const [isComplete, setIsComplete] = useState<boolean>(false);
+
+  const updateTrack = async (track: CsSpecializations) => {
+    setSelectedTrack(track); // Optimistically update UI
+    const res = await updateUserTrack(track);
+    if (!res.ok) {
+      // Rollback if server update fails
+      setSelectedTrack(selectedTrack);
+    }
+  };
 
   return (
     <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md overflow-hidden">
@@ -38,7 +48,7 @@ const TrackRequirements = ({ track, courses }: TrackRequirementProps) => {
         </p>
         <Select
           value={selectedTrack || ""}
-          onValueChange={(value) => setSelectedTrack(value as CsSpecializations)}
+          onValueChange={updateTrack}
           defaultValue={track}
         >
           <SelectTrigger className={cn(buttonVariants({ variant: "outline" }), "text-sm w-fit shadow-none ml-auto")}>

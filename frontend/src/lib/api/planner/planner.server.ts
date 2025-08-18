@@ -1,7 +1,7 @@
 'use server';
 
 import { CourseInfoSchema, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
-import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS, UserInfo } from "@/lib/utils/types";
+import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS, UserInfo, CsSpecializations } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 import { courseAndSemesterToDto } from "@/lib/utils";
 
@@ -350,5 +350,30 @@ export const updateUserNote = async (note: string): Promise<CustomServerResponse
     ok: true,
     message: "Successfully updated user note",
     data: "User note updated successfully",
+  };
+}
+
+export const updateUserTrack = async (track: CsSpecializations): Promise<CustomServerResponse<string>> => {
+  const res = await fetchWithAuth("v1/userinfo/track", {
+    init: {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ track }),
+    }
+  });
+
+  if (!res.ok) {
+    return {
+      ok: false,
+      message: "Failed to update user track",
+      data: null,
+    };
+  }
+  return {
+    ok: true,
+    message: "Successfully updated user track",
+    data: "User track updated successfully",
   };
 }
