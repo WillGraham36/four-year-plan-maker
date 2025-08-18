@@ -28,7 +28,7 @@ const UpperLevelConcentrationContainer = ({
             checkedMessage="You met the upper-level concentration requirements!"
           />
           <p className="font-semibold text-lg">
-            Upper Level Concentration <span className="text-muted-foreground text-base ml-1">({totalCredits} / 12 credits)</span>
+            Upper Level Concentration <span className="text-muted-foreground text-sm md:text-base ml-1">({totalCredits} / 12 credits)</span>
           </p>
         </div>
         <ULCCombobox value={concentration} setValueStateAction={async (newConcentration) => {

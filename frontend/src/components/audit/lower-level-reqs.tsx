@@ -64,13 +64,15 @@ const stat4xxCourses = courses.filter(course => course.courseId.startsWith("STAT
 
   return (
    <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md overflow-hidden">
-      <SemesterHeaderText className="flex items-center gap-2">
+      <SemesterHeaderText className="flex items-center gap-2 py-1.5">
         <SatisfiedCheck
           isChecked={allRequirementsMet}
           uncheckedMessage="Your plan needs to include all lower-level courses"
           checkedMessage="You met the lower level requirements!"
         />
-        Required Lower Level Courses
+        <span className='font-semibold text-base md:text-lg'>
+          Required Lower Level Courses
+        </span>
       </SemesterHeaderText>
       <div className='grid grid-cols-[1fr_1fr]'>
         <CourseRow

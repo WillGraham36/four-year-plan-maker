@@ -82,14 +82,14 @@ const AreaRequirements = ({ courses }: AreaRequirementsProps) => {
 
   return (
     <div className="flex flex-col rounded-lg border w-full h-min bg-card shadow-md overflow-hidden">
-      <SemesterHeaderText className="flex items-center gap-2">
+      <SemesterHeaderText className="flex items-center gap-2 py-1.5">
         <SatisfiedCheck
           isChecked={degreeReqsSatisfied}
           uncheckedMessage="You do not have courses from at least 3 areas (excluding electives)"
           checkedMessage="You have courses from at least 3 areas!"
         />
-        <p className="font-semibold text-lg">
-          Area Requirements <span className="text-muted-foreground text-base ml-1">({areaCourseCount} / 3 areas satisfied)</span>
+        <p className="font-semibold text-base md:text-lg">
+          Area Requirements <span className="text-muted-foreground text-sm md:text-base ml-1">({areaCourseCount} / 3 areas satisfied)</span>
         </p>
       </SemesterHeaderText>
 
