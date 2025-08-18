@@ -36,6 +36,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hook-form": "^7.58.0",
+    "recharts": "^2.15.4",
     "sonner": "^2.0.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
@@ -53,5 +54,8 @@
     "postcss": "^8",
     "tailwindcss": "^4.1.11",
     "typescript": "^5"
+  },
+  "overrides": {
+    "react-is": "^19.0.0-rc-69d4b800-20241021"
   }
 }

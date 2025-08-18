@@ -1,4 +1,5 @@
 import AreaRequirements from '@/components/audit/area-requirements';
+import ChartsContainer from '@/components/audit/charts/charts-container';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
 import TrackRequirements from '@/components/audit/track-requirements';
 import { RequirementsProvider } from '@/components/context/requirements-context';
@@ -40,21 +41,26 @@ const AuditPage = async () => {
     .reduce((sum, course) => sum + course.credits, 0);
 
   return (
-    <main className='mx-4 flex flex-row gap-4 mt-4'>
+    <main className='mx-4 flex flex-col gap-4 mt-4'>
       <RequirementsProvider 
         initialGenEds={genEds} 
         initialULCourses={courses} 
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
       >
-        <section className='flex flex-col gap-4 flex-1'>
-          <LowerLevelRequirements courses={allCourses} />
-          <AreaRequirements courses={allCourses} />
+        <section>
+          <ChartsContainer />
         </section>
-        <section className='flex flex-col gap-4 flex-1'>
-          <UpperLevelConcentrationContainer concentration={concentration} />
-          <TrackRequirements track={userInfo?.track} courses={allCourses} />
-        </section>
+        <div className='flex flex-row gap-4'>
+          <section className='flex flex-col gap-4 flex-1'>
+            <LowerLevelRequirements courses={allCourses} />
+            <AreaRequirements courses={allCourses} />
+          </section>
+          <section className='flex flex-col gap-4 flex-1'>
+            <UpperLevelConcentrationContainer concentration={concentration} />
+            <TrackRequirements track={userInfo?.track} courses={allCourses} />
+          </section>
+        </div>
       </RequirementsProvider>
     </main>
   )
