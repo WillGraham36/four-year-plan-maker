@@ -1,5 +1,6 @@
 import AreaRequirements from '@/components/audit/area-requirements';
 import ChartsContainer from '@/components/audit/charts/charts-container';
+import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
 import TrackRequirements from '@/components/audit/track-requirements';
 import { RequirementsProvider } from '@/components/context/requirements-context';
@@ -49,7 +50,9 @@ const AuditPage = async () => {
         userInfo={userInfo}
       >
         <section>
-          <ChartsContainer />
+          <ChartsInfoProvider allCourses={allCourses}>
+            <ChartsContainer />
+          </ChartsInfoProvider>
         </section>
         <div className='flex flex-row gap-4'>
           <section className='flex flex-col gap-4 flex-1'>

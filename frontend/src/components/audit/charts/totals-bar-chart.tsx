@@ -7,33 +7,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-
-const chartData = [
-  { 
-    category: "Total Credits", 
-    completed: 50,
-    planned: 25,
-    totalCount: 120
-  },
-  { 
-    category: "Gen Eds", 
-    completed: 70, // 14/20 = 70%
-    planned: 20,   // 4 more planned
-    totalCount: 20
-  },
-  { 
-    category: "Major", 
-    completed: 40, // 6/15 = 40%
-    planned: 40,   // 6 more planned
-    totalCount: 15
-  },
-  { 
-    category: "Upper Level Concentration", 
-    completed: 40, // 6/15 = 40%
-    planned: 40,   // 6 more planned
-    totalCount: 15
-  },
-]
+import { useChartsInfo } from "./charts-context"
+import { useRequirements } from "@/components/context/requirements-context"
 
 const chartConfig = {
   completed: {
@@ -46,35 +21,64 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-// Custom label component to show the count on bars
-const CustomLabel = (props: any) => {
-  const { x, y, width, height, payload } = props;
-  const centerX = x + width / 2;
-  const centerY = y + height / 2;
-  
-  return (
-    <text 
-      x={centerX} 
-      y={centerY} 
-      fill="#000" 
-      textAnchor="middle" 
-      dominantBaseline="middle"
-      fontSize={12}
-      fontWeight="500"
-    >
-      {payload.displayText}
-    </text>
-  );
-};
-
 const TotalsBarChart = () => {
+  const { allCourses } = useChartsInfo();
+  const { completedSemesters } = useRequirements();
+
+  let totalPlannedCredits = 0;
+  let totalCompletedCredits = 0;
+
+  // Create a set of completed semester names for quick lookup
+  const completedSemesterNames = new Set(completedSemesters.map(sem => sem.term + ' ' + sem.year));
+
+  allCourses.forEach(course => {
+    const credits = course.credits || 0;
+
+    // Check if course is completed
+    const isCompleted = course.semester === "Transfer Credit" || completedSemesterNames.has(course.semester.toUpperCase());
+    
+    if (isCompleted) {
+      totalCompletedCredits += credits;
+    } else {
+      totalPlannedCredits += credits;
+    }
+  });
+
+  const chartData = [
+    { 
+      category: "Total Credits", 
+      completed: totalCompletedCredits,
+      planned: totalPlannedCredits,
+      totalCount: 120
+    },
+    { 
+      category: "Gen Eds", 
+      completed: 70, // 14/20 = 70%
+      planned: 20,   // 4 more planned
+      totalCount: 20
+    },
+    { 
+      category: "Major Requirements", 
+      completed: 40, // 6/15 = 40%
+      planned: 40,   // 6 more planned
+      totalCount: 15
+    },
+    { 
+      category: "Upper Level Concentration", 
+      completed: 40, // 6/15 = 40%
+      planned: 40,   // 6 more planned
+      totalCount: 15
+    },
+  ]
+
+
   return (
     <ChartContainer config={chartConfig} className='w-full md:flex-1 max-md:max-h-72'>
       <BarChart 
         accessibilityLayer 
         data={chartData} 
         layout='vertical'
-        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+        margin={{ top: 10, right: 30, left: 0, bottom: 10 }}
       >
         <CartesianGrid horizontal={false} />
         <XAxis 
@@ -90,7 +94,7 @@ const TotalsBarChart = () => {
           tickLine={false}
           tickMargin={10}
           axisLine={false}
-          width={80}
+          width={90}
           tick={{ textAnchor: 'middle', dx: -30  }}
         />
         <ChartTooltip
@@ -141,17 +145,7 @@ const TotalsBarChart = () => {
           stackId="a"
           fill="var(--color-completed)"
           radius={[0, 0, 0, 0]}
-        >
-          {/* <LabelList
-            dataKey="completed"
-            position="insideLeft"
-            offset={8}
-            className="fill-(--color-label)"
-            fontSize={12}
-          >
-            <CustomLabel />
-          </LabelList> */}
-        </Bar>
+        />
         
         {/* Planned portion */}
         <Bar
