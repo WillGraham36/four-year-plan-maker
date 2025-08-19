@@ -11,7 +11,7 @@ const ChartsContainer = () => {
         Total Completion Status
       </SemesterHeaderText>
 
-      <div className='flex flex-row h-96 w-full'>
+      <div className='flex flex-col md:flex-row h-auto md:max-h-96 w-full'>
         <DegreeChart />
         <TotalsBarChart />
       </div>

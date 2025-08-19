@@ -44,7 +44,7 @@ const TrackRequirements = ({ track, courses }: TrackRequirementProps) => {
           checkedMessage="You meet all track requirements!"
         />
         <p className="font-semibold text-base md:text-lg">
-          Track Course Requirements
+          Major Requirements
         </p>
         <Select
           value={selectedTrack || ""}

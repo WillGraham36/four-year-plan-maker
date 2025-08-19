@@ -8,30 +8,29 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-// Updated data structure for your requirements
 const chartData = [
   { 
     category: "Total Credits", 
-    completed: 50, // 60/120 = 50%
-    planned: 25,   // 30 more credits planned
-    displayText: "60/120",
-    completedCount: 60,
+    completed: 50,
+    planned: 25,
     totalCount: 120
   },
   { 
-    category: "Major Courses", 
+    category: "Gen Eds", 
     completed: 70, // 14/20 = 70%
     planned: 20,   // 4 more planned
-    displayText: "14/20",
-    completedCount: 14,
     totalCount: 20
   },
   { 
-    category: "Gen Eds", 
+    category: "Major", 
     completed: 40, // 6/15 = 40%
     planned: 40,   // 6 more planned
-    displayText: "6/15",
-    completedCount: 6,
+    totalCount: 15
+  },
+  { 
+    category: "Upper Level Concentration", 
+    completed: 40, // 6/15 = 40%
+    planned: 40,   // 6 more planned
     totalCount: 15
   },
 ]
@@ -39,11 +38,11 @@ const chartData = [
 const chartConfig = {
   completed: {
     label: "Completed",
-    color: "var(--chart-1)", // Green
+    color: "var(--completed)", // Green
   },
   planned: {
     label: "Planned", 
-    color: "var(--chart-3)", // Yellow/Orange
+    color: "var(--planned)", // Yellow/Orange
   },
 } satisfies ChartConfig
 
@@ -70,7 +69,7 @@ const CustomLabel = (props: any) => {
 
 const TotalsBarChart = () => {
   return (
-    <ChartContainer config={chartConfig} className='max-h-72'>
+    <ChartContainer config={chartConfig} className='w-full md:flex-1 max-md:max-h-72'>
       <BarChart 
         accessibilityLayer 
         data={chartData} 
@@ -92,17 +91,47 @@ const TotalsBarChart = () => {
           tickMargin={10}
           axisLine={false}
           width={80}
+          tick={{ textAnchor: 'middle', dx: -30  }}
         />
-        <ChartTooltip 
+        <ChartTooltip
+          cursor={false}
           content={
             <ChartTooltipContent 
-              hideLabel={false}
-              formatter={(value, name, props) => [
-                `${value}% (${Math.round(props.payload.completedCount * Number(value) / (props.payload.completed || 1))}/${props.payload.totalCount})`,
-                name
-              ]}
+              hideLabel  
+              formatter={(value, name, item, index) => (
+                <>
+                  {index === 0 && (
+                    <p className="w-full font-bold">{item.payload.category}</p>
+                  )}
+                  <div className={`h-2.5 w-2.5 shrink-0 rounded-[2px] ${name === 'completed' ? 'bg-[var(--completed)]' : 'bg-[var(--planned)]'}`}
+                  />
+                  {chartConfig[name as keyof typeof chartConfig]?.label || name}
+                  <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-medium tabular-nums">
+                    {name === 'completed' 
+                      ? item.payload.completed
+                      : item.payload.planned
+                    }
+                    <span className="text-muted-foreground font-normal">
+                      {name === 'completed' ? ' completed' : ' planned'}
+                    </span>
+                  </div>
+                  
+                  {/* Add total after the last item */}
+                  {index === 1 && (
+                    <div className="text-foreground mt-1.5 flex basis-full items-center border-t pt-1.5 text-xs font-medium">
+                      Total
+                      <div className="text-foreground ml-auto flex items-baseline gap-0.5 font-medium tabular-nums">
+                        {item.payload.completed + item.payload.planned}%
+                        <span className="text-muted-foreground font-normal">
+                          ({Math.round(item.payload.totalCount * (item.payload.completed + item.payload.planned) / 100)}/{item.payload.totalCount})
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             />
-          } 
+          }
         />
         <ChartLegend content={<ChartLegendContent />} />
         

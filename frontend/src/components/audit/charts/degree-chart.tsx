@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/chart"
 
 const chartData = [
-  { category: "chrome", visitors: 275, fill: "var(--color-chrome)" },
-  { category: "safari", visitors: 200, fill: "var(--color-safari)" },
-  { category: "firefox", visitors: 187, fill: "var(--color-firefox)" },
-  { category: "edge", visitors: 173, fill: "var(--color-edge)" },
-  { category: "other", visitors: 90, fill: "var(--color-other)" },
+  { category: "chrome", complete: 275, planned: 100 },
+  { category: "safari", complete: 200, planned: 150 },
+  { category: "firefox", complete: 187, planned: 120 },
+  { category: "edge", complete: 173, planned: 130 },
+  { category: "other", complete: 90, planned: 80 },
 ]
 
 const chartConfig = {
@@ -47,13 +47,17 @@ const DegreeChart = () => {
   return (
     <ChartContainer
       config={chartConfig}
-      className=""
+      className="w-full md:flex-1 max-md:max-h-72"
     >
-      <RadialBarChart data={chartData} innerRadius={30} outerRadius={110}>
+      <RadialBarChart data={chartData} innerRadius={30} startAngle={180} endAngle={-180}>
         <ChartTooltip
           cursor={false}
           content={<ChartTooltipContent hideLabel nameKey="category" />}
         />
+
+        <RadialBar dataKey="complete" stackId="a" fill='var(--completed)' />
+        <RadialBar dataKey="planned" stackId="a" fill='var(--planned)' />
+
         <ChartLegend
           className=''
           align='center'
@@ -66,7 +70,6 @@ const DegreeChart = () => {
             { value: 'other', dataKey: 'other', type: 'rect', color: 'var(--chart-5)' }
           ]}
         />
-        <RadialBar dataKey="visitors" background />
       </RadialBarChart>
     </ChartContainer>
   )
