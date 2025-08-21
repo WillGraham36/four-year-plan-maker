@@ -184,6 +184,8 @@
   }
 
   @theme inline {
+    --color-planned: var(--planned);
+    --color-completed: var(--completed);
     --color-background: var(--background);
     --color-foreground: var(--foreground);
     --color-card: var(--card);

@@ -54,6 +54,7 @@ const AuditPage = async () => {
         <MajorRequirementsProvider 
           courses={allCourses}
           userTrack={userInfo?.track}
+          completedSemesters={userInfo?.completedSemesters || []}
         >
           <ChartsInfoProvider allCourses={allCourses}>
             <section>

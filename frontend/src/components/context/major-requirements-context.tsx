@@ -1,5 +1,5 @@
 'use client';
-import { Course } from "@/lib/utils/types";
+import { Course, SemesterDateDescriptor } from "@/lib/utils/types";
 import { CsSpecializations } from "../onboarding/onboarding-form";
 import { createContext, useContext, useMemo, useState } from "react";
 import { courseAreas } from "@/components/audit/course-areas";
@@ -9,6 +9,7 @@ export interface RequirementStatus {
   id: string;
   displayName: string;
   completed: boolean;
+  planned: boolean; // NEW: indicates if course is planned but not completed
   details?: string;
   courses?: string[];
   progress?: { current: number; total: number };
@@ -43,8 +44,8 @@ export interface MajorRequirementsContextProps {
   updateTrack: (track: CsSpecializations | undefined) => void;
   // Chart-friendly summary
   chartSummary: {
-    lowerLevelCS: { completed: number; total: number };
-    lowerLevelMath: { completed: number; total: number };
+    lowerLevelCS: { completed: number; planned: number; total: number };
+    lowerLevelMath: { completed: number; planned: number; total: number };
     areas: { completed: number; total: number }; // 1 total, 1 if all areas met
     track: { completed: number; total: number }; // each section counts as 1
   };
@@ -56,12 +57,31 @@ interface MajorRequirementsProviderProps {
   children: React.ReactNode;
   courses: (Course & { semester: string })[];
   userTrack: CsSpecializations | undefined;
+  completedSemesters: SemesterDateDescriptor[];
 }
+
+// Helper function to check if a course is completed (moved outside component)
+const isCourseCompleted = (
+  course: Course & { semester: string }, 
+  completedSemesters: SemesterDateDescriptor[]
+) => {
+  if (course.semester === "Transfer Credit") return true;
+  
+  // Parse the semester string (e.g., "Fall 2024", "Spring 2023")
+  const [term, yearStr] = course.semester.split(' ');
+  const year = parseInt(yearStr);
+  
+  return completedSemesters.some(completedSem => 
+    completedSem.term.toLowerCase() === term.toLowerCase() && 
+    completedSem.year === year
+  );
+};
 
 export const MajorRequirementsProvider = ({ 
   children, 
   courses,
-  userTrack 
+  userTrack,
+  completedSemesters
 }: MajorRequirementsProviderProps) => {
   const [currentTrack, setCurrentTrack] = useState<CsSpecializations | undefined>(userTrack);
   
@@ -75,20 +95,59 @@ export const MajorRequirementsProvider = ({
     const initialTrackReqs = computeTrackRequirements(courses, userTrack);
     // Calculate initial lower level requirements
     const LowerLevelCSRequirements = ["CMSC131", "CMSC132", "CMSC216", "CMSC250", "CMSC330", "CMSC351"];
-    const csCompleted = LowerLevelCSRequirements.filter(courseId => 
-      courses.some(c => c.courseId === courseId)
-    ).length;
     
-    const mathCompleted = ["MATH140", "MATH141"].filter(courseId => 
-      courses.some(c => c.courseId === courseId)
-    ).length + 
-    (courses.some(course => course.courseId.startsWith("STAT4")) ? 1 : 0) +
-    (courses.some(course => 
+    let csCompleted = 0;
+    let csPlanned = 0;
+    LowerLevelCSRequirements.forEach(courseId => {
+      const course = courses.find(c => c.courseId === courseId);
+      if (course) {
+        if (isCourseCompleted(course, completedSemesters)) {
+          csCompleted++;
+        } else {
+          csPlanned++;
+        }
+      }
+    });
+
+    let mathCompleted = 0;
+    let mathPlanned = 0;
+    
+    // MATH140 and MATH141
+    ["MATH140", "MATH141"].forEach(courseId => {
+      const course = courses.find(c => c.courseId === courseId);
+      if (course) {
+        if (isCourseCompleted(course, completedSemesters)) {
+          mathCompleted++;
+        } else {
+          mathPlanned++;
+        }
+      }
+    });
+    
+    // STAT4XX course
+    const stat4Course = courses.find(course => course.courseId.startsWith("STAT4"));
+    if (stat4Course) {
+      if (isCourseCompleted(stat4Course, completedSemesters)) {
+        mathCompleted++;
+      } else {
+        mathPlanned++;
+      }
+    }
+    
+    // Additional MATH/STAT course
+    const additionalMathStat = courses.find(course => 
       (course.courseId.startsWith("MATH") || course.courseId.startsWith("STAT")) &&
       course.courseId !== "MATH140" &&
       course.courseId !== "MATH141" &&
       !course.courseId.startsWith("STAT4")
-    ) ? 1 : 0);
+    );
+    if (additionalMathStat) {
+      if (isCourseCompleted(additionalMathStat, completedSemesters)) {
+        mathCompleted++;
+      } else {
+        mathPlanned++;
+      }
+    }
 
     // Calculate areas
     const upperLevelCSCourses = courses.filter(
@@ -105,8 +164,8 @@ export const MajorRequirementsProvider = ({
     const hasThreeAreas = areaSet.size >= 3;
 
     return {
-      lowerLevelCS: { completed: csCompleted, total: 6 },
-      lowerLevelMath: { completed: mathCompleted, total: 4 },
+      lowerLevelCS: { completed: csCompleted, planned: csPlanned, total: 6 },
+      lowerLevelMath: { completed: mathCompleted, planned: mathPlanned, total: 4 },
       areas: { completed: hasThreeAreas ? 1 : 0, total: 1 },
       track: {
         completed: initialTrackReqs.requirements.filter(req => req.completed).length,
@@ -124,20 +183,59 @@ export const MajorRequirementsProvider = ({
   // Update chart summary when any requirements change
   useMemo(() => {
     const LowerLevelCSRequirements = ["CMSC131", "CMSC132", "CMSC216", "CMSC250", "CMSC330", "CMSC351"];
-    const csCompleted = LowerLevelCSRequirements.filter(courseId => 
-      courses.some(c => c.courseId === courseId)
-    ).length;
     
-    const mathCompleted = ["MATH140", "MATH141"].filter(courseId => 
-      courses.some(c => c.courseId === courseId)
-    ).length + 
-    (courses.some(course => course.courseId.startsWith("STAT4")) ? 1 : 0) +
-    (courses.some(course => 
+    let csCompleted = 0;
+    let csPlanned = 0;
+    LowerLevelCSRequirements.forEach(courseId => {
+      const course = courses.find(c => c.courseId === courseId);
+      if (course) {
+        if (isCourseCompleted(course, completedSemesters)) {
+          csCompleted++;
+        } else {
+          csPlanned++;
+        }
+      }
+    });
+
+    let mathCompleted = 0;
+    let mathPlanned = 0;
+    
+    // MATH140 and MATH141
+    ["MATH140", "MATH141"].forEach(courseId => {
+      const course = courses.find(c => c.courseId === courseId);
+      if (course) {
+        if (isCourseCompleted(course, completedSemesters)) {
+          mathCompleted++;
+        } else {
+          mathPlanned++;
+        }
+      }
+    });
+    
+    // STAT4XX course
+    const stat4Course = courses.find(course => course.courseId.startsWith("STAT4"));
+    if (stat4Course) {
+      if (isCourseCompleted(stat4Course, completedSemesters)) {
+        mathCompleted++;
+      } else {
+        mathPlanned++;
+      }
+    }
+    
+    // Additional MATH/STAT course
+    const additionalMathStat = courses.find(course => 
       (course.courseId.startsWith("MATH") || course.courseId.startsWith("STAT")) &&
       course.courseId !== "MATH140" &&
       course.courseId !== "MATH141" &&
       !course.courseId.startsWith("STAT4")
-    ) ? 1 : 0);
+    );
+    if (additionalMathStat) {
+      if (isCourseCompleted(additionalMathStat, completedSemesters)) {
+        mathCompleted++;
+      } else {
+        mathPlanned++;
+      }
+    }
 
     const upperLevelCSCourses = courses.filter(
       (course) =>
@@ -153,8 +251,8 @@ export const MajorRequirementsProvider = ({
     const hasThreeAreas = areaSet.size >= 3;
 
     const newChartSummary = {
-      lowerLevelCS: { completed: csCompleted, total: 6 },
-      lowerLevelMath: { completed: mathCompleted, total: 4 },
+      lowerLevelCS: { completed: csCompleted, planned: csPlanned, total: 6 },
+      lowerLevelMath: { completed: mathCompleted, planned: mathPlanned, total: 4 },
       areas: { completed: hasThreeAreas ? 1 : 0, total: 1 },
       track: {
         completed: trackRequirements.requirements.filter(req => req.completed).length,
@@ -167,17 +265,21 @@ export const MajorRequirementsProvider = ({
       const hasChanged = JSON.stringify(prev) !== JSON.stringify(newChartSummary);
       return hasChanged ? newChartSummary : prev;
     });
-  }, [courses, trackRequirements]);
+  }, [courses, trackRequirements, isCourseCompleted]);
   
   const contextValue = useMemo(() => {
     // Compute other requirements for the context
     const LowerLevelCSRequirements = ["CMSC131", "CMSC132", "CMSC216", "CMSC250", "CMSC330", "CMSC351"];
     const csRequirements: RequirementStatus[] = LowerLevelCSRequirements.map(courseId => {
       const course = courses.find(c => c.courseId === courseId);
+      const completed = course ? isCourseCompleted(course, completedSemesters) : false;
+      const planned = course ? !completed : false;
+      
       return {
         id: courseId,
         displayName: courseId,
-        completed: !!course,
+        completed,
+        planned,
         details: course?.semester || ''
       };
     });
@@ -194,25 +296,41 @@ export const MajorRequirementsProvider = ({
       {
         id: "MATH140",
         displayName: "MATH140",
-        completed: courses.some(c => c.courseId === "MATH140"),
+        completed: (() => {
+          const course = courses.find(c => c.courseId === "MATH140");
+          return course ? isCourseCompleted(course, completedSemesters) : false;
+        })(),
+        planned: (() => {
+          const course = courses.find(c => c.courseId === "MATH140");
+          return course ? !isCourseCompleted(course, completedSemesters) : false;
+        })(),
         details: courses.find(c => c.courseId === "MATH140")?.semester || ''
       },
       {
         id: "MATH141",
-        displayName: "MATH141", 
-        completed: courses.some(c => c.courseId === "MATH141"),
+        displayName: "MATH141",
+        completed: (() => {
+          const course = courses.find(c => c.courseId === "MATH141");
+          return course ? isCourseCompleted(course, completedSemesters) : false;
+        })(),
+        planned: (() => {
+          const course = courses.find(c => c.courseId === "MATH141");
+          return course ? !isCourseCompleted(course, completedSemesters) : false;
+        })(),
         details: courses.find(c => c.courseId === "MATH141")?.semester || ''
       },
       {
         id: "STAT4XX",
         displayName: stat4xxCourses.length > 0 ? `STAT4XX : ${stat4xxCourses[0].courseId}` : "STAT4XX",
-        completed: stat4xxCourses.length > 0,
+        completed: stat4xxCourses.length > 0 ? isCourseCompleted(stat4xxCourses[0], completedSemesters) : false,
+        planned: stat4xxCourses.length > 0 ? !isCourseCompleted(stat4xxCourses[0], completedSemesters) : false,
         details: stat4xxCourses[0]?.semester || ''
       },
       {
         id: "MATH_STATXXX",
         displayName: mathStatCourses.length > 0 ? `MATH/STATXXX : ${mathStatCourses[0].courseId}` : "MATH / STATXXX",
-        completed: mathStatCourses.length > 0,
+        completed: mathStatCourses.length > 0 ? isCourseCompleted(mathStatCourses[0], completedSemesters) : false,
+        planned: mathStatCourses.length > 0 ? !isCourseCompleted(mathStatCourses[0], completedSemesters) : false,
         details: mathStatCourses[0]?.semester || ''
       }
     ];
@@ -284,7 +402,7 @@ export const MajorRequirementsProvider = ({
       updateTrack: setCurrentTrack,
       chartSummary // Use the state version
     };
-  }, [courses, trackRequirements, chartSummary, currentTrack]);
+  }, [courses, trackRequirements, chartSummary, currentTrack, completedSemesters]);
 
   return (
     <MajorRequirementsContext.Provider value={contextValue}>
@@ -357,6 +475,7 @@ function computeGeneralTrackRequirements(courses: (Course & { semester: string }
       id: "400_level_areas",
       displayName: "5 CMSC 400 level courses from at least 3 different areas",
       completed: is400LevelComplete,
+      planned: false,
       progress: { current: Math.min(total400LevelCourses, 5), total: 5 },
       details: `${total400LevelCourses}/5 courses, ${coveredAreas.size}/3 areas`
     },
@@ -364,6 +483,7 @@ function computeGeneralTrackRequirements(courses: (Course & { semester: string }
       id: "electives",
       displayName: "2 CMSC electives totaling 6 credits",
       completed: isElectivesComplete,
+      planned: false,
       progress: { current: Math.min(electiveCourses.length, 2), total: 2 },
       details: `${electiveCourses.length}/2 courses, ${electiveCourses.reduce((sum, course) => sum + course.credits, 0)}/6 credits`
     }
@@ -399,6 +519,7 @@ function computeCybersecurityTrackRequirements(courses: (Course & { semester: st
       id: "required",
       displayName: "Required: CMSC 414 and CMSC 456",
       completed: completedRequired.length >= 2,
+      planned: false,
       progress: { current: completedRequired.length, total: 2 },
       courses: completedRequired.map(c => c.courseId)
     },
@@ -406,6 +527,7 @@ function computeCybersecurityTrackRequirements(courses: (Course & { semester: st
       id: "choose_four",
       displayName: "Choose 4 from: CMSC 411, 412, 417, 430, 433, 451",
       completed: completedChooseFrom.length >= 4,
+      planned: false,
       progress: { current: completedChooseFrom.length, total: 4 },
       courses: completedChooseFrom.map(c => c.courseId)
     },
@@ -413,6 +535,7 @@ function computeCybersecurityTrackRequirements(courses: (Course & { semester: st
       id: "ulec",
       displayName: "Upper Level Elective: 3 credits from CMSC 300-400 level",
       completed: ulecCourses.reduce((sum, course) => sum + course.credits, 0) >= 3,
+      planned: false,
       details: `${ulecCourses.reduce((sum, course) => sum + course.credits, 0)}/3 credits`,
       courses: ulecCourses.map(c => c.courseId)
     }
@@ -440,12 +563,14 @@ function computeDataScienceTrackRequirements(courses: (Course & { semester: stri
       id: "math_req",
       displayName: "One math course: MATH240 or MATH461 or MATH341",
       completed: completedMath.length >= 1,
+      planned: false,
       courses: completedMath.map(c => c.courseId)
     },
     {
       id: "other_required",
       displayName: "Required: STAT400, CMSC320, CMSC422, CMSC424",
       completed: completedOtherRequired.length >= 4,
+      planned: false,
       progress: { current: completedOtherRequired.length, total: 4 },
       courses: completedOtherRequired.map(c => c.courseId)
     },
@@ -453,18 +578,21 @@ function computeDataScienceTrackRequirements(courses: (Course & { semester: stri
       id: "choose_one_1",
       displayName: "Choose 1 from: CMSC 420, 421, 423, 425, 426, 427, or 470",
       completed: completedChooseOne1.length >= 1,
+      planned: false,
       courses: completedChooseOne1.map(c => c.courseId)
     },
     {
       id: "choose_one_2",
       displayName: "Choose 1 from: CMSC 451, 454, or 460",
       completed: completedChooseOne2.length >= 1,
+      planned: false,
       courses: completedChooseOne2.map(c => c.courseId)
     },
     {
       id: "choose_two",
       displayName: "Choose 2 from: CMSC 411, 412, 414, 417, 430, 433, 434, or 435",
       completed: completedChooseTwo.length >= 2,
+      planned: false,
       progress: { current: completedChooseTwo.length, total: 2 },
       courses: completedChooseTwo.map(c => c.courseId)
     }
@@ -525,12 +653,14 @@ function computeQuantumTrackRequirements(courses: (Course & { semester: string }
       id: "math_req",
       displayName: "One math course: MATH 240 or MATH 461 or MATH 341",
       completed: completedMath.length >= 1,
+      planned: false,
       courses: completedMath.map(c => c.courseId)
     },
     {
       id: "other_required",
       displayName: "Required: CMSC457, PHYS467",
       completed: completedOtherRequired.length >= 2,
+      planned: false,
       progress: { current: completedOtherRequired.length, total: 2 },
       courses: completedOtherRequired.map(c => c.courseId)
     },
@@ -538,6 +668,7 @@ function computeQuantumTrackRequirements(courses: (Course & { semester: string }
       id: "area_courses",
       displayName: "Choose 4 courses from Areas 1-5",
       completed: completedAreaCourses.length >= 4,
+      planned: false,
       progress: { current: completedAreaCourses.length, total: 4 },
       courses: completedAreaCourses.map(c => c.courseId)
     },
@@ -545,12 +676,14 @@ function computeQuantumTrackRequirements(courses: (Course & { semester: string }
       id: "two_areas_outside_4",
       displayName: "2 of the 4 courses must be from 2 separate areas outside Area 4",
       completed: coveredNonArea4Areas.size >= 2 && nonArea4Courses.length >= 2,
+      planned: false,
       details: `${nonArea4Courses.length}/2 courses, ${coveredNonArea4Areas.size}/2 areas`
     },
     {
       id: "ulec",
       displayName: "Upper Level Elective: 3 credits from CMSC 300-400 level",
       completed: ulecCourses.reduce((sum, course) => sum + course.credits, 0) >= 3,
+      planned: false,
       details: `${ulecCourses.reduce((sum, course) => sum + course.credits, 0)}/3 credits`,
       courses: ulecCourses.map(c => c.courseId)
     }
@@ -592,12 +725,14 @@ function computeMLTrackRequirements(courses: (Course & { semester: string })[]):
       id: "math_req",
       displayName: "One math course: MATH240 or MATH461 or MATH341",
       completed: completedMath.length >= 1,
+      planned: false,
       courses: completedMath.map(c => c.courseId)
     },
     {
       id: "other_required",
       displayName: "Required: CMSC320, CMSC421, and CMSC422",
       completed: completedOtherRequired.length >= 3,
+      planned: false,
       progress: { current: completedOtherRequired.length, total: 3 },
       courses: completedOtherRequired.map(c => c.courseId)
     },
@@ -605,6 +740,7 @@ function computeMLTrackRequirements(courses: (Course & { semester: string })[]):
       id: "choose_two",
       displayName: "Choose 2 from: MATH401, CMSC426, 460/466, 470, 472, 473, or 474",
       completed: completedChooseTwo.length >= 2,
+      planned: false,
       progress: { current: completedChooseTwo.length, total: 2 },
       courses: completedChooseTwo.map(c => c.courseId)
     },
@@ -612,6 +748,7 @@ function computeMLTrackRequirements(courses: (Course & { semester: string })[]):
       id: "ulec",
       displayName: "Upper Level Electives: 6 credits from CMSC 300-400 level",
       completed: ulecCourses.reduce((sum, course) => sum + course.credits, 0) >= 6,
+      planned: false,
       details: `${ulecCourses.reduce((sum, course) => sum + course.credits, 0)}/6 credits`,
       courses: ulecCourses.map(c => c.courseId)
     }

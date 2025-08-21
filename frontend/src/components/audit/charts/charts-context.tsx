@@ -168,28 +168,26 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
       plannedPercentage: Math.round((plannedGenEds / GenEdListForRendering.length) * 100)
     };
 
-    // Major Requirements computation (from context)
+    // Major Requirements computation (from context) - UPDATED
+    const totalMajorRequirements = majorChartSummary.lowerLevelCS.total + 
+                                   majorChartSummary.lowerLevelMath.total + 
+                                   majorChartSummary.areas.total + 
+                                   majorChartSummary.track.total;
+    
+    const completedMajorRequirements = majorChartSummary.lowerLevelCS.completed + 
+                                       majorChartSummary.lowerLevelMath.completed + 
+                                       majorChartSummary.areas.completed + 
+                                       majorChartSummary.track.completed;
+    
+    const plannedMajorRequirements = majorChartSummary.lowerLevelCS.planned + 
+                                     majorChartSummary.lowerLevelMath.planned;
+
     const majorRequirementsData = {
-      completed: majorChartSummary.lowerLevelCS.completed + 
-                 majorChartSummary.lowerLevelMath.completed + 
-                 majorChartSummary.areas.completed + 
-                 majorChartSummary.track.completed,
-      planned: 0, // Major requirements are typically all or nothing
-      total: majorChartSummary.lowerLevelCS.total + 
-             majorChartSummary.lowerLevelMath.total + 
-             majorChartSummary.areas.total + 
-             majorChartSummary.track.total,
-      completedPercentage: Math.round((
-        (majorChartSummary.lowerLevelCS.completed + 
-         majorChartSummary.lowerLevelMath.completed + 
-         majorChartSummary.areas.completed + 
-         majorChartSummary.track.completed) / 
-        (majorChartSummary.lowerLevelCS.total + 
-         majorChartSummary.lowerLevelMath.total + 
-         majorChartSummary.areas.total + 
-         majorChartSummary.track.total)
-      ) * 100),
-      plannedPercentage: 0
+      completed: completedMajorRequirements,
+      planned: plannedMajorRequirements,
+      total: totalMajorRequirements,
+      completedPercentage: Math.round((completedMajorRequirements / totalMajorRequirements) * 100),
+      plannedPercentage: Math.round((plannedMajorRequirements / totalMajorRequirements) * 100)
     };
 
     // Combined chart data for the bar chart

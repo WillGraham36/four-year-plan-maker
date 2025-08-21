@@ -24,7 +24,7 @@ const LowerLevelRequirements = () => {
           key={"MathHeader"}
           columns={[
             <span>Required Math Courses</span>,
-            <span>Semester Planned</span>
+            <span>Semester Completed</span>
           ]}
           headerRow={true}
         />

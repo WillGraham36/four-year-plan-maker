@@ -2,19 +2,20 @@
 import { cn } from '@/lib/utils';
 import React, { ReactNode } from 'react';
 
-const getSharedClasses = (isLast: boolean, completed: boolean, headerRow: boolean) => 
+const getSharedClasses = (isLast: boolean, completed: boolean, planned: boolean, headerRow: boolean) => 
   `px-3 py-1 text-sm md:text-sm text-muted-foreground bg-background transition-all duration-200 flex items-center ${
     !isLast ? 'border-b' : ''
   } ${
-    completed ? 'bg-green-500/15 dark:bg-green-800/15' : ''
+    completed ? 'bg-completed/35 dark:bg-green-800/15' : ''
   } ${
-    headerRow ? 'bg-card' : ''
-  }`;
+    planned ? 'bg-planned/35 dark:bg-yellow-800/15' : ''
+  } ${headerRow ? 'bg-card' : ''}`;
 
 interface CourseRowProps {
   columns: (string | ReactNode)[];
   isLast?: boolean;
   completed?: boolean;
+  planned?: boolean;
   headerRow?: boolean;
   className?: string;
 }
@@ -23,6 +24,7 @@ const CourseRow = ({
   columns, 
   isLast = false, 
   completed = false, 
+  planned = false,
   headerRow = false,
   className = ""
 }: CourseRowProps) => {
@@ -32,7 +34,7 @@ const CourseRow = ({
         <div
           key={index}
           className={cn(
-            getSharedClasses(isLast, completed, headerRow),
+            getSharedClasses(isLast, completed, planned, headerRow),
             index > 0 ? "border-l" : "",
             "break-words",
             columns.length === 1 ? "col-span-2" : "",

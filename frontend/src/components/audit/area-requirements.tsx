@@ -58,7 +58,7 @@ const AreaRequirements = () => {
                   key={`header-${areaNum}`}
                   columns={[
                     <span>{num !== 0 ? `Area ${num} : ${mapAreaNumToString(num)}` : 'Electives'}</span>,
-                    <span>{foundFirstArea === 1 ? 'Semester Planned' : ''}</span>
+                    <span>{foundFirstArea === 1 ? 'Semester Completed' : ''}</span>
                   ]}
                   headerRow={true}
                 />
