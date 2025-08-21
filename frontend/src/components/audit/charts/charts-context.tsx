@@ -2,6 +2,7 @@
 import { Course } from "@/lib/utils/types";
 import { createContext, useContext, useMemo } from "react";
 import { useRequirements } from "@/components/context/requirements-context";
+import { useMajorRequirements } from "@/components/context/major-requirements-context";
 import { assignGenEdsToRequirements, GenEdListForRendering } from "@/components/gen-eds/gen-eds-container";
 
 interface ChartData {
@@ -73,6 +74,7 @@ export const ChartsInfoProvider = ({ children, allCourses = [] }: ChartsInfoProv
 // Wrapper component that handles the computation logic
 const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) => {
   const { completedSemesters, ULCourses, genEds } = useRequirements();
+  const { chartSummary: majorChartSummary } = useMajorRequirements();
   const context = useContext(ChartsInfoContext);
   
   if (!context) {
@@ -166,13 +168,28 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
       plannedPercentage: Math.round((plannedGenEds / GenEdListForRendering.length) * 100)
     };
 
-    // Major Requirements computation (you might want to make this dynamic)
+    // Major Requirements computation (from context)
     const majorRequirementsData = {
-      completed: 6,
-      planned: 6,
-      total: 15,
-      completedPercentage: Math.round((6 / 15) * 100),
-      plannedPercentage: Math.round((6 / 15) * 100)
+      completed: majorChartSummary.lowerLevelCS.completed + 
+                 majorChartSummary.lowerLevelMath.completed + 
+                 majorChartSummary.areas.completed + 
+                 majorChartSummary.track.completed,
+      planned: 0, // Major requirements are typically all or nothing
+      total: majorChartSummary.lowerLevelCS.total + 
+             majorChartSummary.lowerLevelMath.total + 
+             majorChartSummary.areas.total + 
+             majorChartSummary.track.total,
+      completedPercentage: Math.round((
+        (majorChartSummary.lowerLevelCS.completed + 
+         majorChartSummary.lowerLevelMath.completed + 
+         majorChartSummary.areas.completed + 
+         majorChartSummary.track.completed) / 
+        (majorChartSummary.lowerLevelCS.total + 
+         majorChartSummary.lowerLevelMath.total + 
+         majorChartSummary.areas.total + 
+         majorChartSummary.track.total)
+      ) * 100),
+      plannedPercentage: 0
     };
 
     // Combined chart data for the bar chart
@@ -219,7 +236,7 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
       upperLevelCreditsData,
       majorRequirementsData
     };
-  }, [allCourses, completedSemesters, ULCourses, genEds]);
+  }, [allCourses, completedSemesters, ULCourses, genEds, majorChartSummary]);
 
   return (
     <ChartsInfoContext.Provider value={computedData}>

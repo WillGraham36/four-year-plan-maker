@@ -21,7 +21,6 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const TotalsBarChart = () => {
-  // All computation is now handled in the context!
   const { chartData } = useChartsInfo();
 
   return (

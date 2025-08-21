@@ -4,6 +4,7 @@ import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
 import TrackRequirements from '@/components/audit/track-requirements';
 import { RequirementsProvider } from '@/components/context/requirements-context';
+import { MajorRequirementsProvider } from '@/components/context/major-requirements-context';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
@@ -50,24 +51,29 @@ const AuditPage = async () => {
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
       >
-        <ChartsInfoProvider allCourses={allCourses}>
-          <section>
-            <ChartsContainer />
-          </section>
-          <div className='flex flex-row gap-4'>
-            <section className='flex flex-col gap-4 flex-1'>
-              <LowerLevelRequirements courses={allCourses} />
-              <AreaRequirements courses={allCourses} />
+        <MajorRequirementsProvider 
+          courses={allCourses}
+          userTrack={userInfo?.track}
+        >
+          <ChartsInfoProvider allCourses={allCourses}>
+            <section>
+              <ChartsContainer />
             </section>
-            <section className='flex flex-col gap-4 flex-1'>
-              <UpperLevelConcentrationContainer concentration={concentration} />
-              <TrackRequirements track={userInfo?.track} courses={allCourses} />
-            </section>
-          </div>
-        </ChartsInfoProvider>
+            <div className='flex flex-row gap-4'>
+              <section className='flex flex-col gap-4 flex-1'>
+                <LowerLevelRequirements />
+                <AreaRequirements />
+              </section>
+              <section className='flex flex-col gap-4 flex-1'>
+                <UpperLevelConcentrationContainer concentration={concentration} />
+                <TrackRequirements initialTrack={userInfo?.track} />
+              </section>
+            </div>
+          </ChartsInfoProvider>
+        </MajorRequirementsProvider>
       </RequirementsProvider>
     </main>
   )
 }
 
-export default AuditPage
+export default AuditPage;
