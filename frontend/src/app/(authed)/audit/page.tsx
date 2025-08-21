@@ -32,10 +32,11 @@ const AuditPage = async () => {
     getAllULCourses(),
     getUserInfo()
   ]);
+  
   const allCourses = Object.entries(semesters)
-  .flatMap(([semesterName, courses]) => 
-    courses.map(course => ({ ...course, semester: formatSemester(semesterName) }))
-  ) as (Course & { semester: string })[];
+    .flatMap(([semesterName, courses]) => 
+      courses.map(course => ({ ...course, semester: formatSemester(semesterName) }))
+    ) as (Course & { semester: string })[];
 
   const totalCredits = Object.values(semesters)
     .flat()
@@ -49,21 +50,21 @@ const AuditPage = async () => {
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
       >
-        <section>
-          <ChartsInfoProvider allCourses={allCourses}>
+        <ChartsInfoProvider allCourses={allCourses}>
+          <section>
             <ChartsContainer />
-          </ChartsInfoProvider>
-        </section>
-        <div className='flex flex-row gap-4'>
-          <section className='flex flex-col gap-4 flex-1'>
-            <LowerLevelRequirements courses={allCourses} />
-            <AreaRequirements courses={allCourses} />
           </section>
-          <section className='flex flex-col gap-4 flex-1'>
-            <UpperLevelConcentrationContainer concentration={concentration} />
-            <TrackRequirements track={userInfo?.track} courses={allCourses} />
-          </section>
-        </div>
+          <div className='flex flex-row gap-4'>
+            <section className='flex flex-col gap-4 flex-1'>
+              <LowerLevelRequirements courses={allCourses} />
+              <AreaRequirements courses={allCourses} />
+            </section>
+            <section className='flex flex-col gap-4 flex-1'>
+              <UpperLevelConcentrationContainer concentration={concentration} />
+              <TrackRequirements track={userInfo?.track} courses={allCourses} />
+            </section>
+          </div>
+        </ChartsInfoProvider>
       </RequirementsProvider>
     </main>
   )
