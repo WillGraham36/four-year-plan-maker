@@ -1,5 +1,5 @@
 import React from 'react'
-import { RadialBar, RadialBarChart } from "recharts"
+import { LabelList, RadialBar, RadialBarChart } from "recharts"
 import {
   ChartConfig,
   ChartContainer,
@@ -8,70 +8,94 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-
-const chartData = [
-  { category: "chrome", complete: 275, planned: 100 },
-  { category: "safari", complete: 200, planned: 150 },
-  { category: "firefox", complete: 187, planned: 120 },
-  { category: "edge", complete: 173, planned: 130 },
-  { category: "other", complete: 90, planned: 80 },
-]
+import { useChartsInfo } from './charts-context'
 
 const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  chrome: {
-    label: "Chrome",
+  areas: {
+    label: "Areas",
     color: "var(--chart-1)",
   },
-  safari: {
-    label: "Safari", 
+  concentration: {
+    label: "Concentration",
     color: "var(--chart-2)",
   },
-  firefox: {
-    label: "Firefox",
+  lowerLevel: {
+    label: "Lower Level Reqs.",
     color: "var(--chart-3)",
   },
-  edge: {
-    label: "Edge",
+  upperLevel: {
+    label: "Upper Level Reqs.",
     color: "var(--chart-4)",
   },
-  other: {
-    label: "Other",
+  planned: {
+    label: "Planned",
     color: "var(--chart-5)",
+  },
+  completed: {
+    label: "Completed",
+    color: "var(--chart-6)",
   },
 } satisfies ChartConfig
 
 const DegreeChart = () => {
+  const { upperLevelCreditsData } = useChartsInfo();
+
+  const usedChartData = [
+    { category: "Areas", complete: 275, planned: 100, labelArc: 100 },
+    { category: "Concentration", complete: upperLevelCreditsData.completed, planned: upperLevelCreditsData.planned, labelArc: 100 },
+    { category: "Lower Level Reqs.", complete: 0, planned: 120, labelArc: 100 },
+    { category: "Upper Level Reqs.", complete: 173, planned: 0, labelArc: 100 },
+  ];
+
+
+
   return (
-    <ChartContainer
-      config={chartConfig}
-      className="w-full md:flex-1 max-md:max-h-72"
-    >
-      <RadialBarChart data={chartData} innerRadius={30} startAngle={180} endAngle={-180}>
-        <ChartTooltip
-          cursor={false}
-          content={<ChartTooltipContent hideLabel nameKey="category" />}
-        />
+    <div className='w-full md:flex-1 max-md:max-h-72 relative'>
+      <ChartContainer
+        config={chartConfig}
+        className='w-full h-full'
+      >
+        <RadialBarChart data={usedChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={-90} endAngle={270}>
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent hideLabel nameKey="category" className='z-[9999]' />}
+          />
+          <RadialBar dataKey="complete" stackId="a" background fill='var(--completed)' cornerRadius={5}/>
+          <RadialBar dataKey="planned" stackId="a" fill='var(--planned)' cornerRadius={5}/>
 
-        <RadialBar dataKey="complete" stackId="a" fill='var(--completed)' />
-        <RadialBar dataKey="planned" stackId="a" fill='var(--planned)' />
+          <ChartLegend
+            className=''
+            align='center'
+            content={<ChartLegendContent />}
+            payload={[
+              { value: 'Completed', dataKey: 'completed', type: 'rect', color: 'var(--completed)' },
+              { value: 'Planned', dataKey: 'planned', type: 'rect', color: 'var(--planned)' },
+            ]}
+          />
+        </RadialBarChart>
+      </ChartContainer>
 
-        <ChartLegend
-          className=''
-          align='center'
-          content={<ChartLegendContent />}
-          payload={[
-            { value: 'chrome', dataKey: 'chrome', type: 'rect', color: 'var(--chart-1)' },
-            { value: 'safari', dataKey: 'safari', type: 'rect', color: 'var(--chart-2)' },
-            { value: 'firefox', dataKey: 'firefox', type: 'rect', color: 'var(--chart-3)' },
-            { value: 'edge', dataKey: 'edge', type: 'rect', color: 'var(--chart-4)' },
-            { value: 'other', dataKey: 'other', type: 'rect', color: 'var(--chart-5)' }
-          ]}
-        />
-      </RadialBarChart>
-    </ChartContainer>
+      <ChartContainer
+        config={chartConfig}
+        className='absolute top-0 w-full h-full pointer-events-none'
+      >
+        <RadialBarChart data={usedChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={0} endAngle={-90}>
+          <RadialBar 
+            dataKey="labelArc"
+            stackId="labels"
+            fill="transparent" // invisible but real arc
+            isAnimationActive={false} // prevent flicker
+          >
+            <LabelList
+              dataKey="category"
+              position="insideEnd"
+              className="fill-white capitalize"
+              fontSize={11}
+            />
+          </RadialBar>
+        </RadialBarChart>
+      </ChartContainer>
+    </div>
   )
 }
 

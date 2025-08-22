@@ -20,6 +20,23 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+const CustomCursor = (props: any) => {
+  const { x, y, width, height, payload } = props
+
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      className="fill-muted dark:fill-neutral-700"
+      opacity={0.4}
+      rx={4}
+    />
+  )
+}
+
+
 const TotalsBarChart = () => {
   const { chartData } = useChartsInfo();
 
@@ -49,7 +66,7 @@ const TotalsBarChart = () => {
           tick={{ textAnchor: 'middle', dx: -30  }}
         />
         <ChartTooltip
-          cursor={false}
+          cursor={<CustomCursor />}
           content={
             <ChartTooltipContent 
               hideLabel  
@@ -96,6 +113,7 @@ const TotalsBarChart = () => {
           stackId="a"
           fill="var(--color-completed)"
           radius={[0, 0, 0, 0]}
+          className=""
         />
         
         {/* Planned portion */}
