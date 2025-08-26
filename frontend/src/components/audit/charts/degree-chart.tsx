@@ -40,18 +40,34 @@ const chartConfig = {
 
 const DegreeChart = () => {
   const { upperLevelCreditsData } = useChartsInfo();
-  const { areas, lowerLevel } = useMajorRequirements();
+  const { areas, lowerLevel, trackRequirements } = useMajorRequirements();
 
   let lowerLevelPlanned = 0;
   let lowerLevelCompleted = 0;
   lowerLevel.cs.forEach(course => { if (course.completed) { lowerLevelCompleted++; } else { lowerLevelPlanned++; } });
   lowerLevel.math.forEach(course => { if (course.completed) { lowerLevelCompleted++; } else { lowerLevelPlanned++; } });
 
+  let upperLevelPlanned = 0;
+  let upperLevelCompleted = 0;
+  let upperLevelTotal = trackRequirements.requirements.length;
+  trackRequirements.requirements.forEach(req => {
+    if(req.progress) {
+      upperLevelTotal += req.progress.total - 1;
+    }
+    if (req.completed) {
+      upperLevelCompleted++;
+    } else if(req.planned) {
+      upperLevelPlanned++;
+    } else if(req.progress) {
+      upperLevelPlanned += req.progress.current;
+    }
+  });
+
   const rawChartData = [
     { category: "Areas", complete: areas.completedCount, planned: areas.plannedCount, total: 3 },
     { category: "Concentration", complete: upperLevelCreditsData.completed, planned: upperLevelCreditsData.planned, total: 12 },
     { category: "Lower Level Reqs.", complete: lowerLevelCompleted, planned: lowerLevelPlanned, total: lowerLevel.cs.length + lowerLevel.math.length },
-    { category: "Upper Level Reqs.", complete: 173, planned: 0, total: 173 },
+    { category: "Upper Level Reqs.", complete: upperLevelCompleted, planned: upperLevelPlanned, total: upperLevelTotal },
   ];
 
   // normalize to percentages so every row fills 100%
