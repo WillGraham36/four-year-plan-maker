@@ -22,11 +22,13 @@ export interface LowerLevelRequirementStatus {
 }
 
 export interface AreaRequirementStatus {
-  areaAssignments: Record<number, (Course & { semester: string })[]>;
+  areaAssignments: Record<number, (Course & { semester: string; completed: boolean })[]>;
   areaCourseCount: number;
   coveredAreas: Set<number>;
   hasThreeAreas: boolean;
   satisfied: boolean;
+  completedCount: number;
+  plannedCount: number;
 }
 
 export interface TrackRequirementStatus {
@@ -150,6 +152,9 @@ export const MajorRequirementsProvider = ({
     }
 
     // Calculate areas
+    const areaAssignments: Record<number, (Course & { semester: string; completed: boolean })[]> = { 
+      1: [], 2: [], 3: [], 4: [], 5: [], 0: [] 
+    };
     const upperLevelCSCourses = courses.filter(
       (course) =>
         (course.courseId.startsWith('CMSC3') || course.courseId.startsWith('CMSC4')) &&
@@ -159,8 +164,26 @@ export const MajorRequirementsProvider = ({
     const areaSet = new Set<number>();
     upperLevelCSCourses.forEach((course) => {
       const areas = courseAreas[course.courseId] || [];
-      areas.forEach(area => areaSet.add(area));
+      const courseWithStatus = {
+        ...course,
+        completed: isCourseCompleted(course, completedSemesters),
+      };
+
+      if (areas.length === 0) {
+        areaAssignments[0].push(courseWithStatus);
+      } else {
+        let chosenArea = areas[0];
+        let minCount = areaAssignments[chosenArea].length;
+        areas.forEach((a) => {
+          if (areaAssignments[a].length < minCount) {
+            chosenArea = a;
+            minCount = areaAssignments[a].length;
+          }
+        });
+        areaAssignments[chosenArea].push(courseWithStatus);
+      }
     });
+
     const hasThreeAreas = areaSet.size >= 3;
 
     return {
@@ -348,14 +371,18 @@ export const MajorRequirementsProvider = ({
         course.courseId !== 'CMSC330'
     );
 
-    const areaAssignments: Record<number, (Course & { semester: string })[]> = { 
+    const areaAssignments: Record<number, (Course & { semester: string; completed: boolean })[]> = { 
       1: [], 2: [], 3: [], 4: [], 5: [], 0: [] 
     };
 
     upperLevelCSCourses.forEach((course) => {
       const areas = courseAreas[course.courseId] || [];
+      const courseWithCompleted = {
+        ...course,
+        completed: isCourseCompleted(course, completedSemesters),
+      };
       if (areas.length === 0) {
-        areaAssignments[0].push(course);
+        areaAssignments[0].push(courseWithCompleted);
       } else {
         let chosenArea = areas[0];
         let minCount = areaAssignments[chosenArea].length;
@@ -365,12 +392,14 @@ export const MajorRequirementsProvider = ({
             minCount = areaAssignments[a].length;
           }
         });
-        areaAssignments[chosenArea].push(course);
+        areaAssignments[chosenArea].push(courseWithCompleted);
       }
     });
 
     let areaCourseCount = 0;
     let areaSet = new Set<number>();
+    let completedCount = 0;
+    let plannedCount = 0;
 
     Object.entries(areaAssignments).forEach(([areaNum, areaCourses]) => {
       const num = parseInt(areaNum);
@@ -381,6 +410,13 @@ export const MajorRequirementsProvider = ({
 
       areaCourseCount += valid.length;
       if (valid.length > 0) areaSet.add(num);
+        areaCourses.forEach(c => {
+        if (c.completed) {
+          completedCount++;
+        } else {
+          plannedCount++;
+        }
+      });
     });
 
     const hasThreeAreas = areaSet.size >= 3;
@@ -390,8 +426,11 @@ export const MajorRequirementsProvider = ({
       areaCourseCount,
       coveredAreas: areaSet,
       hasThreeAreas,
-      satisfied: hasThreeAreas
+      satisfied: hasThreeAreas,
+      completedCount,
+      plannedCount,
     };
+
 
     return {
       courses,

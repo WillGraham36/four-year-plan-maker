@@ -69,8 +69,11 @@ const AreaRequirements = () => {
                       <span>{course.courseId}</span>,
                       <span>{course.semester || ''}</span>
                     ]}
-                    completed={areas.satisfied}
-                    isLast={index === Object.keys(areas.areaAssignments).length - 1 && coursesInArea.indexOf(course) === coursesInArea.length - 1}
+                    completed={course.completed}
+                    isLast={
+                      index === Object.keys(areas.areaAssignments).length - 1 &&
+                      coursesInArea.indexOf(course) === coursesInArea.length - 1
+                    }
                   />
                 ))}
               </React.Fragment>

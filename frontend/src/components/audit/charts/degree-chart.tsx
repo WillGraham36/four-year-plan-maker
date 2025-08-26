@@ -9,6 +9,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { useChartsInfo } from './charts-context'
+import { useMajorRequirements } from '@/components/context/major-requirements-context'
 
 const chartConfig = {
   areas: {
@@ -39,14 +40,35 @@ const chartConfig = {
 
 const DegreeChart = () => {
   const { upperLevelCreditsData } = useChartsInfo();
+  const { areas, lowerLevel } = useMajorRequirements();
 
-  const usedChartData = [
-    { category: "Areas", complete: 275, planned: 100, labelArc: 100 },
-    { category: "Concentration", complete: upperLevelCreditsData.completed, planned: upperLevelCreditsData.planned, labelArc: 100 },
-    { category: "Lower Level Reqs.", complete: 0, planned: 120, labelArc: 100 },
-    { category: "Upper Level Reqs.", complete: 173, planned: 0, labelArc: 100 },
+  let lowerLevelPlanned = 0;
+  let lowerLevelCompleted = 0;
+  lowerLevel.cs.forEach(course => { if (course.completed) { lowerLevelCompleted++; } else { lowerLevelPlanned++; } });
+  lowerLevel.math.forEach(course => { if (course.completed) { lowerLevelCompleted++; } else { lowerLevelPlanned++; } });
+
+  const rawChartData = [
+    { category: "Areas", complete: areas.completedCount, planned: areas.plannedCount, total: 3 },
+    { category: "Concentration", complete: upperLevelCreditsData.completed, planned: upperLevelCreditsData.planned, total: 12 },
+    { category: "Lower Level Reqs.", complete: lowerLevelCompleted, planned: lowerLevelPlanned, total: lowerLevel.cs.length + lowerLevel.math.length },
+    { category: "Upper Level Reqs.", complete: 173, planned: 0, total: 173 },
   ];
 
+  // normalize to percentages so every row fills 100%
+  const usedChartData = rawChartData.map(row => {
+    const completePct = (row.complete / row.total) * 100;
+    const plannedPct = (row.planned / row.total) * 100;
+    return {
+      ...row,
+      completePct,
+      plannedPct,
+    };
+  });
+
+  const labelChartData = rawChartData.map(row => ({
+    category: row.category,
+    labelArc: 100, // full arc just for positioning labels
+  }));
 
 
   return (
@@ -60,8 +82,8 @@ const DegreeChart = () => {
             cursor={false}
             content={<ChartTooltipContent hideLabel nameKey="category" className='z-[9999]' />}
           />
-          <RadialBar dataKey="complete" stackId="a" background fill='var(--completed)' cornerRadius={5}/>
-          <RadialBar dataKey="planned" stackId="a" fill='var(--planned)' cornerRadius={5}/>
+          <RadialBar dataKey="completePct" stackId="a" background fill='var(--completed)' cornerRadius={5}/>
+          <RadialBar dataKey="plannedPct" stackId="a" fill='var(--planned)' cornerRadius={5}/>
 
           <ChartLegend
             className=''
@@ -79,7 +101,7 @@ const DegreeChart = () => {
         config={chartConfig}
         className='absolute top-0 w-full h-full pointer-events-none'
       >
-        <RadialBarChart data={usedChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={0} endAngle={-90}>
+        <RadialBarChart data={labelChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={0} endAngle={-90}>
           <RadialBar 
             dataKey="labelArc"
             stackId="labels"
