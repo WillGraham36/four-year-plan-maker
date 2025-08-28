@@ -91,13 +91,9 @@ const DegreeChart = () => {
     <div className='w-full md:flex-1 max-md:max-h-72 relative'>
       <ChartContainer
         config={chartConfig}
-        className='w-full h-full'
+        className='w-full h-full max-md:max-h-72 '
       >
-        <RadialBarChart data={usedChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={-90} endAngle={270}>
-          {/* <ChartTooltip
-            cursor={false}
-            content={<ChartTooltipContent hideLabel nameKey="category" className='z-[9999]' />}
-          /> */}
+        <RadialBarChart data={usedChartData} innerRadius={'25%'} outerRadius={'100%'} startAngle={-90} endAngle={270}>
           <RadialBar dataKey="completePct" stackId="a" background fill='var(--completed)' cornerRadius={5}/>
           <RadialBar dataKey="plannedPct" stackId="a" fill='var(--planned)' cornerRadius={5}/>
 
@@ -178,9 +174,9 @@ const DegreeChart = () => {
 
       <ChartContainer
         config={chartConfig}
-        className='absolute top-0 w-full h-full pointer-events-none'
+        className='hidden sm:block md:hidden lg:block absolute top-0 w-full h-full max-md:max-h-72 pointer-events-none'
       >
-        <RadialBarChart data={labelChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={0} endAngle={-90}>
+        <RadialBarChart data={labelChartData} innerRadius={'22%'} outerRadius={'92%'} startAngle={0} endAngle={-90}>
           <RadialBar 
             dataKey="labelArc"
             stackId="labels"

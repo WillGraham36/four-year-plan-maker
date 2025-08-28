@@ -44,7 +44,7 @@ const AuditPage = async () => {
     .reduce((sum, course) => sum + course.credits, 0);
 
   return (
-    <main className='mx-4 flex flex-col gap-4 mt-4'>
+    <main className='mx-4 flex flex-col gap-4 mt-4 mb-8'>
       <RequirementsProvider 
         initialGenEds={genEds} 
         initialULCourses={courses} 
