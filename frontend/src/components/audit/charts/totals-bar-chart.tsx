@@ -20,7 +20,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const CustomCursor = (props: any) => {
+export const CustomCursor = (props: any) => {
   const { x, y, width, height, payload } = props
 
   return (

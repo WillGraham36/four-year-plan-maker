@@ -29,7 +29,7 @@ const chartConfig = {
     color: "var(--chart-4)",
   },
   planned: {
-    label: "Planned",
+    label: "In Progress",
     color: "var(--chart-5)",
   },
   completed: {
@@ -94,22 +94,85 @@ const DegreeChart = () => {
         className='w-full h-full'
       >
         <RadialBarChart data={usedChartData} innerRadius={40} outerRadius={160} barSize={25} startAngle={-90} endAngle={270}>
-          <ChartTooltip
+          {/* <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent hideLabel nameKey="category" className='z-[9999]' />}
-          />
+          /> */}
           <RadialBar dataKey="completePct" stackId="a" background fill='var(--completed)' cornerRadius={5}/>
           <RadialBar dataKey="plannedPct" stackId="a" fill='var(--planned)' cornerRadius={5}/>
 
           <ChartLegend
-            className=''
             align='center'
             content={<ChartLegendContent />}
             payload={[
               { value: 'Completed', dataKey: 'completed', type: 'rect', color: 'var(--completed)' },
-              { value: 'Planned', dataKey: 'planned', type: 'rect', color: 'var(--planned)' },
+              { value: 'In Progress', dataKey: 'planned', type: 'rect', color: 'var(--planned)' },
             ]}
           />
+          <ChartTooltip
+            cursor={false}
+            content={({ active, payload, label, coordinate }) => {
+              if (!active || !payload) return null;
+
+              // coordinate = { x, y } of mouse
+              const offsetX = 20; // px to the right
+              const offsetY = -20; // px up
+
+              return (
+                <div
+                  className="absolute z-[9999] rounded-md bg-background shadow-lg p-2 text-sm min-w-60 flex flex-col gap-1.5"
+                  style={{
+                    left: (coordinate?.x || 0) + offsetX,
+                    top: (coordinate?.y || 0) + offsetY,
+                    pointerEvents: "none", // don’t block chart hover
+                    position: "absolute",
+                  }}
+                >
+                  {/* Your custom tooltip content */}
+                  <p className="font-bold text-sm">{payload[0]?.payload.category}</p>
+                  {payload.map((entry, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs">
+                      <div
+                        className="h-2.5 w-2.5 rounded-sm"
+                        style={{ background: entry.color }}
+                      />
+                      <p>
+                        {entry.name === "completePct"
+                          ? `Completed`
+                          : `Planned`}
+                      </p>
+                      <p className="ml-auto">
+                        {entry.payload[entry.name === "completePct"
+                          ? `complete`
+                          : `planned`] ?? 0}
+                        <span className='text-muted-foreground'>
+                          {entry.name === "completePct"
+                            ? ` completed`
+                            : ` planned`}
+                        </span>
+                      </p>
+                    </div>
+                  ))}
+                  <div className="border-t pt-1 mt-1.5 text-xs w-full flex items-center justify-between font-semibold">
+                    Total
+                    <div>
+                      {Math.round(
+                      (((payload[0]?.payload.complete ?? 0) + (payload[0]?.payload.planned ?? 0)) /
+                        (payload[0]?.payload.total ?? 1)) * 100
+                      )}% 
+                      <span className='text-muted-foreground font-normal'>
+                        (
+                        {(payload[0]?.payload.complete ?? 0) + (payload[0]?.payload.planned ?? 0)}/
+                        {payload[0]?.payload.total ?? 1}
+                        )
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
+          />
+
         </RadialBarChart>
       </ChartContainer>
 
