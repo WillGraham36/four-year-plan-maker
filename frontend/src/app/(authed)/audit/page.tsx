@@ -1,3 +1,4 @@
+// AuditPage.tsx
 import AreaRequirements from '@/components/audit/area-requirements';
 import ChartsContainer from '@/components/audit/charts/charts-container';
 import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
@@ -9,6 +10,7 @@ import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-c
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
 import React from 'react'
+import ResponsiveAuditLayout from '@/components/audit/audit-tabs';
 
 const formatSemester = (semesterName: string): string => {
   // Extract term and year using regex
@@ -60,16 +62,10 @@ const AuditPage = async () => {
             <section>
               <ChartsContainer />
             </section>
-            <div className='flex flex-row gap-4'>
-              <section className='flex flex-col gap-4 flex-1'>
-                <LowerLevelRequirements />
-                <AreaRequirements />
-              </section>
-              <section className='flex flex-col gap-4 flex-1'>
-                <UpperLevelConcentrationContainer concentration={concentration} />
-                <TrackRequirements initialTrack={userInfo?.track} />
-              </section>
-            </div>
+            <ResponsiveAuditLayout
+              concentration={concentration}
+              initialTrack={userInfo?.track}
+            />
           </ChartsInfoProvider>
         </MajorRequirementsProvider>
       </RequirementsProvider>
