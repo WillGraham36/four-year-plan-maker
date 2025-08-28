@@ -19,6 +19,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
 import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -38,122 +44,159 @@ const YearsContainer = ({ userInfo, semesters }: { userInfo: UserInfo | null, se
     }
   };
 
+  const renderYearContent = (yearData: { year: number; semesters: SemesterDateDescriptor[] }) => {
+    const { year, semesters: yearSemesters } = yearData;
+    
+    return (
+      <Year key={year} year={year}>
+        {yearSemesters.map(semester => (
+          <Semester
+            key={`${semester.term}-${semester.year}`}
+            term={semester.term}
+            year={semester.year}
+            minNumCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 1 : 5}
+            courses={extractSemester(semesters, semester.term, semester.year)}
+            removable={semester.term === 'WINTER' || semester.term === "SUMMER"}
+            maxCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 3 : 8}
+          />
+        ))}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className={`
+            ${
+              yearSemesters.length === 4 ||
+              (
+              yearSemesters.length === 3 && (
+                yearSemesters.some(sem => sem.term === 'FALL') && !yearSemesters.some(sem => sem.term === 'SPRING')
+                || yearSemesters.some(sem => sem.term === 'SPRING') && !yearSemesters.some(sem => sem.term === 'FALL')
+              ))
+              ? "hidden"
+              : "block"
+            }
+            ${yearSemesters.length === 3 ? "col-span-1 h-min mt-0" : "col-span-2"}
+            -mt-2.5 -mb-1
+            `}
+          >
+            <Tooltip delayDuration={1500}>
+              <TooltipTrigger className={cn(
+                buttonVariants({ variant: 'ghost'}),
+                "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full"
+              )}
+              asChild>
+                <Plus className="h-4 w-4 text-muted-foreground/60 group-hover:text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent className="text-sm text-muted-foreground p-1 px-2">
+                Add Summer / Winter Semester
+              </TooltipContent>
+            </Tooltip>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64" >
+            <DropdownMenuLabel className="font-bold">Select semester to add:</DropdownMenuLabel>
+            {!yearSemesters.some(sem => sem.term === 'WINTER') && (
+              <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
+                <div 
+                  className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
+                  onClick={async () => {
+                    // Find the Fall semester in this academic year to determine the correct Winter year
+                    const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
+                    const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
+                    
+                    const winterYear = fallSemester ? fallSemester.year + 1 : 
+                      // If no Fall semester, calculate based on Spring semester
+                      springSemester ? springSemester.year : 
+                      // Fallback calculation
+                      year + userInfo.startSemester.year;
+                    
+                    createNewSemester('WINTER', winterYear);
+                  }}
+                >
+                  {(() => {
+                    const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
+                    const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
+                    
+                    const winterYear = fallSemester ? fallSemester.year + 1 : 
+                      springSemester ? springSemester.year : 
+                      year + userInfo.startSemester.year;
+                    return `Winter ${winterYear}`;
+                  })()}
+                </div>
+              </DropdownMenuItem>
+            )}
+            {!yearSemesters.some(sem => sem.term === 'SUMMER') && (
+              <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
+                <div 
+                  className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
+                  onClick={async () => {
+                    // Find the Spring semester in this academic year to determine the correct Summer year
+                    const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
+                    const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
+                    
+                    const summerYear = springSemester ? springSemester.year : 
+                      // If no Spring semester, calculate based on Fall semester
+                      fallSemester ? fallSemester.year + 1 : 
+                      // Fallback calculation
+                      year + userInfo.startSemester.year;
+                    
+                    createNewSemester('SUMMER', summerYear);
+                  }}
+                >
+                  {(() => {
+                    const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
+                    const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
+                    
+                    const summerYear = springSemester ? springSemester.year : 
+                      fallSemester ? fallSemester.year + 1 : 
+                      year + userInfo.startSemester.year;
+                    return `Summer ${summerYear}`;
+                  })()}
+                </div>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Year>
+    );
+  };
+
   return (
     <div>
       <AccordionProvider>
-        {academicYears.map(({ year, semesters: yearSemesters }) => (
-          <Year key={year} year={year}>
-            {yearSemesters.map(semester => (
-              <Semester
-                key={`${semester.term}-${semester.year}`}
-                term={semester.term}
-                year={semester.year}
-                minNumCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 1 : 5}
-                courses={extractSemester(semesters, semester.term, semester.year)}
-                removable={semester.term === 'WINTER' || semester.term === "SUMMER"}
-                maxCourses={semester.term === 'WINTER' ? 1 : semester.term === "SUMMER" ? 3 : 8}
-              />
-            ))}
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                className={`
-                ${
-                  yearSemesters.length === 4 ||
-                  (
-                  yearSemesters.length === 3 && (
-                    yearSemesters.some(sem => sem.term === 'FALL') && !yearSemesters.some(sem => sem.term === 'SPRING')
-                    || yearSemesters.some(sem => sem.term === 'SPRING') && !yearSemesters.some(sem => sem.term === 'FALL')
-                  ))
-                  ? "hidden"
-                  : "block"
-                }
-                ${yearSemesters.length === 3 ? "col-span-1 h-min mt-0" : "col-span-2"}
-                -mt-2.5 -mb-1
-                `}
+        {/* Mobile/Tablet Layout - Tabs (visible below lg) */}
+        <div className="lg:hidden">
+          <Tabs defaultValue="year-1" className="w-full">
+            <TabsList className="w-full">
+              {academicYears.map(({ year }) => (
+                <TabsTrigger 
+                  key={year} 
+                  value={`year-${year}`} 
+                  className="text-xs w-full"
+                >
+                  Year {year}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            
+            {academicYears.map((yearData) => (
+              <TabsContent 
+                key={yearData.year} 
+                value={`year-${yearData.year}`} 
+                className="min-h-[400px] mt-4"
               >
-                <Tooltip delayDuration={1500}>
-                  <TooltipTrigger className={cn(
-                    buttonVariants({ variant: 'ghost'}),
-                    "col-span-2 h-5 py-1 group bg-transparent hover:bg-muted transition-all duration-300 ease-out overflow-hidden px-2 w-full"
-                  )}
-                  asChild>
-                    <Plus className="h-4 w-4 text-muted-foreground/60 group-hover:text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent className="text-sm text-muted-foreground p-1 px-2">
-                    Add Summer / Winter Semester
-                  </TooltipContent>
-                </Tooltip>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64" >
-                <DropdownMenuLabel className="font-bold">Select semester to add:</DropdownMenuLabel>
-                {!yearSemesters.some(sem => sem.term === 'WINTER') && (
-                  <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
-                    <div 
-                      className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
-                      onClick={async () => {
-                        // Find the Fall semester in this academic year to determine the correct Winter year
-                        const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
-                        const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
-                        
-                        const winterYear = fallSemester ? fallSemester.year + 1 : 
-                          // If no Fall semester, calculate based on Spring semester
-                          springSemester ? springSemester.year : 
-                          // Fallback calculation
-                          year + userInfo.startSemester.year;
-                        
-                        createNewSemester('WINTER', winterYear);
-                      }}
-                    >
-                      {(() => {
-                        const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
-                        const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
-                        
-                        const winterYear = fallSemester ? fallSemester.year + 1 : 
-                          springSemester ? springSemester.year : 
-                          year + userInfo.startSemester.year;
-                        return `Winter ${winterYear}`;
-                      })()}
-                    </div>
-                  </DropdownMenuItem>
-                )}
-                {!yearSemesters.some(sem => sem.term === 'SUMMER') && (
-                  <DropdownMenuItem className="hover:bg-transparent focus:bg-transparent py-1">
-                    <div 
-                      className={cn(buttonVariants({ variant: 'outline'}), "w-full text-center cursor-pointer")}
-                      onClick={async () => {
-                        // Find the Spring semester in this academic year to determine the correct Summer year
-                        const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
-                        const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
-                        
-                        const summerYear = springSemester ? springSemester.year : 
-                          // If no Spring semester, calculate based on Fall semester
-                          fallSemester ? fallSemester.year + 1 : 
-                          // Fallback calculation
-                          year + userInfo.startSemester.year;
-                        
-                        createNewSemester('SUMMER', summerYear);
-                      }}
-                    >
-                      {(() => {
-                        const springSemester = yearSemesters.find(sem => sem.term === 'SPRING');
-                        const fallSemester = yearSemesters.find(sem => sem.term === 'FALL');
-                        
-                        const summerYear = springSemester ? springSemester.year : 
-                          fallSemester ? fallSemester.year + 1 : 
-                          year + userInfo.startSemester.year;
-                        return `Summer ${summerYear}`;
-                      })()}
-                    </div>
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </Year>
-        ))}
+                {renderYearContent(yearData)}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+
+        {/* Desktop Layout - All years visible (visible lg and above) */}
+        <div className="hidden lg:block">
+          {academicYears.map((yearData) => renderYearContent(yearData))}
+        </div>
       </AccordionProvider>
     </div>
   )
 };
+
 // Generate all semesters between start and end, grouped by academic year
 export const generateAcademicYears = (userInfo: UserInfo): { year: number; semesters: SemesterDateDescriptor[] }[] => {
   const academicYears: { year: number; semesters: SemesterDateDescriptor[] }[] = [];
