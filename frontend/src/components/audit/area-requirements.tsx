@@ -57,8 +57,8 @@ const AreaRequirements = () => {
                 <CourseRow
                   key={`header-${areaNum}`}
                   columns={[
-                    <span>{num !== 0 ? `Area ${num} : ${mapAreaNumToString(num)}` : 'Electives'}</span>,
-                    <span>{foundFirstArea === 1 ? 'Semester Completed' : ''}</span>
+                    <span key={`area-${areaNum}`}>{num !== 0 ? `Area ${num} : ${mapAreaNumToString(num)}` : 'Electives'}</span>,
+                    <span key={`area-${areaNum}-status`}>{foundFirstArea === 1 ? 'Semester Completed' : ''}</span>
                   ]}
                   headerRow={true}
                 />
@@ -66,8 +66,8 @@ const AreaRequirements = () => {
                   <CourseRow
                     key={course.courseId}
                     columns={[
-                      <span>{course.courseId}</span>,
-                      <span>{course.semester || ''}</span>
+                      <span key={`course-${course.courseId}`}>{course.courseId}</span>,
+                      <span key={`course-${course.courseId}-semester`}>{course.semester || ''}</span>
                     ]}
                     completed={course.completed}
                     isLast={

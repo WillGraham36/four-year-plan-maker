@@ -75,15 +75,15 @@ const TrackRequirements = ({ initialTrack }: TrackRequirementProps) => {
             <CourseRow
               key={requirement.id}
               columns={[
-                <span>{requirement.displayName}</span>,
-                <span className="text-center w-full">
+                <span key={`track-${requirement.id}`}>{requirement.displayName}</span>,
+                <span key={`track-${requirement.id}-progress`} className="text-center w-full">
                   {requirement.progress ? (
                     <><strong>{requirement.progress.current}</strong> / <strong>{requirement.progress.total}</strong></>
                   ) : (
                     requirement.completed ? "✓" : "✗"
                   )}
                 </span>,
-                <span className="text-center w-full">
+                <span key={`track-${requirement.id}-courses`} className="text-center w-full">
                   {requirement.courses?.join(", ") || requirement.details || (requirement.completed ? "Complete" : "Incomplete")}
                 </span>
               ]}

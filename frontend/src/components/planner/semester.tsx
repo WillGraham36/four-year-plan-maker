@@ -84,28 +84,25 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
   const maxNumCourses = maxCourses ?? 8;
 
   // Handle core semesters (with index-based ordering)
-  if (isCore) {
-    const maxInitialIndex = (initialCourses?.length ?? 0) > 0 
-      ? Math.max(...(initialCourses ?? []).map(course => course.index ?? 0))
-      : -1;
-    
-    const minSlotsForIndices = maxInitialIndex + 1;
-    const totalSlots = Math.max(minNumCourses, minSlotsForIndices);
+  const maxInitialIndex = (initialCourses?.length ?? 0) > 0 
+    ? Math.max(...(initialCourses ?? []).map(course => course.index ?? 0))
+    : -1;
+  const minSlotsForIndices = maxInitialIndex + 1;
+  const totalSlots = Math.max(minNumCourses, minSlotsForIndices);
+  const [numCourseInputs, setNumCourseInputs] = useState<number>(totalSlots);
+  useEffect(() => {
+    if (isCore && (courses.length === numCourseInputs && numCourseInputs < maxNumCourses)) {
+      setNumCourseInputs((prevNum) => courses.length + 1);
+    }
+  }, [courses, numCourseInputs]);
 
+
+  if (isCore) {
     const coursesByIndex = new Map();
     initialCourses?.forEach(course => {
       const index = course.index ?? 0;
       coursesByIndex.set(index, course);
     });
-
-    const [numCourseInputs, setNumCourseInputs] = useState<number>(totalSlots);
-
-    useEffect(() => {
-      if (courses.length === numCourseInputs && numCourseInputs < maxNumCourses) {
-        setNumCourseInputs((prevNum) => courses.length + 1);
-      }
-    }, [courses, numCourseInputs]);
-
     return (
       <>
         {Array.from({ length: numCourseInputs }, (_, index) => {

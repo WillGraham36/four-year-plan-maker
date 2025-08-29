@@ -397,7 +397,7 @@ export const MajorRequirementsProvider = ({
     });
 
     let areaCourseCount = 0;
-    let areaSet = new Set<number>();
+    const areaSet = new Set<number>();
     let completedCount = 0;
     let plannedCount = 0;
 

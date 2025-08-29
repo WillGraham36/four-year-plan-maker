@@ -46,11 +46,11 @@ export const GeneralTrackRequirements = ({
     <div className="grid grid-cols-[3.5fr_1fr_1fr]">
       <CourseRow
         columns={[
-          <span>Completed <strong>5</strong> CMSC 400 level courses from at least <strong>3</strong> different areas</span>,
-          <span className="text-center w-full">
+          <span key={'description'}>Completed <strong>5</strong> CMSC 400 level courses from at least <strong>3</strong> different areas</span>,
+          <span key={'total'} className="text-center w-full">
             <strong>{total400LevelCourses}</strong> / <strong>5</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'areas'} className="text-center w-full">
             <strong>{coveredAreas.size}</strong> / <strong>3</strong> areas
           </span>
         ]}
@@ -59,11 +59,11 @@ export const GeneralTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Completed <strong>2</strong> CMSC electives totaling <strong>6</strong> credits</span>,
-          <span className="text-center w-full">
+          <span key={'description'}>Completed <strong>2</strong> CMSC electives totaling <strong>6</strong> credits</span>,
+          <span key={'total'} className="text-center w-full">
             <strong>{electiveCourses.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'credits'} className="text-center w-full">
             <strong>{electiveCourses.reduce((sum, course) => sum + course.credits, 0)}</strong> / <strong>6</strong> credits
           </span>
         ]}
@@ -124,11 +124,11 @@ export const CybersecurityTrackRequirements = ({
     <div className="grid grid-cols-[3fr_1fr_1.5fr]">
       <CourseRow
         columns={[
-          <span>Completed required courses: <strong>CMSC 414</strong> and <strong>CMSC 456</strong></span>,
-          <span className="text-center w-full">
+          <span key={'required-courses'}>Completed required courses: <strong>CMSC 414</strong> and <strong>CMSC 456</strong></span>,
+          <span key={'required-courses-count'} className="text-center w-full">
             <strong>{completedRequired.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'required-courses-list'} className="text-center w-full">
             {completedRequired.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -137,11 +137,11 @@ export const CybersecurityTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>4</strong> courses from: CMSC 411, 412, 417, 430, 433, 451</span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses'}>Choose <strong>4</strong> courses from: CMSC 411, 412, 417, 430, 433, 451</span>,
+          <span key={'choose-from-courses-count'} className="text-center w-full">
             <strong>{completedChooseFrom.length}</strong> / <strong>4</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses-list'} className="text-center w-full">
             {completedChooseFrom.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -150,11 +150,11 @@ export const CybersecurityTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Upper Level Elective: <strong>3</strong> credits from CMSC 300-400 level</span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses'}>Upper Level Elective: <strong>3</strong> credits from CMSC 300-400 level</span>,
+          <span key={'ulec-courses-count'} className="text-center w-full">
             <strong>{ulecCourses.reduce((sum, course) => sum + course.credits, 0)}</strong> / <strong>3</strong> credits
           </span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses-list'} className="text-center w-full">
             {ulecCourses.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -217,11 +217,11 @@ export const DataScienceTrackRequirements = ({
     <div className="grid grid-cols-[3.5fr_1fr_1fr]">
       <CourseRow
         columns={[
-          <span>One math course: <strong>MATH240</strong> or <strong>MATH461</strong> or <strong>MATH341</strong></span>,
-          <span className="text-center w-full">
+          <span key={'math-course'}>One math course: <strong>MATH240</strong> or <strong>MATH461</strong> or <strong>MATH341</strong></span>,
+          <span key={'math-course-count'} className="text-center w-full">
             <strong>{completedMath.length}</strong> / <strong>1</strong> course
           </span>,
-          <span className="text-center w-full">
+          <span key={'math-course-list'} className="text-center w-full">
             {completedMath.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -230,11 +230,11 @@ export const DataScienceTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Required: <strong>STAT400, CMSC320, CMSC422, CMSC424</strong></span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses'}>Required: <strong>STAT400, CMSC320, CMSC422, CMSC424</strong></span>,
+          <span key={'other-required-courses-count'} className="text-center w-full">
             <strong>{completedOtherRequired.length}</strong> / <strong>4</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses-list'} className="text-center w-full">
             {completedOtherRequired.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -243,11 +243,11 @@ export const DataScienceTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>1</strong> from: CMSC 420, 421, 423, 425, 426, 427, or 470</span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses'}>Choose <strong>1</strong> from: CMSC 420, 421, 423, 425, 426, 427, or 470</span>,
+          <span key={'choose-from-courses-count'} className="text-center w-full">
             <strong>{completedChooseOne1.length}</strong> / <strong>1</strong> course
           </span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses-list'} className="text-center w-full">
             {completedChooseOne1.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -256,11 +256,11 @@ export const DataScienceTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>1</strong> from: CMSC 451, 454, or 460</span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses'}>Choose <strong>1</strong> from: CMSC 451, 454, or 460</span>,
+          <span key={'choose-from-courses-count'} className="text-center w-full">
             <strong>{completedChooseOne2.length}</strong> / <strong>1</strong> course
           </span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses-list'} className="text-center w-full">
             {completedChooseOne2.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -269,11 +269,11 @@ export const DataScienceTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>2</strong> from: CMSC 411, 412, 414, 417, 430, 433, 434, or 435</span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses'}>Choose <strong>2</strong> from: CMSC 411, 412, 414, 417, 430, 433, 434, or 435</span>,
+          <span key={'choose-from-courses-count'} className="text-center w-full">
             <strong>{completedChooseTwo.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'choose-from-courses-list'} className="text-center w-full">
             {completedChooseTwo.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -363,11 +363,11 @@ export const QuantumTrackRequirements = ({
     <div className="grid grid-cols-[3.5fr_1fr_1fr]">
       <CourseRow
         columns={[
-          <span>One math course: <strong>MATH 240</strong> or <strong>MATH 461</strong> or <strong>MATH 341</strong></span>,
-          <span className="text-center w-full">
+          <span key={'one-math-course'}>One math course: <strong>MATH 240</strong> or <strong>MATH 461</strong> or <strong>MATH 341</strong></span>,
+          <span key={'one-math-course-count'} className="text-center w-full">
             <strong>{completedMath.length}</strong> / <strong>1</strong> course
           </span>,
-          <span className="text-center w-full">
+          <span key={'one-math-course-list'} className="text-center w-full">
             {completedMath.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -376,11 +376,11 @@ export const QuantumTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Required: <strong>CMSC457, PHYS467</strong> </span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses'}>Required: <strong>CMSC457, PHYS467</strong> </span>,
+          <span key={'other-required-courses-count'} className="text-center w-full">
             <strong>{completedOtherRequired.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses-list'} className="text-center w-full">
             {completedOtherRequired.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -389,11 +389,11 @@ export const QuantumTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>4</strong> courses from Areas 1-5</span>,
-          <span className="text-center w-full">
+          <span key={'area-courses'}>Choose <strong>4</strong> courses from Areas 1-5</span>,
+          <span key={'area-courses-count'} className="text-center w-full">
             <strong>{completedAreaCourses.length}</strong> / <strong>4</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'area-courses-list'} className="text-center w-full">
             {completedAreaCourses.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -402,11 +402,11 @@ export const QuantumTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span><strong>2</strong> of the <strong> 4 </strong> courses must be from <strong>2 separate areas</strong> outside Area 4</span>,
-          <span className="text-center w-full">
+          <span key={'two-areas-outside-area-4'}><strong>2</strong> of the <strong> 4 </strong> courses must be from <strong>2 separate areas</strong> outside Area 4</span>,
+          <span key={'two-areas-outside-area-4-count'} className="text-center w-full">
             <strong>{nonArea4Courses.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'two-areas-outside-area-4-list'} className="text-center w-full">
             <strong>{coveredNonArea4Areas.size}</strong> / <strong>2</strong> areas
           </span>
         ]}
@@ -415,11 +415,11 @@ export const QuantumTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Upper Level Elective: <strong>3</strong> credits from CMSC 300-400 level</span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses'}>Upper Level Elective: <strong>3</strong> credits from CMSC 300-400 level</span>,
+          <span key={'ulec-courses-count'} className="text-center w-full">
             <strong>{ulecCourses.reduce((sum, course) => sum + course.credits, 0)}</strong> / <strong>3</strong> credits
           </span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses-list'} className="text-center w-full">
             {ulecCourses.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -491,11 +491,11 @@ export const MachineLearningTrackRequirements = ({
     <div className="grid grid-cols-[3.5fr_1fr_1fr]">
       <CourseRow
         columns={[
-          <span>One math course: <strong>MATH240</strong> or <strong>MATH461</strong> or <strong>MATH341</strong></span>,
-          <span className="text-center w-full">
+          <span key={'one-math-course'}>One math course: <strong>MATH240</strong> or <strong>MATH461</strong> or <strong>MATH341</strong></span>,
+          <span key={'one-math-course-count'} className="text-center w-full">
             <strong>{completedMath.length}</strong> / <strong>1</strong> course
           </span>,
-          <span className="text-center w-full">
+          <span key={'one-math-course-list'} className="text-center w-full">
             {completedMath.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -504,11 +504,11 @@ export const MachineLearningTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Required: <strong>CMSC320, CMSC421, </strong> and <strong>CMSC422</strong></span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses'}>Required: <strong>CMSC320, CMSC421, </strong> and <strong>CMSC422</strong></span>,
+          <span key={'other-required-courses-count'} className="text-center w-full">
             <strong>{completedOtherRequired.length}</strong> / <strong>3</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'other-required-courses-list'} className="text-center w-full">
             {completedOtherRequired.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -517,11 +517,11 @@ export const MachineLearningTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Choose <strong>2</strong> from: MATH401, CMSC426, 460/466, 470, 472, 473, or 474</span>,
-          <span className="text-center w-full">
+          <span key={'choose-two-courses'}>Choose <strong>2</strong> from: MATH401, CMSC426, 460/466, 470, 472, 473, or 474</span>,
+          <span key={'choose-two-courses-count'} className="text-center w-full">
             <strong>{completedChooseTwo.length}</strong> / <strong>2</strong> courses
           </span>,
-          <span className="text-center w-full">
+          <span key={'choose-two-courses-list'} className="text-center w-full">
             {completedChooseTwo.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}
@@ -530,11 +530,11 @@ export const MachineLearningTrackRequirements = ({
 
       <CourseRow
         columns={[
-          <span>Upper Level Electives: <strong>6</strong> credits from CMSC 300-400 level</span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses'}>Upper Level Electives: <strong>6</strong> credits from CMSC 300-400 level</span>,
+          <span key={'ulec-courses-count'} className="text-center w-full">
             <strong>{ulecCourses.reduce((sum, course) => sum + course.credits, 0)}</strong> / <strong>6</strong> credits
           </span>,
-          <span className="text-center w-full">
+          <span key={'ulec-courses-list'} className="text-center w-full">
             {ulecCourses.map(c => c.courseId).join(", ") || "None"}
           </span>
         ]}

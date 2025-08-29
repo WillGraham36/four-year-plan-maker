@@ -23,8 +23,8 @@ const LowerLevelRequirements = () => {
         <CourseRow
           key={"MathHeader"}
           columns={[
-            <span>Required Math Courses</span>,
-            <span>Semester Completed</span>
+            <span key={"math-courses"}>Required Math Courses</span>,
+            <span key={"math-semester"}>Semester Completed</span>
           ]}
           headerRow={true}
         />
@@ -32,8 +32,8 @@ const LowerLevelRequirements = () => {
           <CourseRow
             key={requirement.id}
             columns={[
-              <span>{requirement.displayName}</span>,
-              <span>{requirement.details || ''}</span>
+              <span key={`math-${requirement.id}`}>{requirement.displayName}</span>,
+              <span key={`math-${requirement.id}-semester`}>{requirement.details || ''}</span>
             ]}
             completed={requirement.completed}
           />
@@ -41,7 +41,7 @@ const LowerLevelRequirements = () => {
         <CourseRow
           key={"CourseHeader"}
           columns={[
-            <span>Required CS Course</span>
+            <span key={"cs-courses"}>Required CS Course</span>
           ]}
           headerRow={true}
         />
@@ -49,8 +49,8 @@ const LowerLevelRequirements = () => {
           <CourseRow
           key={requirement.id}
           columns={[
-            <span>{requirement.displayName}</span>,
-            <span>{requirement.details || ''}</span>
+            <span key={`cs-${requirement.id}`}>{requirement.displayName}</span>,
+            <span key={`cs-${requirement.id}-semester`}>{requirement.details || ''}</span>
           ]}
           isLast={index === lowerLevel.cs.length - 1}
           completed={requirement.completed}

@@ -18,12 +18,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <script
-          crossOrigin="anonymous"
-          src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
-      </head>
       <body
         className={`${outfit.className} antialiased`}
       >
@@ -31,7 +25,6 @@ export default function RootLayout({
           {children}
           <Toaster 
             position="top-center"
-            // richColors
           />
         </Providers>
       </body>
