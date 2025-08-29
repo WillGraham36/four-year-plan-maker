@@ -46,6 +46,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: java-app
+          path: .
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -60,7 +61,8 @@ jobs:
         with:
           app-name: 'terpplanner-backend'
           slot-name: 'Production'
-          package: 'backend/target/*.jar'
+          package: '*.jar'
 
           
+
 
