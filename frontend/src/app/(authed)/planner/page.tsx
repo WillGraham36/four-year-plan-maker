@@ -25,10 +25,7 @@ const PlannerPage = async () => {
         <TabbedPlanner
           userInfo={userInfo}
           semesters={semesters}
-          genEds={genEds}
           concentration={concentration}
-          ulCourses={courses}
-          totalCredits={totalCredits}
         />
       </RequirementsProvider>
     </main>

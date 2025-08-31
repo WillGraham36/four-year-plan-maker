@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { createOffTerm } from "@/lib/api/planner/planner.server";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AccordionProvider } from "../context/accordion-context";
 import GenEdsContainer from '@/components/gen-eds/gen-eds-container';
@@ -29,26 +29,21 @@ import Notes from '@/components/planner/notes';
 interface TabbedPlannerProps {
   userInfo: UserInfo | null;
   semesters: SemesterSchema;
-  genEds: GenEdList;
   concentration: string;
-  ulCourses: any; // Replace with proper type
-  totalCredits: number;
 }
 
 const TabbedPlanner = ({ 
   userInfo, 
   semesters, 
-  genEds, 
   concentration, 
-  ulCourses, 
-  totalCredits 
 }: TabbedPlannerProps) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
 
   const academicYears = generateAcademicYears(userInfo);
-
+  
   const createNewSemester = async (term: "SUMMER" | "WINTER", year: number) => {
     const res = await createOffTerm(term, year);
     if (res.ok) {
@@ -58,9 +53,16 @@ const TabbedPlanner = ({
     }
   };
 
+  const activeTab = searchParams.get('tab') || 'year-1';
+  const handleTabChange = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', value);
+    router.push(`/planner?${params.toString()}`);
+  };
+  
   const renderYearContent = (yearData: { year: number; semesters: SemesterDateDescriptor[] }) => {
     const { year, semesters: yearSemesters } = yearData;
-
+    
     return (
       <Year key={year} year={year}>
         {yearSemesters.map(semester => (
@@ -176,21 +178,31 @@ const TabbedPlanner = ({
     <AccordionProvider>
       {/* Mobile/Tablet Layout - Tabs (visible below lg) */}
       <div className="lg:hidden">
-        <Tabs defaultValue="year-1" className="w-full">
-          <TabsList className="w-full">
-            {academicYears.map(({ year }) => (
-              <TabsTrigger
-                key={year}
-                value={`year-${year}`}
-                className="text-xs flex-1"
-              >
-                Year {year}
+        <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
+          <div className="flex flex-col gap-2">
+            {/* Year tabs in a row */}
+            <TabsList className="w-full">
+              {academicYears.map(({ year }) => (
+                <TabsTrigger
+                  key={year}
+                  value={`year-${year}`}
+                  className="text-xs flex-1"
+                >
+                  Year {year}
+                </TabsTrigger>
+              ))}
+              <TabsTrigger value="requirements" className="text-xs flex-1 hidden md:block">
+                Requirements
               </TabsTrigger>
-            ))}
-            <TabsTrigger value="requirements" className="text-xs flex-1">
-              Requirements
-            </TabsTrigger>
-          </TabsList>
+            </TabsList>
+            
+            {/* Requirements tab below, full width */}
+            <TabsList className="w-full block md:hidden">
+              <TabsTrigger value="requirements" className="text-xs w-full">
+                Requirements
+              </TabsTrigger>
+            </TabsList>
+          </div>
           
           {academicYears.map((yearData) => (
             <TabsContent
