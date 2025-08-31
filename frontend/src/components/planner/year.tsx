@@ -9,7 +9,7 @@ import UseYearAccordian from '@/components/hooks/use-year-accordion';
 import DefaultOpenAccordion from '../ui/default-open-accordion';
 import { useAccordionContext } from '../context/accordion-context';
 
-const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
+const Year = ({ year, isLast, children }: {  year: number, isLast?: boolean, children: ReactNode }) => {
   const { isYearOpen, toggleYear } = useAccordionContext()
   const shouldBeOpen = isYearOpen(year)
   const handleValueChange = (value: string | undefined) => {
@@ -19,7 +19,7 @@ const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
 
   return (
     <DefaultOpenAccordion
-      itemClassName='border-b-1'
+      itemClassName='!border-b-0'
       triggerClassName='py-2'
       trigger={
         <>
@@ -40,7 +40,7 @@ const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
           value={shouldBeOpen ? `year-${year}` : ""}
           onValueChange={handleValueChange}
         >
-          <AccordionItem value={`year-${year}`} >
+          <AccordionItem value={`year-${year}`} className={isLast ? '!border-b-0' : ''}>
           </AccordionItem>
         </Accordion>
       }

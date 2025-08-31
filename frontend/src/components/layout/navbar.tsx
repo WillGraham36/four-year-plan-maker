@@ -20,8 +20,12 @@ const Navbar = () => {
       headerTitle = "Audit";
       headerSubtitle = "See if you meet the detailed degree requirements";
       break;
+    case "/account/setup":
+      headerTitle = "Account Setup";
+      headerSubtitle = "Upload your transcript and configure your account";
+      break;
     default:
-      headerTitle = "4 Year Planner";
+      headerTitle = "Terp Planner";
       headerSubtitle = undefined;
       break;
   }

@@ -60,11 +60,11 @@ const TabbedPlanner = ({
     router.push(`/planner?${params.toString()}`);
   };
   
-  const renderYearContent = (yearData: { year: number; semesters: SemesterDateDescriptor[] }) => {
+  const renderYearContent = (yearData: { year: number; semesters: SemesterDateDescriptor[] }, isLast: boolean) => {
     const { year, semesters: yearSemesters } = yearData;
     
     return (
-      <Year key={year} year={year}>
+      <Year key={year} year={year} isLast={isLast}>
         {yearSemesters.map(semester => (
           <Semester
             key={`${semester.term}-${semester.year}`}
@@ -204,13 +204,13 @@ const TabbedPlanner = ({
             </TabsList>
           </div>
           
-          {academicYears.map((yearData) => (
+          {academicYears.map((yearData, index) => (
             <TabsContent
               key={yearData.year}
               value={`year-${yearData.year}`}
               className="min-h-[400px] mt-4"
             >
-              {renderYearContent(yearData)}
+              {renderYearContent(yearData, index === academicYears.length - 1)}
             </TabsContent>
           ))}
           
@@ -223,7 +223,7 @@ const TabbedPlanner = ({
       {/* Desktop Layout - All years and aside content visible (visible lg and above) */}
       <div className="hidden lg:flex lg:gap-4">
         <div className='flex flex-col w-full lg:w-[60%]'>
-          {academicYears.map((yearData) => renderYearContent(yearData))}
+          {academicYears.map((yearData, index) => renderYearContent(yearData, index === academicYears.length - 1))}
         </div>
         <div className='w-full lg:w-[40%]'>
           {renderAsideContent()}

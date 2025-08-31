@@ -12,6 +12,8 @@ import { useClerk } from "@clerk/nextjs";
 import fillPDFForm from "../planner/fill-pdf";
 import { getAllGenEds, getAllSemesters, getUserInfo } from "@/lib/api/planner/planner.server";
 import { toast } from "sonner";
+import Image from "next/image";
+import { IconWithLightMode } from "./footer";
 
 export const navbarLinks = [
   {
@@ -119,13 +121,18 @@ export const Logo = () => {
         href="/"
         className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal pl-1.5"
       >
-        <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
+        <IconWithLightMode
+          icon="/icons/logo"
+          alt="Logo"
+          width={24}
+          height={24}
+        />
         <motion.span
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="font-medium whitespace-pre text-"
         >
-          Terp Planner
+          TerpPlanner
         </motion.span>
       </Link>
       <Button variant="ghost" className="p-2 h-8 w-8 z-20">

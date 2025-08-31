@@ -1,8 +1,8 @@
 import { extractSemester, termYearToString } from '@/lib/utils';
 import { GenEdList, SemesterSchema } from '@/lib/utils/schemas';
 import { UserInfo } from '@/lib/utils/types';
-import { generateAcademicYears } from './years-container';
 import { assignGenEdsToRequirements, GenEdListForRendering } from '../gen-eds/gen-eds-container';
+import { generateAcademicYears } from './tabbed-planner';
 
 interface FillPDFFormParams {
   userInfo: UserInfo;
