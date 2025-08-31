@@ -19,7 +19,7 @@ const Year = ({ year, children }: {  year: number, children: ReactNode }) => {
 
   return (
     <DefaultOpenAccordion
-    itemClassName='border-b-1'
+      itemClassName='border-b-1'
       triggerClassName='py-2'
       trigger={
         <>
