@@ -1,12 +1,7 @@
-// AuditPage.tsx
-import AreaRequirements from '@/components/audit/area-requirements';
 import ChartsContainer from '@/components/audit/charts/charts-container';
 import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
-import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
-import TrackRequirements from '@/components/audit/track-requirements';
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import { MajorRequirementsProvider } from '@/components/context/major-requirements-context';
-import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
 import React from 'react'
@@ -52,6 +47,7 @@ const AuditPage = async () => {
         initialULCourses={courses} 
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
+        redirectIfNotCS={true}
       >
         <MajorRequirementsProvider 
           courses={allCourses}

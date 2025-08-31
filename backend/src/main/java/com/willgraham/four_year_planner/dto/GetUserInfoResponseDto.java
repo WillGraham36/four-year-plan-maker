@@ -19,4 +19,5 @@ public class GetUserInfoResponseDto {
     private List<Semester> completedSemesters;
     private String note;
     private CsTrack track;
+    private String major;
 }

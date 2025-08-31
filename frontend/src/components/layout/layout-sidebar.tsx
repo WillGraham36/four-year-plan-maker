@@ -2,17 +2,15 @@
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SideBarClickableItem, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
-import { ArrowLeft, BookDashed, CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, User } from "lucide-react";
+import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, User } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import AccountButton from "./account-button";
 import { ThemeToggleIcon } from "../ui/toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 import fillPDFForm from "../planner/fill-pdf";
 import { getAllGenEds, getAllSemesters, getUserInfo } from "@/lib/api/planner/planner.server";
 import { toast } from "sonner";
-import Image from "next/image";
 import { IconWithLightMode } from "./footer";
 
 export const navbarLinks = [

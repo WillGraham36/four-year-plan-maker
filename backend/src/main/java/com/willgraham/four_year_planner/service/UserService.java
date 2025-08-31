@@ -103,7 +103,8 @@ public class UserService {
                 value.getOffSemesters(),
                 value.getCompletedSemesters(),
                 value.getNote(),
-                value.getTrack()
+                value.getTrack(),
+                value.getMajor()
             )).orElseGet(GetUserInfoResponseDto::new);
 
     }

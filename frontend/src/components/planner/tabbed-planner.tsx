@@ -168,7 +168,7 @@ const TabbedPlanner = ({
     <div className='flex flex-col w-full gap-4 mt-2'>
       <TotalCreditsContainer />
       <GenEdsContainer />
-      <UpperLevelConcentrationContainer concentration={concentration} />
+      {userInfo?.major === "Computer Science" && <UpperLevelConcentrationContainer concentration={concentration} />}
       <Notes note={userInfo?.note} />
       <TransferCreditsContainer courses={extractSemester(semesters, 'TRANSFER', -1)} />
     </div>

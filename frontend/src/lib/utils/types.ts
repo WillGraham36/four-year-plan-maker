@@ -356,7 +356,8 @@ export type UserInfo = {
   offSemesters: SemesterDateDescriptor[] | null
   completedSemesters: SemesterDateDescriptor[] | null
   note: string | null
-  track: CsSpecializations | undefined
+  track: CsSpecializations | undefined,
+  major: string
 }
 
 export type CsSpecializations = 

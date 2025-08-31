@@ -30,9 +30,10 @@ interface RequirementsProviderProps {
   initialULCourses: ULCoursesInfo;
   initialTotalCredits?: number;
   userInfo: UserInfo | null;
+  redirectIfNotCS?: boolean;
 }
 
-export const RequirementsProvider = ({ children, initialGenEds, initialULCourses, initialTotalCredits, userInfo }: RequirementsProviderProps) => {
+export const RequirementsProvider = ({ children, initialGenEds, initialULCourses, initialTotalCredits, userInfo, redirectIfNotCS }: RequirementsProviderProps) => {
   const [completedSemesters, setCompletedSemesters] = useState<SemesterDateDescriptor[]>(userInfo?.completedSemesters || []);
   const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
   const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
@@ -43,6 +44,11 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
     if(!userInfo || !userInfo.startSemester || !userInfo.endSemester) {
       toast.info("Please complete your account setup first");
       router.push("/account/setup");
+    }
+
+    if(redirectIfNotCS && userInfo?.major !== "Computer Science") {
+      toast.info("Sorry, this feature is only available for Computer Science majors for right now");
+      router.push("/planner");
     }
   }, [userInfo, router]);
 
