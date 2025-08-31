@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className='w-full h-20 flex flex-col items-center justify-center gap-1'>
       <div className='flex items-center justify-center space-x-2'>
-        <Link href="https://www.linkedin.com/company/umd-four-year-planner" target="_blank">
+        <Link href="https://www.linkedin.com/in/will-graham-4623022a8/" target="_blank">
           <IconWithLightMode
             icon="/icons/linkedin-icon"
             alt="LinkedIn"
@@ -14,7 +14,7 @@ const Footer = () => {
             height={32}
           />
         </Link>
-        <Link href="https://github.com/WillGraham36/four-year-plan-maker" target="_blank">
+        <Link href="https://github.com/WillGraham36/" target="_blank">
           <IconWithLightMode
             icon="/icons/github-icon"
             alt="GitHub"
@@ -32,7 +32,7 @@ const Footer = () => {
         </Link>
       </div>
       <div className='text-sm text-muted-foreground flex items-center justify-center space-x-2'>
-        <p className=''>
+        <p>
           &copy; {new Date().getFullYear()} TerpPlanner
         </p>
         <Link href="/privacy-policy" className="hover:underline">

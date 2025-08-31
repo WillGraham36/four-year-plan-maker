@@ -27,7 +27,7 @@ const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormVa
   const [transcriptValues, setTranscriptValues] = useState<OnboardingFormValues | undefined>(formInputs || undefined);
 
   return (
-    <main className="max-w-3xl mx-auto py-5 px-4">
+    <main className="max-w-3xl mx-auto py-5 px-4 min-h-[calc(100vh-8.75rem)]">
       <Stepper value={step}>
         {steps.map(({ step, title }) => (
           <StepperItem
