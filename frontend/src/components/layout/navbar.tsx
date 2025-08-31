@@ -32,7 +32,10 @@ const Navbar = () => {
 
   return (
     <nav className="w-full h-15 flex items-center justify-between px-4 border-b shadow-xs">
-      <span className="flex gap-5 items-center">
+      <span className="flex gap-2 md:gap-5 items-center">
+        <SignedIn>
+          <MobileSidebar />
+        </SignedIn>
         <Link href={pathName}>
           <h3 className="text-xl font-bold">{headerTitle}</h3>
         </Link>
@@ -64,7 +67,6 @@ const Navbar = () => {
         </SignedOut>
 
         <SignedIn>
-          <MobileSidebar />
           <AccountButton />
         </SignedIn>
       </div>
