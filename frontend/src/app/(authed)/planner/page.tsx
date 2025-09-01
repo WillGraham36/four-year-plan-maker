@@ -20,7 +20,7 @@ const PlannerPage = async () => {
     .reduce((sum, course) => sum + course.credits, 0);
 
   return (
-    <main className='mx-4 mt-2'>
+    <main className='mx-4 mt-2 min-h-[calc(100vh-9.25rem)]'>
       <RequirementsProvider
         initialGenEds={genEds}
         initialULCourses={courses}
