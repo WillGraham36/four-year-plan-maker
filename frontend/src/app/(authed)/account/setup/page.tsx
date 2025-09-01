@@ -1,5 +1,4 @@
 import MultiStageOnboardingForm from "@/components/onboarding/multi-onboarding-form";
-import OnboardingForm from "@/components/onboarding/onboarding-form";
 import { getOnboardingFormValues } from "@/lib/api/forms/onboarding-form.server";
 import { Metadata } from "next";
 
