@@ -1,6 +1,5 @@
 import React from 'react'
 import { Skeleton } from '@/components/ui/skeleton';
-import { SemesterHeaderText } from '@/components/planner/semester';
 
 const AuditLoadingPage = () => {
   return (
