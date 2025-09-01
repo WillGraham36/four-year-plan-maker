@@ -6,6 +6,11 @@ import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/l
 import { Course } from '@/lib/utils/types';
 import React from 'react'
 import ResponsiveAuditLayout from '@/components/audit/audit-tabs';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "TerpPlanner | Audit",
+};
 
 const formatSemester = (semesterName: string): string => {
   // Extract term and year using regex

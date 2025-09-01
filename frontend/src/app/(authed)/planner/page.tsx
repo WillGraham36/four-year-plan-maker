@@ -1,6 +1,11 @@
 import { RequirementsProvider } from '@/components/context/requirements-context';
-import TabbedPlanner from '@/components/planner/tabbed-planner'; // Update import path as needed
+import TabbedPlanner from '@/components/planner/tabbed-planner';
 import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "TerpPlanner | Planner",
+};
 
 const PlannerPage = async () => {
   const [semesters, genEds, { concentration, courses }, { data: userInfo }] = await Promise.all([
