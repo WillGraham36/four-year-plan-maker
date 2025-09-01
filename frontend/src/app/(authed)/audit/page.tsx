@@ -44,7 +44,6 @@ const AuditPage = async () => {
   const totalCredits = Object.values(semesters)
     .flat()
     .reduce((sum, course) => sum + course.credits, 0);
-
   return (
     <main className='mx-4 flex flex-col gap-4 mt-4 mb-8 min-h-[calc(100vh-8.75rem)]'>
       <RequirementsProvider 
