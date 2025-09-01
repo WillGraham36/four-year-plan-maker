@@ -304,14 +304,14 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl mx-auto py-10 px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <FormField
             control={form.control}
             name="startTerm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Start Term{" "}
+                  Start Semester{" "}
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
@@ -336,12 +336,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
             control={form.control}
             name="startYear"
             render={({ field }) => (
-              <FormItem>
-                  <FormLabel>
-                  Start Year{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
-                  <span className="sr-only">(required)</span>
-                </FormLabel>
+              <FormItem className="mt-auto">
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
@@ -366,14 +361,14 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
           />
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <FormField
             control={form.control}
             name="endTerm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Anticipated Graduation Term{" "}
+                  Graduation Semester{" "}
                   <span aria-hidden="true" className="text-red-600">*</span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
@@ -397,12 +392,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
             control={form.control}
             name="endYear"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Anticipated Graduation Year{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
-                  <span className="sr-only">(required)</span>
-                </FormLabel>
+              <FormItem className="mt-auto">
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
