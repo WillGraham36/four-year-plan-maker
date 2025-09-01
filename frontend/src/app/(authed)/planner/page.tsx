@@ -1,6 +1,6 @@
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import TabbedPlanner from '@/components/planner/tabbed-planner';
-import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
+import { getAllAcademicInfo, getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -8,13 +8,13 @@ export const metadata: Metadata = {
 };
 
 const PlannerPage = async () => {
-  const [semesters, genEds, { concentration, courses }, { data: userInfo }] = await Promise.all([
-    getAllSemesters(),
-    getAllGenEds(),
-    getAllULCourses(),
-    getUserInfo()
-  ]);
-
+  const { data: academicInfo } = await getAllAcademicInfo();
+  if (!academicInfo) {
+    throw new Error("Failed to fetch academic info");
+  }
+  const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
+  const concentration = courses?.concentration;
+  
   const totalCredits = Object.values(semesters)
     .flat()
     .reduce((sum, course) => sum + course.credits, 0);
@@ -23,7 +23,7 @@ const PlannerPage = async () => {
     <main className='mx-4 mt-2 min-h-[calc(100vh-9.25rem)]'>
       <RequirementsProvider
         initialGenEds={genEds}
-        initialULCourses={courses}
+        initialULCourses={courses.courses}
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
       >

@@ -28,13 +28,16 @@ public class ULConcentrationController {
 
     private final UserCourseService userCourseService;
     private final UserService userService;
-    private static final Logger logger = LoggerFactory.getLogger(ULConcentrationController.class);
 
 
     @GetMapping
     public ResponseEntity<ApiResponse<ULConcentrationDTO>> getUserULConcentrationAndCourses(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
+        ULConcentrationDTO coursesAndConcentration = getULConcentrationAndCourses(userId);
+        return ResponseEntity.ok(ApiResponse.success(coursesAndConcentration));
+    }
 
+    public ULConcentrationDTO getULConcentrationAndCourses(String userId) {
         String concentration = userService.findById(userId).getULConcentration();
         List<UserCourse> courses = userCourseService.getULCourses(userId, concentration);
 
@@ -61,7 +64,7 @@ public class ULConcentrationController {
                 ))
                 .toList();
 
-        return ResponseEntity.ok(ApiResponse.success(new ULConcentrationDTO(concentration, coursesDTO)));
+        return new ULConcentrationDTO(concentration, coursesDTO);
     }
 
     @PatchMapping

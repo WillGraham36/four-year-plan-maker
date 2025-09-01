@@ -50,25 +50,25 @@ public class GenEdsController {
             "DVCC" //DVUP or DVCC
     );
 
-    private static final Logger logger = LoggerFactory.getLogger(GenEdsController.class);
-
     private final UserCourseService userCourseService;
     private final GenEdService genEdService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<GenEdDto>>> getAllGenEdsForUser(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
+        List<GenEdDto> result = getAllGenEds(userId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
 
+    public List<GenEdDto> getAllGenEds(String userId) {
         // Get gen eds from database
         List<UserCourseWithInfoDto> courses = genEdService.getUserCoursesWithInfo(userId);
-        logger.info("Courses data: {}", courses);
 
         // Remove genEds if the current course is not taken in the same semester
         for(UserCourseWithInfoDto course : courses) {
             List<List<String>> updatedGenEds = filterGenEds(course, courses);
             course.setGenEds(updatedGenEds);
         }
-        logger.info("Updated course data: {}", courses);
 
         List<GenEdDto> result = new ArrayList<>();
 
@@ -97,17 +97,13 @@ public class GenEdsController {
                         genEd = genEd.substring(0, pipeIndex);
                     }
                     if (GENEDS_LIST.contains(genEd)) {
-
                         result.add(new GenEdDto(genEd, course.getCourseId(), course.getSemester().getName(), course.getTransferCreditName()));
                     }
                 }
             }
         }
-
-        logger.info("Result: {}", result);
-        return ResponseEntity.ok(ApiResponse.success(result));
+        return result;
     }
-
     /**
      * Filters out dependant gen eds if the requirements are not met
      * @param course - course to filter out genEds from

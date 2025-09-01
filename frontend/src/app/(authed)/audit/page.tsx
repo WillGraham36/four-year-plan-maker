@@ -2,7 +2,7 @@ import ChartsContainer from '@/components/audit/charts/charts-container';
 import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import { MajorRequirementsProvider } from '@/components/context/major-requirements-context';
-import { getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
+import { getAllAcademicInfo, getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
 import React from 'react'
 import ResponsiveAuditLayout from '@/components/audit/audit-tabs';
@@ -29,12 +29,11 @@ const formatSemester = (semesterName: string): string => {
 };
 
 const AuditPage = async () => {
-  const [semesters, genEds, { concentration, courses }, { data: userInfo }] = await Promise.all([
-    getAllSemesters(),
-    getAllGenEds(),
-    getAllULCourses(),
-    getUserInfo()
-  ]);
+  const { data: academicInfo } = await getAllAcademicInfo();
+    if (!academicInfo) {
+      throw new Error("Failed to fetch academic info");
+    }
+    const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
   
   const allCourses = Object.entries(semesters)
     .flatMap(([semesterName, courses]) => 
@@ -48,7 +47,7 @@ const AuditPage = async () => {
     <main className='mx-4 flex flex-col gap-4 mt-4 mb-8 min-h-[calc(100vh-8.75rem)]'>
       <RequirementsProvider 
         initialGenEds={genEds} 
-        initialULCourses={courses} 
+        initialULCourses={courses.courses} 
         initialTotalCredits={totalCredits}
         userInfo={userInfo}
         redirectIfNotCS={true}
@@ -63,7 +62,7 @@ const AuditPage = async () => {
               <ChartsContainer />
             </section>
             <ResponsiveAuditLayout
-              concentration={concentration}
+              concentration={courses.concentration}
               initialTrack={userInfo?.track}
             />
           </ChartsInfoProvider>
