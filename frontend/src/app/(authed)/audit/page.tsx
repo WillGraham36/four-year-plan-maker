@@ -7,6 +7,8 @@ import { Course } from '@/lib/utils/types';
 import React from 'react'
 import ResponsiveAuditLayout from '@/components/audit/audit-tabs';
 import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import PageError from '@/components/layout/page-error';
 
 export const metadata: Metadata = {
   title: "TerpPlanner | Audit",
@@ -30,10 +32,10 @@ const formatSemester = (semesterName: string): string => {
 
 const AuditPage = async () => {
   const { data: academicInfo } = await getAllAcademicInfo();
-    if (!academicInfo) {
-      throw new Error("Failed to fetch academic info");
-    }
-    const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
+  if (!academicInfo) {
+    return <PageError />;
+  }
+  const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
   
   const allCourses = Object.entries(semesters)
     .flatMap(([semesterName, courses]) => 

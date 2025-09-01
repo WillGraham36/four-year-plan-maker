@@ -1,4 +1,5 @@
 import { RequirementsProvider } from '@/components/context/requirements-context';
+import PageError from '@/components/layout/page-error';
 import TabbedPlanner from '@/components/planner/tabbed-planner';
 import { getAllAcademicInfo, getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server';
 import { Metadata } from 'next';
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 const PlannerPage = async () => {
   const { data: academicInfo } = await getAllAcademicInfo();
   if (!academicInfo) {
-    throw new Error("Failed to fetch academic info");
+    return <PageError />;
   }
   const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
   const concentration = courses?.concentration;
