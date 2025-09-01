@@ -49,7 +49,7 @@ const Semester = ({
         <div className="relative w-full">
           <div className={`grid ${isCore ? 'grid-cols-[1fr_2fr_3.5rem]' : 'grid-cols-[1fr_2fr_7rem]'} border-b text-xs md:text-sm text-muted-foreground`}>
             <p className="w-full px-3 py-1">Course</p>
-            <p className="border-x w-full px-3 py-1">GenEd</p>
+            <p className="border-x w-full px-3 py-1">Gen Ed</p>
             <p className="w-full text-center py-1">Credits</p>
           </div>
 
