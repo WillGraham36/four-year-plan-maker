@@ -174,7 +174,9 @@ export function BentoGrid1() {
               className={cn(
                 item.size === 'large'
                   ? 'col-span-6 lg:col-span-4'
-                  : 'col-span-6 sm:col-span-3'
+                  : item.size === 'medium'
+                  ? 'col-span-6 sm:col-span-3'
+                  : 'col-span-6 sm:col-span-3 lg:col-span-2'
               )}
             />
           ))}
