@@ -33,7 +33,7 @@ export default function ContentSection() {
                     <div className="mt-12 h-fit md:absolute md:-inset-y-12 md:inset-x-0 md:mt-0">
                         <div
                             aria-hidden
-                            className="bg-linear-to-l z-1 to-background absolute inset-0 hidden from-transparent to-55% md:block"></div>
+                            className="bg-linear-to-t md:bg-linear-to-l z-1 to-background absolute inset-0 from-transparent to-55% md:block"></div>
                         <div className="border-border/50 relative rounded-2xl border border-dotted p-2">
                             <Image
                               src="/images/charts2.png"
@@ -44,10 +44,17 @@ export default function ContentSection() {
                             />
                             <Image
                               src="/images/charts1.png"
-                              className="rounded-[12px] block md:hidden"
+                              className="rounded-[12px] hidden sm:block md:hidden"
                               alt="Audit section charts"
                               width={1207}
                               height={929}
+                            />
+                            <Image
+                              src="/images/charts3.png"
+                              className="rounded-[12px] block sm:hidden -mt-20"
+                              alt="Audit section charts"
+                              width={600}
+                              height={400}
                             />
                         </div>
                     </div>

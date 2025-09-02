@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 export default function CallToAction() {
     return (
-        <section className="py-32 pt-56">
+        <section className="py-16 md:py-32 md:pt-56">
             <div className="mx-auto max-w-5xl px-6">
                 <div className="text-center">
                     <h2 className="text-balance text-4xl font-semibold lg:text-5xl">Start Planning Today</h2>
