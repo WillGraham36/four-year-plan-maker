@@ -36,7 +36,7 @@ const Navbar = () => {
         <SignedIn>
           <MobileSidebar />
         </SignedIn>
-        <Link href={pathName}>
+        <Link href={pathName === "/terms-of-service" ? "/" : pathName === "/privacy-policy" ? "/" : pathName}>
           <h3 className="text-xl font-bold">{headerTitle}</h3>
         </Link>
         {headerSubtitle && (
