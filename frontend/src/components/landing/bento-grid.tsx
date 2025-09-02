@@ -86,10 +86,6 @@ const BentoGridItem = ({
             {description}
           </p>
         </div>
-        <div className="mt-4 flex items-center text-sm font-medium text-primary">
-          <span>Learn more</span>
-          <ArrowRight className="ml-1 size-4 transition-transform duration-300 group-hover:translate-x-1" />
-        </div>
       </div>
 
       {/* Bottom glow */}
