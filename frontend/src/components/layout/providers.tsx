@@ -2,6 +2,7 @@ import React from 'react'
 import { ThemeProvider } from '../context/theme-provider';
 import { TooltipProvider } from '../ui/tooltip';
 import CustomClerkProvider from './clerk-provider';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function Providers({
   children,
@@ -17,6 +18,7 @@ export default function Providers({
       enableSystem
       disableTransitionOnChange
     >
+      <SpeedInsights />
       <CustomClerkProvider>
         <UIProviders>
           {children}
