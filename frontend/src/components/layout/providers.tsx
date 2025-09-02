@@ -10,21 +10,14 @@ export default function Providers({
   children: React.ReactNode;
 }>) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      key="four-year-planner-theme"
-      storageKey="four-year-planner-theme"
-      enableSystem
-      disableTransitionOnChange
-    >
+    <>
       <SpeedInsights />
       <CustomClerkProvider>
         <UIProviders>
           {children}
         </UIProviders>
       </CustomClerkProvider>
-    </ThemeProvider>
+    </>
   )
 };
 
