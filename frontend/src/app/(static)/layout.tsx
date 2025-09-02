@@ -8,7 +8,7 @@ export default function StaticLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <Navbar />
       {children}
     </ThemeProvider>

@@ -5,8 +5,8 @@ import React from 'react'
 const HomePage = async () => {
 
   return (
-    <main className=''>
-        
+    <main className="w-full h-screen bg-gradient-to-b from-bg to-bg/50">
+      hasdf
     </main>
   );
 }
