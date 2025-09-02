@@ -58,7 +58,7 @@ export default function HeroSection() {
                                     delay={0.5}
                                     as="p"
                                     className="mt-8 max-w-2xl text-pretty text-lg">
-                                    TerpPlanner is the 4-year planning tool built for UMD students. Import your transcript, track requirements, and make sure you're on track to graduate on time
+                                    TerpPlanner is the 4-year planning tool built for UMD students. Import your transcript, track requirements, and make sure you&apos;re on track to graduate on time
                                 </TextEffect>
 
                                 <AnimatedGroup

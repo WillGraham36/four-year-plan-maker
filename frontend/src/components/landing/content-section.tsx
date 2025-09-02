@@ -9,7 +9,7 @@ export default function ContentSection() {
                 <div className="relative">
                     <div className="relative z-10 space-y-4 md:w-1/2">
                         <p>
-                            Get a clear snapshot of exactly which gen eds, credits, and CS requirements you've finished, and what's still left
+                            Get a clear snapshot of exactly which gen eds, credits, and CS requirements you&apos;ve finished, and what&apos;s still left
                         </p>
                         <p>It supports all CS tracks, upper level concentrations, and more. It actively reflects your progress, including what classes you finished and what you plan to take</p>
 
