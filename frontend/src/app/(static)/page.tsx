@@ -1,13 +1,18 @@
-import Navbar from '@/components/layout/navbar'
-import OnboardingForm from '@/components/onboarding/onboarding-form'
+import { BentoGrid1 } from '@/components/landing/bento-grid';
+import CallToAction from '@/components/landing/call-to-action';
+import ContentSection from '@/components/landing/content-section';
+import HeroSection from '@/components/landing/hero';
 import React from 'react'
 
 const HomePage = async () => {
 
   return (
-    <main className="w-full h-screen bg-gradient-to-b from-bg to-bg/50">
-      hasdf
-    </main>
+    <>
+      <HeroSection />
+      <BentoGrid1 />
+      <ContentSection />
+      <CallToAction />
+    </>
   );
 }
 

@@ -31,7 +31,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="w-full h-15 flex items-center justify-between px-4 border-b shadow-xs">
+    <nav className="w-full h-15 flex items-center justify-between px-4 border-b shadow-xs z-[9999]">
       <span className="flex gap-2 md:gap-5 items-center">
         <SignedIn>
           <MobileSidebar />

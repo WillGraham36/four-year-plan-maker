@@ -35,9 +35,11 @@ const Footer = () => {
         <p>
           &copy; {new Date().getFullYear()} TerpPlanner
         </p>
+        <span> | </span>
         <Link href="/privacy-policy" className="hover:underline">
           Privacy Policy
         </Link>
+        <span> | </span>
         <Link href="/terms-of-service" className="hover:underline">
           Terms of Service
         </Link>
