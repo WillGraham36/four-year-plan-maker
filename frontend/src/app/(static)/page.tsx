@@ -5,9 +5,9 @@ import React from 'react'
 const HomePage = async () => {
 
   return (
-    <div>
+    <main className=''>
         
-    </div>
+    </main>
   );
 }
 

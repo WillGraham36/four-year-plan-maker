@@ -1,3 +1,4 @@
+import { ThemeProvider } from "@/components/context/theme-provider";
 import Navbar from "@/components/layout/navbar";
 import { useTheme } from "next-themes";
 
@@ -7,9 +8,9 @@ export default function StaticLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <Navbar />
       {children}
-    </>
+    </ThemeProvider>
   )
 }
