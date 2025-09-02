@@ -2,17 +2,18 @@
 import React from 'react'
 import { Button } from '../ui/button'
 import { useRequirements } from '../context/requirements-context';
-import { deleteOffTerm } from '@/lib/api/planner/planner.server';
 import { Term } from '@/lib/utils/types';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import LoadingButton from '../ui/loading-button';
 import { useSemester } from '../context/semester-context';
+import { useCourseApi } from '@/lib/api/planner/planner.client';
 
 const RemoveCourseButton = ({ term, year }: { term: Term, year: number }) => {
   const [loading, setLoading] = React.useState(false);
   const { refreshAllRequirements, updateTotalCredits, updateCompletedSemesters } = useRequirements();
   const { getTotalCredits } = useSemester();
+  const { deleteOffTerm } = useCourseApi();
   const router = useRouter();
 
   const onRemoveSemester = async () => {

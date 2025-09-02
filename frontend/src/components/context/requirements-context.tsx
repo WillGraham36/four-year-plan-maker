@@ -1,5 +1,5 @@
 'use client';
-import { getAllGenEds, getAllULCourses } from "@/lib/api/planner/planner.server";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 import { GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
 import { CourseWithSemester, SemesterDateDescriptor, UserInfo } from "@/lib/utils/types";
 import { useRouter } from "next/navigation";
@@ -38,6 +38,7 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
   const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
   const [totalCredits, setTotalCredits] = useState<number>(initialTotalCredits || 0);
+  const { getAllGenEds, getAllULCourses } = useCourseApi();
 
   const router = useRouter();
   useEffect(() => {

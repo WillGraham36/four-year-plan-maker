@@ -8,7 +8,7 @@ import { AlertCircleIcon, Check, ImageUpIcon, LoaderCircleIcon } from "lucide-re
 import Link from "next/link";
 import { OnboardingFormValues } from "./onboarding-form";
 import { Term } from "@/lib/utils/types";
-import { getMultipleCourseInfos, saveSemester } from "@/lib/api/planner/planner.server";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 const maxSizeMB = 10
 const maxSize = maxSizeMB * 1024 * 1024 // 5MB default
@@ -22,6 +22,7 @@ interface TranscriptUploadProps {
 const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUploadProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { saveSemester, getMultipleCourseInfos } = useCourseApi();
 
   const handleFileUpload = async (files: FileWithPreview[]) => {
     setLoading(true);

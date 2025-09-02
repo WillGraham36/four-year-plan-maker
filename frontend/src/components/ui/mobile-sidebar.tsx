@@ -17,9 +17,9 @@ import { ThemeToggleIcon } from "./toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 import { IconWithLightMode } from "../layout/footer";
-import { getAllGenEds, getAllSemesters, getUserInfo } from "@/lib/api/planner/planner.server";
 import fillPDFForm from "../planner/fill-pdf";
 import { toast } from "sonner";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 export const MobileSidebar = ({
   className,
@@ -30,6 +30,7 @@ export const MobileSidebar = ({
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { setTheme, theme } = useTheme();
   const { openUserProfile, user } = useClerk();
+  const { getAllGenEds, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
 
   const handleThemeToggle = () => {

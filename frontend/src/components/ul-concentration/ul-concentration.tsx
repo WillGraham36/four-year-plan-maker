@@ -3,8 +3,8 @@ import { termYearToString } from "@/lib/utils";
 import { useRequirements } from "../context/requirements-context";
 import { ULCCombobox } from "./concentration-combobox";
 import { Fragment, useState } from "react";
-import { updateULConcentration } from "@/lib/api/planner/planner.server";
 import SatisfiedCheck from "../ui/satisfied-check";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 
 interface ULCProps {
@@ -16,6 +16,7 @@ const UpperLevelConcentrationContainer = ({
 }: ULCProps) => {
   const [concentration, setConcentration] = useState<string>(initialConcentration);
   const { ULCourses, refreshULCourses, completedSemesters } = useRequirements();
+  const { updateULConcentration } = useCourseApi();
   const totalCredits = ULCourses.reduce((total, course) => total + course.credits, 0);
 
   return (

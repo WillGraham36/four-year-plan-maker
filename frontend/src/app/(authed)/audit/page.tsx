@@ -2,7 +2,7 @@ import ChartsContainer from '@/components/audit/charts/charts-container';
 import { ChartsInfoProvider } from '@/components/audit/charts/charts-context';
 import { RequirementsProvider } from '@/components/context/requirements-context';
 import { MajorRequirementsProvider } from '@/components/context/major-requirements-context';
-import { getAllAcademicInfo, getAllGenEds, getAllSemesters, getAllULCourses, getUserInfo } from '@/lib/api/planner/planner.server'
+import { getAllAcademicInfo } from '@/lib/api/planner/planner.server'
 import { Course } from '@/lib/utils/types';
 import React from 'react'
 import ResponsiveAuditLayout from '@/components/audit/audit-tabs';

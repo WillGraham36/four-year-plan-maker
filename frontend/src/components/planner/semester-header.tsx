@@ -21,8 +21,8 @@ import { Term } from '@/lib/utils/types';
 import { termYearToString } from '@/lib/utils';
 import { useState } from 'react';
 import { useRequirements } from '../context/requirements-context';
-import { updateSemesterCompletion } from '@/lib/api/planner/planner.server';
 import { toast } from 'sonner';
+import { useCourseApi } from '@/lib/api/planner/planner.client';
 
 interface SemesterHeaderProps {
   term: Term;
@@ -33,6 +33,7 @@ interface SemesterHeaderProps {
 }
 const SemesterHeader = ({ term, year, removable, completed, setCompleted }: SemesterHeaderProps) => {
   const { updateCompletedSemesters } = useRequirements();
+  const { updateSemesterCompletion } = useCourseApi();
   const semesterTerm = termYearToString(term, year);
   const [isUpdating, setIsUpdating] = useState(false);
 

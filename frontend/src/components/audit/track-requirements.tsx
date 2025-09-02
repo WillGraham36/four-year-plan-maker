@@ -13,9 +13,9 @@ import {
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
-import { updateUserTrack } from "@/lib/api/planner/planner.server";
 import { useMajorRequirements } from '@/components/context/major-requirements-context';
 import CourseRow from './course-row';
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 export const tracks: { value: CsSpecializations; label: string }[] = [
   { value: "GENERAL", label: "General Track" },
@@ -31,6 +31,7 @@ interface TrackRequirementProps {
 
 const TrackRequirements = ({ initialTrack }: TrackRequirementProps) => {
   const { trackRequirements, currentTrack, updateTrack: updateContextTrack } = useMajorRequirements();
+  const { updateUserTrack } = useCourseApi();
 
   const updateTrack = async (track: CsSpecializations) => {
     updateContextTrack(track); // Update context immediately

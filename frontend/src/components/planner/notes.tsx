@@ -2,13 +2,14 @@
 import React from 'react'
 import { SemesterHeaderText } from './semester'
 import { Textarea } from '../ui/textarea'
-import { updateUserNote } from '@/lib/api/planner/planner.server';
 import { useDebounce } from 'use-debounce';
 import { toast } from 'sonner';
+import { useCourseApi } from '@/lib/api/planner/planner.client';
 
 const Notes = ({ note }: { note: string | null | undefined}) => {
   const [noteText, setNoteText] = React.useState(note || '');
   const [debouncedNoteText] = useDebounce(noteText, 500);
+  const { updateUserNote } = useCourseApi();
 
   // Effect to handle the debounced server request
   React.useEffect(() => {

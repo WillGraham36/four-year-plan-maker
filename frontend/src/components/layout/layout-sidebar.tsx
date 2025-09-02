@@ -9,9 +9,9 @@ import { ThemeToggleIcon } from "../ui/toggle";
 import { useTheme } from "next-themes";
 import { useClerk } from "@clerk/nextjs";
 import fillPDFForm from "../planner/fill-pdf";
-import { getAllGenEds, getAllSemesters, getUserInfo } from "@/lib/api/planner/planner.server";
 import { toast } from "sonner";
 import { IconWithLightMode } from "./footer";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 export const navbarLinks = [
   {
@@ -35,6 +35,7 @@ function LayoutSidebar() {
   const { setTheme, theme } = useTheme();
   const { openUserProfile, user } = useClerk();
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const { getAllGenEds, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
 
   const handleThemeToggle = () => {

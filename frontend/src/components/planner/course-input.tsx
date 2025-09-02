@@ -2,7 +2,6 @@
 import { Course, GenEd } from '@/lib/utils/types';
 import React, { useEffect, useRef, useState } from 'react'
 import { Input } from '../ui/input';
-import { deleteSemesterCourses, getCourseInfo, updateCourseSelectedGenEds } from '@/lib/api/planner/planner.server';
 import {
   Tooltip,
   TooltipContent,
@@ -10,11 +9,11 @@ import {
 } from "@/components/ui/tooltip"
 
 import { CircleAlert, Info } from 'lucide-react';
-import { saveCourse } from '@/lib/api/planner/planner.server';
 import SelectGenEdButton from './select-gened-button';
 import { arraysEqual } from '@/lib/utils';
 import { useRequirements } from '../context/requirements-context';
 import { useSemester } from '../context/semester-context';
+import { useCourseApi } from '@/lib/api/planner/planner.client';
 
 
 type CourseInputProps = {
@@ -32,6 +31,7 @@ const CourseInput = ({
 }: CourseInputProps) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
   const { refreshGenEds, refreshAllRequirements } = useRequirements();
+  const { saveCourse, updateCourseSelectedGenEds, deleteSemesterCourses, getCourseInfo } = useCourseApi();
 
   const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",

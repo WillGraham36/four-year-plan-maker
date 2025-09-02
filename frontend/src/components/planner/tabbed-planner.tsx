@@ -16,7 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { createOffTerm } from "@/lib/api/planner/planner.server";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AccordionProvider } from "../context/accordion-context";
@@ -25,6 +24,7 @@ import TotalCreditsContainer from '@/components/planner/total-credits-container'
 import TransferCreditsContainer from '@/components/planner/transfer-credits-container';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
 import Notes from '@/components/planner/notes';
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 interface TabbedPlannerProps {
   userInfo: UserInfo | null;
@@ -39,6 +39,7 @@ const TabbedPlanner = ({
 }: TabbedPlannerProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { createOffTerm } = useCourseApi();
 
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) return null;
 

@@ -33,10 +33,10 @@ import { Course, CustomServerResponse, GenEd, termOrder } from "@/lib/utils/type
 import { Input } from "../ui/input"
 import { Plus, Trash2 } from "lucide-react"
 import { MajorMinorCombobox } from "./major-minor-combobox"
-import { getMultipleCourseInfos } from "@/lib/api/planner/planner.server"
 import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
 import { useRouter } from "next/navigation"
 import LoadingButton from "../ui/loading-button"
+import { useCourseApi } from "@/lib/api/planner/planner.client"
 
 export type CsSpecializations = 
   | "GENERAL"
@@ -128,6 +128,7 @@ export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
 
 export default function OnboardingForm({ formInputs, backButton }: {formInputs?: OnboardingFormValues, backButton?: React.ReactNode}) {
   const router = useRouter();
+  const { getMultipleCourseInfos } = useCourseApi();
   const form = useForm<z.infer<typeof baseOnboardingFormSchema>> ({
     resolver: zodResolver(baseOnboardingFormSchema),
     defaultValues: formInputs || {
