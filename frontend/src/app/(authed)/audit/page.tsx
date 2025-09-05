@@ -33,7 +33,7 @@ const formatSemester = (semesterName: string): string => {
 const AuditPage = async () => {
   const { data: academicInfo } = await getAllAcademicInfo();
   if (!academicInfo) {
-    return <PageError />;
+    return <PageError error={"Failed to load page"} />;
   }
   const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
   

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import PageError from "@/components/layout/page-error";
 
 export default function GlobalError({
   error,
@@ -12,13 +12,7 @@ export default function GlobalError({
   return (
     <html>
       <body className="p-6">
-        <h2 className="text-xl font-semibold">Something went wrong!</h2>
-        <p className="text-gray-500">{error.message}</p>
-        <Button
-          onClick={() => reset()}
-        >
-          Try again
-        </Button>
+        <PageError error={error.message} />
       </body>
     </html>
   );

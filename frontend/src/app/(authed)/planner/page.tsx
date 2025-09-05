@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const PlannerPage = async () => {
   const { data: academicInfo } = await getAllAcademicInfo();
   if (!academicInfo) {
-    return <PageError />;
+    return <PageError error={"Failed to load page"} />;
   }
   const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
   const concentration = courses?.concentration;
