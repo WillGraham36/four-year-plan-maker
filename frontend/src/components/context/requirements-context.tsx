@@ -59,8 +59,8 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   }
 
   const refreshGenEds = async () => {
-    const genEds = await getAllGenEds();
-    setGenEds(genEds);
+    const newGenEds = await getAllGenEds();
+    setGenEds(newGenEds);
   };
 
   const refreshULCourses = async () => {

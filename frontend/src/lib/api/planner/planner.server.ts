@@ -1,7 +1,7 @@
 'use server';
 
-import { CourseInfoSchema, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
-import { Course, CustomServerResponse, GenEd, Term, ACCEPTABLE_ULC_AREAS, UserInfo, CsSpecializations } from "@/lib/utils/types";
+import { SemesterSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
+import { UserInfo } from "@/lib/utils/types";
 import { fetchWithAuth } from "../server";
 
 const getAllULCourses = async () => {

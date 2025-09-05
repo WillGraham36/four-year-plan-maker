@@ -85,10 +85,8 @@ const CourseInput = ({
     if(hasCourse(verifiedCourseId.current)) {
       removeCourse(verifiedCourseId.current);
 
-      await Promise.all([
-        deleteSemesterCourses([verifiedCourseId.current], term, year),
-        refreshAllRequirements(),
-      ])
+      await deleteSemesterCourses([verifiedCourseId.current], term, year);
+      await refreshAllRequirements();
 
       verifiedCourseId.current = "";
     }
@@ -131,16 +129,11 @@ const CourseInput = ({
 
         // Avoid extra call to update ULConcentration if courseId is not 3 or 400 level
         if(courseInfo.data.courseId.charAt(4) === "3" || courseInfo.data.courseId.charAt(4) === "4") {
-          await Promise.all([
-            saveCourse(courseInfo.data, term, year, index),
-            refreshAllRequirements()
-          ]);
+          await saveCourse(courseInfo.data, term, year, index);
+          await refreshAllRequirements();
         } else {
-          await Promise.all([
-            saveCourse({...courseInfo.data }, term, year, index),
-            refreshGenEds()
-          ]);
-
+          await saveCourse({...courseInfo.data }, term, year, index);
+          await refreshGenEds();
         }
 
         verifiedCourseId.current = courseId;
@@ -203,10 +196,8 @@ const CourseInput = ({
                         selectedGenEds: genEdGroup,
                       }));
 
-                      await Promise.all([
-                        updateCourseSelectedGenEds(course.courseId, genEdGroup),
-                        refreshGenEds()
-                      ]);
+                      await updateCourseSelectedGenEds(course.courseId, genEdGroup);
+                      await refreshGenEds();
                     }}
                     selected={arraysEqual(genEdGroup, course.selectedGenEds || [])}
                     isFirstInGroup={groupIndex === 0}

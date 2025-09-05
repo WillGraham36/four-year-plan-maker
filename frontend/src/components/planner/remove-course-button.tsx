@@ -25,10 +25,10 @@ const RemoveCourseButton = ({ term, year }: { term: Term, year: number }) => {
       return;
     }
     const numCreditsRemoved = getTotalCredits();
-    await Promise.all([
-      refreshAllRequirements(),
-      updateTotalCredits(numCreditsRemoved, true),
-    ]);
+    
+    await refreshAllRequirements();
+    updateTotalCredits(numCreditsRemoved, true);
+
     updateCompletedSemesters({ term, year }, true);
     router.refresh();
     setLoading(false);
