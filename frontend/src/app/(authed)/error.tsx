@@ -10,10 +10,6 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html>
-      <body className="p-6">
-        <PageError error={error.message} />
-      </body>
-    </html>
+    <PageError error={error.message} />
   );
 }

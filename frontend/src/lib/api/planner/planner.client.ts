@@ -3,8 +3,8 @@
 
 import { useFetchWithAuth } from "@/hooks/useFetchWithAuthClient";
 import { courseAndSemesterToDto } from "@/lib/utils";
-import { CourseInfoSchema, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema } from "@/lib/utils/schemas";
-import { Course, CsSpecializations, CustomServerResponse, GenEd, Term, UserInfo } from "@/lib/utils/types";
+import { CourseInfoSchema, GenEd as GenEdSchema, GenEdList, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, CourseWithSemester, CsSpecializations, CustomServerResponse, GenEd, Term, UserInfo } from "@/lib/utils/types";
 
 // Save a course
 export function useCourseApi() {
@@ -28,6 +28,33 @@ export function useCourseApi() {
       body,
     });
   };
+
+  interface ReturnUpdatedResponse {
+    savedCourses: CourseWithSemester[];
+    updatedGenEds: GenEdList;
+    updatedULConcentration: {
+      concentration: string;
+      courses: ULCoursesInfo;
+    }
+  }
+  const saveCourseAndReturnUpdated = async (course: Course, term: Term, year: number, index: number): Promise<CustomServerResponse<ReturnUpdatedResponse>>  => {
+    const body = JSON.stringify([{
+      course: {
+        courseId: course.courseId,
+        name: course.name,
+        credits: course.credits,
+        genEds: course.genEds,
+      },
+      semester: { term, year },
+      index,
+    }]);
+
+    return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+  }
 
   const saveSemester = async (courses: (Course & { index?: number })[], term: Term, year: number) => {
     const body = JSON.stringify(
@@ -60,6 +87,21 @@ export function useCourseApi() {
     );
   };
 
+  const updateCourseSelectedGenEdsAndReturnUpdated = async (courseId: string, selectedGenEds: GenEd[]): Promise<CustomServerResponse<ReturnUpdatedResponse>> => {
+    const body = JSON.stringify({
+      courseId: courseId,
+      selectedGenEds: selectedGenEds,
+    });
+  
+   return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body,
+    });
+  }
+
   const deleteSemesterCourses = async (courseIds: string[], term: Term, year: number) => {
     const body = JSON.stringify(
       courseIds.map((courseId) => ({
@@ -80,6 +122,27 @@ export function useCourseApi() {
       }
     );
   };
+
+  const deleteSemesterCoursesAndReturnUpdated = async (courseIds: string[], term: Term, year: number): Promise<CustomServerResponse<ReturnUpdatedResponse>> => {
+    const body = JSON.stringify(
+      courseIds.map((courseId) => ({
+        courseId: courseId,
+        semester: {
+          term: term,
+          year: year
+        }
+      }))
+    );
+  
+    return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: body,
+      }
+    );
+  }
 
   const getAllSemesters = async (): Promise<SemesterSchema> => {
     const res = await fetchWithAuth("v1/usercourses");
@@ -349,8 +412,11 @@ export function useCourseApi() {
 
   return {
     saveCourse,
+    saveCourseAndReturnUpdated,
     saveSemester,
     updateCourseSelectedGenEds,
+    updateCourseSelectedGenEdsAndReturnUpdated,
+    deleteSemesterCoursesAndReturnUpdated,
     deleteSemesterCourses,
     getAllSemesters,
     getAllGenEds,

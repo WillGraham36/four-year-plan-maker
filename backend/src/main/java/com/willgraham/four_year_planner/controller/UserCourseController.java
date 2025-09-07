@@ -7,6 +7,7 @@ import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
+import com.willgraham.four_year_planner.service.GenEdService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
@@ -33,6 +34,7 @@ public class UserCourseController {
 
     private final UserCourseService userCourseService;
     private final CourseService courseService;
+    private final GenEdService genEdService;
     private static final Logger logger = LoggerFactory.getLogger(UserCourseController.class);
 
     /**
@@ -48,6 +50,65 @@ public class UserCourseController {
                 .map(dto -> processUserCourse(dto, userId))
                 .toList();
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(savedCourses));
+    }
+
+    /**
+     * Add courses that a user is taking and return updated GenEds and UL concentration data
+     * @param requestDtos - List of user_courses the user is taking
+     * @return - Object containing saved courses, updated GenEds, and UL concentration data
+     */
+    @PostMapping("/with-updates")
+    public ResponseEntity<ApiResponse<UserCourseWithUpdatesResponseDto>> saveUserCoursesWithUpdates(
+            @RequestBody List<UserCourseRequestDto> requestDtos,
+            Authentication authentication) {
+
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        // Save the courses (reusing existing logic)
+        List<UserCourseResponseDto> savedCourses = requestDtos.stream()
+                .map(dto -> processUserCourse(dto, userId))
+                .toList();
+
+        // Get updated GenEds data
+        List<GenEdDto> updatedGenEds = genEdService.getAllGenEds(userId);
+
+        // Get updated UL concentration data
+        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+
+        // Create combined response
+        UserCourseWithUpdatesResponseDto response = new UserCourseWithUpdatesResponseDto(
+                savedCourses,
+                updatedGenEds,
+                updatedULConcentration
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(response));
+    }
+
+
+    @PatchMapping("/with-updates")
+    public ResponseEntity<ApiResponse<GenEdULUpdatesResponseDto>> updateSelectedGenEdsWithUpdates(
+            @RequestBody UserCourseSelectedGenEdRequestDto selectedGenEdRequestDto,
+            Authentication authentication) {
+
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        // Update the selected GenEds (reusing existing logic)
+        userCourseService.updateUserCourseSelectedGenEds(userId, selectedGenEdRequestDto.getCourseId(), selectedGenEdRequestDto.getSelectedGenEds());
+
+        // Get updated GenEds data
+        List<GenEdDto> updatedGenEds = genEdService.getAllGenEds(userId);
+
+        // Get updated UL concentration data
+        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+
+        // Create combined response
+        GenEdULUpdatesResponseDto response = new GenEdULUpdatesResponseDto(
+                updatedGenEds,
+                updatedULConcentration
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @PatchMapping
@@ -68,6 +129,33 @@ public class UserCourseController {
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
 
         return ResponseEntity.ok(ApiResponse.success(courses));
+    }
+
+
+    @DeleteMapping("/with-updates")
+    public ResponseEntity<ApiResponse<DeleteWithUpdatesResponseDto>> deleteUserCoursesWithUpdates(
+            @RequestBody List<CourseIdentifierDto> courseIdentifiers,
+            Authentication authentication) {
+
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        // Delete the courses (reusing existing logic)
+        int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
+
+        // Get updated GenEds data
+        List<GenEdDto> updatedGenEds = genEdService.getAllGenEds(userId);
+
+        // Get updated UL concentration data
+        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+
+        // Create combined response
+        DeleteWithUpdatesResponseDto response = new DeleteWithUpdatesResponseDto(
+                deletedCount,
+                updatedGenEds,
+                updatedULConcentration
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @DeleteMapping

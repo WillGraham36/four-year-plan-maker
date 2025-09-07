@@ -1,13 +1,15 @@
 'use client';
 import { useCourseApi } from "@/lib/api/planner/planner.client";
-import { GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
-import { CourseWithSemester, SemesterDateDescriptor, UserInfo } from "@/lib/utils/types";
+import { GenEd, GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, GenEd as GenEdListType, SemesterDateDescriptor, Term, UserInfo } from "@/lib/utils/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface RequirementsContextProps {
-  refreshGenEds: () => Promise<void>;
+  saveNewCourseAndRefreshGenEdsAndULCourses: (course: Course, term: Term, year: number, index: number) => Promise<void>;
+  updateCourseSelectedGenEdsAndRefreshGenEds: (courseId: string, selectedGenEds: GenEdListType[]) => Promise<void>;
+  deleteSemesterCoursesAndRefreshGenEdsAndULCourses: (courseIds: string[], term: Term, year: number) => Promise<void>;
   genEds: GenEdList;
 
   refreshULCourses: () => Promise<void>;
@@ -20,6 +22,8 @@ interface RequirementsContextProps {
 
   completedSemesters: SemesterDateDescriptor[];
   updateCompletedSemesters: (semesters: SemesterDateDescriptor, isRemoval?: boolean) => void;
+
+  updateGenEdsOptimistic: (updatedGenEds: GenEd[]) => void;
 }
 
 const RequirementsContext = createContext<RequirementsContextProps | undefined>(undefined);
@@ -38,7 +42,7 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
   const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
   const [totalCredits, setTotalCredits] = useState<number>(initialTotalCredits || 0);
-  const { getAllGenEds, getAllULCourses } = useCourseApi();
+  const { getAllGenEds, getAllULCourses, saveCourseAndReturnUpdated, updateCourseSelectedGenEdsAndReturnUpdated, deleteSemesterCoursesAndReturnUpdated } = useCourseApi();
 
   const router = useRouter();
   useEffect(() => {
@@ -58,9 +62,37 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
     return null; 
   }
 
+  const saveNewCourseAndRefreshGenEdsAndULCourses = async (course: Course, term: Term, year: number, index: number) => {
+    const res = await saveCourseAndReturnUpdated(course, term, year, index);
+    if(!res.ok) {
+      toast.error("Failed to save course. Please try again.");
+      return;
+    }
+    const { savedCourses, updatedGenEds, updatedULConcentration } = res.data;
+    setGenEds(updatedGenEds);
+    setULCourses(updatedULConcentration.courses);
+  }
+
+  const updateCourseSelectedGenEdsAndRefreshGenEds = async (courseId: string, selectedGenEds: GenEdListType[]) => {
+    const res = await updateCourseSelectedGenEdsAndReturnUpdated(courseId, selectedGenEds);
+    if(!res.ok) {
+      toast.error("Failed to save course. Please try again.");
+      return;
+    }
+    const { savedCourses, updatedGenEds, updatedULConcentration } = res.data;
+    setGenEds(updatedGenEds);
+    setULCourses(updatedULConcentration.courses);
+  }
+
   const refreshGenEds = async () => {
     const newGenEds = await getAllGenEds();
     setGenEds(newGenEds);
+  };
+
+  const updateGenEdsOptimistic = (updatedGenEds: GenEd[]) => {
+    setGenEds(prev => {
+      return [...prev, ...updatedGenEds.filter(ug => !prev.some(g => g.courseId === ug.courseId))];
+    });
   };
 
   const refreshULCourses = async () => {
@@ -70,6 +102,17 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
 
   const updateTotalCredits = (credits: number, isRemoval?: boolean) => {
     setTotalCredits(prev => isRemoval ? prev - credits : prev + credits);
+  }
+
+  const deleteSemesterCoursesAndRefreshGenEdsAndULCourses = async (courseIds: string[], term: Term, year: number) => {
+    const res = await deleteSemesterCoursesAndReturnUpdated(courseIds, term, year);
+    if(!res.ok) {
+      toast.error("Failed to delete courses. Please try again.");
+      return;
+    }
+    const { updatedGenEds, updatedULConcentration } = res.data;
+    setGenEds(updatedGenEds);
+    setULCourses(updatedULConcentration.courses);
   }
 
   const updateCompletedSemesters = (semester: SemesterDateDescriptor, isRemoval?: boolean) => {
@@ -89,7 +132,9 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
   return (
     <RequirementsContext.Provider
       value={{ 
-        refreshGenEds, 
+        saveNewCourseAndRefreshGenEdsAndULCourses,
+        updateCourseSelectedGenEdsAndRefreshGenEds,
+        deleteSemesterCoursesAndRefreshGenEdsAndULCourses,
         genEds, 
         refreshULCourses, 
         ULCourses, 
@@ -97,7 +142,9 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
         totalCredits, 
         updateTotalCredits, 
         completedSemesters,
-        updateCompletedSemesters
+        updateCompletedSemesters,
+
+        updateGenEdsOptimistic,
       }}
     >
       {children}

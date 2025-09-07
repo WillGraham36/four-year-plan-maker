@@ -30,8 +30,8 @@ const CourseInput = ({
   index,
 }: CourseInputProps) => {
   const { courses, addCourse, removeCourse, hasCourse, term, year } = useSemester();
-  const { refreshGenEds, refreshAllRequirements } = useRequirements();
-  const { saveCourse, updateCourseSelectedGenEds, deleteSemesterCourses, getCourseInfo } = useCourseApi();
+  const { updateGenEdsOptimistic, saveNewCourseAndRefreshGenEdsAndULCourses, updateCourseSelectedGenEdsAndRefreshGenEds, deleteSemesterCoursesAndRefreshGenEdsAndULCourses } = useRequirements();
+  const { getCourseInfo } = useCourseApi();
 
   const [course, setCourse] = useState<Course>(initialCourse || {
     courseId: "",
@@ -84,10 +84,7 @@ const CourseInput = ({
     // if the course was added and validated to remove it from backend
     if(hasCourse(verifiedCourseId.current)) {
       removeCourse(verifiedCourseId.current);
-
-      await deleteSemesterCourses([verifiedCourseId.current], term, year);
-      await refreshAllRequirements();
-
+      await deleteSemesterCoursesAndRefreshGenEdsAndULCourses([verifiedCourseId.current], term, year)
       verifiedCourseId.current = "";
     }
   }
@@ -127,14 +124,17 @@ const CourseInput = ({
         });
         addCourse(courseInfo.data);
 
-        // Avoid extra call to update ULConcentration if courseId is not 3 or 400 level
-        if(courseInfo.data.courseId.charAt(4) === "3" || courseInfo.data.courseId.charAt(4) === "4") {
-          await saveCourse(courseInfo.data, term, year, index);
-          await refreshAllRequirements();
-        } else {
-          await saveCourse({...courseInfo.data }, term, year, index);
-          await refreshGenEds();
+        if(!courseInfo.data.genEds[0][0]?.includes("|")) {
+          updateGenEdsOptimistic(courseInfo.data.genEds[0]
+            .map(genEd => ({
+              courseId: courseInfo.data.courseId,
+              genEd: genEd,
+              semesterName: term,
+              transferCreditName: null
+            }))
+          );
         }
+        await saveNewCourseAndRefreshGenEdsAndULCourses({...courseInfo.data }, term, year, index);
 
         verifiedCourseId.current = courseId;
       } catch (e) {
@@ -195,9 +195,7 @@ const CourseInput = ({
                         ...prevCourse,
                         selectedGenEds: genEdGroup,
                       }));
-
-                      await updateCourseSelectedGenEds(course.courseId, genEdGroup);
-                      await refreshGenEds();
+                      await updateCourseSelectedGenEdsAndRefreshGenEds(course.courseId, genEdGroup);
                     }}
                     selected={arraysEqual(genEdGroup, course.selectedGenEds || [])}
                     isFirstInGroup={groupIndex === 0}

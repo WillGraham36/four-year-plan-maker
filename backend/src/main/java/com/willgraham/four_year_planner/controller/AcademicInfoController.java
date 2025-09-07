@@ -24,16 +24,14 @@ public class AcademicInfoController {
     private final UserService userService;
     private final UserCourseService userCourseService;
     private final GenEdService genEdService;
-    private final GenEdsController genEdsController;
-    private final ULConcentrationController ulConcentrationController;
 
     @GetMapping
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
-        List<GenEdDto> genEds = genEdsController.getAllGenEds(userId);
-        ULConcentrationDTO concentrationDTO = ulConcentrationController.getULConcentrationAndCourses(userId);
+        List<GenEdDto> genEds = genEdService.getAllGenEds(userId);
+        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId);
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
 
 
