@@ -155,6 +155,8 @@ const CourseInput = ({
     }
 
     if (course.genEds[0].length > 0) {
+      const hasOrChoice = course.genEds.length > 1;
+
       return (
         <span className="flex items-center gap-1">
           {course.genEds.map((genEdGroup, groupIndex) => {
@@ -190,16 +192,20 @@ const CourseInput = ({
 
             return (
               <React.Fragment key={groupIndex}>
-                <SelectGenEdHighlight
-                  selected={
-                    course.assignedGenEdBranchIndex != null
-                      ? groupIndex === course.assignedGenEdBranchIndex
-                      : arraysEqual(genEdGroup, course.assignedGenEds || [])
-                  }
-                  isFirstInGroup={groupIndex === 0}
-                >
-                  {genEdContent}
-                </SelectGenEdHighlight>
+                {hasOrChoice ? (
+                  <SelectGenEdHighlight
+                    selected={
+                      course.assignedGenEdBranchIndex != null
+                        ? groupIndex === course.assignedGenEdBranchIndex
+                        : arraysEqual(genEdGroup, course.assignedGenEds || [])
+                    }
+                    isFirstInGroup={groupIndex === 0}
+                  >
+                    {genEdContent}
+                  </SelectGenEdHighlight>
+                ) : (
+                  genEdContent
+                )}
                 {groupIndex < course.genEds.length - 1 && <span>or</span>}
               </React.Fragment>
             );
