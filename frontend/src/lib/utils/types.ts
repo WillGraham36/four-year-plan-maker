@@ -6,6 +6,7 @@ export type Semester = {
 }
 
 export type Course = {
+  id?: number | null
   courseId: string
   name: string
   credits: number

@@ -11,6 +11,7 @@ export const CourseInfoSchema = z.object({
 })
 
 export const CourseSchema = z.object({
+  id: z.number().optional().nullable(),
   courseId: z.string(),
   name: z.string(),
   credits: z.number(),

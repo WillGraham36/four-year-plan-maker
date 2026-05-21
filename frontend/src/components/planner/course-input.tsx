@@ -15,6 +15,15 @@ import { useRequirements } from "../context/requirements-context";
 import { useSemester } from "../context/semester-context";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
 
+const MAX_COURSE_ID_LENGTH = 9;
+
+const emptyCourse = (courseId: string = ""): Course => ({
+  courseId,
+  name: "",
+  credits: -1,
+  genEds: [["NONE"]],
+});
+
 type CourseInputProps = {
   initialCourse?: Course;
   disabled?: boolean;
@@ -36,16 +45,14 @@ const CourseInput = ({
   } = useRequirements();
   const { getCourseInfo } = useCourseApi();
 
-  const [course, setCourse] = useState<Course>(
-    initialCourse || {
-      courseId: "",
-      name: "",
-      credits: -1,
-      genEds: [["NONE"]],
-    },
+  const [course, setCourse] = useState<Course>(initialCourse || emptyCourse());
+  const [courseIdInput, setCourseIdInput] = useState<string>(
+    initialCourse?.courseId || "",
   );
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
+  const courseIdInputRef = useRef<string>(initialCourse?.courseId || "");
+  const lookupRequestId = useRef<number>(0);
 
   useEffect(() => {
     const updatedCourse = courses.find(
@@ -81,51 +88,71 @@ const CourseInput = ({
     }
   }, [courses]);
 
-  // If courseId is provided, courseId field will NOT be reset
-  const resetCourseFields = async (courseId: string = "") => {
-    setCourse({
-      courseId: courseId,
-      name: "",
-      credits: -1,
-      genEds: [["NONE"]],
-    });
+  const removeVerifiedCourse = async () => {
+    const courseIdToRemove = verifiedCourseId.current;
 
-    if (verifiedCourseId.current === "") return;
+    if (courseIdToRemove === "") return;
 
-    // Make use of fact that course state has not updated yet to check
-    // if the course was added and validated to remove it from backend
-    if (hasCourse(verifiedCourseId.current)) {
-      removeCourse(verifiedCourseId.current);
+    if (hasCourse(courseIdToRemove)) {
+      removeCourse(courseIdToRemove);
       await deleteSemesterCoursesAndRefreshGenEdsAndULCourses(
-        [verifiedCourseId.current],
+        [courseIdToRemove],
         term,
         year,
       );
-      verifiedCourseId.current = "";
     }
+
+    verifiedCourseId.current = "";
+  };
+
+  const resetCourseFields = async (courseId: string = "") => {
+    setCourse(emptyCourse(courseId));
+    await removeVerifiedCourse();
   };
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const courseId = e.target.value.toUpperCase();
-    setCourse((prevCourse) => ({
-      ...prevCourse,
-      courseId,
-    }));
+    const courseId = e.target.value
+      .toUpperCase()
+      .slice(0, MAX_COURSE_ID_LENGTH);
+
+    courseIdInputRef.current = courseId;
+    setCourseIdInput(courseId);
     setErrorMessage("");
 
-    if (courseId.length < 7) {
+    const previousVerifiedCourseId = verifiedCourseId.current;
+
+    if (courseId !== verifiedCourseId.current) {
       await resetCourseFields(courseId);
+    }
+
+    if (courseId.length < 7) {
       return;
     }
 
-    if (courses.some((c) => c.courseId === courseId)) {
+    if (
+      courses.some(
+        (c) =>
+          c.courseId === courseId && c.courseId !== previousVerifiedCourseId,
+      )
+    ) {
       setErrorMessage("Course already added");
       return;
     }
 
     if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
+      const requestId = lookupRequestId.current + 1;
+      lookupRequestId.current = requestId;
+
       try {
         const courseInfo = await getCourseInfo(courseId);
+        const isCurrentRequest =
+          lookupRequestId.current === requestId &&
+          courseIdInputRef.current === courseId;
+
+        if (!isCurrentRequest) {
+          return;
+        }
+
         if (!courseInfo.ok) {
           setErrorMessage(courseInfo.message);
           await resetCourseFields(courseId);
@@ -142,9 +169,22 @@ const CourseInput = ({
           index,
         );
 
+        if (courseIdInputRef.current !== courseId) {
+          removeCourse(courseId);
+          await deleteSemesterCoursesAndRefreshGenEdsAndULCourses(
+            [courseId],
+            term,
+            year,
+          );
+          setCourse(emptyCourse(courseIdInputRef.current));
+          return;
+        }
+
         verifiedCourseId.current = courseId;
       } catch (e) {
-        setErrorMessage("Error fetching course information");
+        if (courseIdInputRef.current === courseId) {
+          setErrorMessage("Error fetching course information");
+        }
       }
     }
   };
@@ -235,8 +275,9 @@ const CourseInput = ({
           )}
           <Input
             className="p-0 px-3 h-8 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border disabled:cursor-default disabled:opacity-100 disabled:text-muted-foreground"
-            value={course.courseId}
+            value={courseIdInput}
             onChange={handleInputChange}
+            maxLength={MAX_COURSE_ID_LENGTH}
             disabled={disabled}
           />
         </div>

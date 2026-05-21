@@ -109,14 +109,14 @@ const SemesterCourseList = ({ initialCourses, disableCourseEditing, isCore, minN
           const course = coursesByIndex.get(index);
           return course ? (
             <CourseInput 
-              key={course.courseId}
+              key={`slot-${index}`}
               initialCourse={course} 
               disabled={disableCourseEditing} 
               index={index}
             />
           ) : (
             <CourseInput 
-              key={`empty-${index}`}
+              key={`slot-${index}`}
               disabled={disableCourseEditing} 
               index={index}
             />

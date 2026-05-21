@@ -37,7 +37,7 @@ public class UserCourseService {
     }
 
     public Map<Semester, List<CourseDto>> getAllCoursesForUser(String userId) {
-        List<UserCourse> courses =  userCourseRepository.findByUserIdOrderBySemesterAsc(userId);
+        List<UserCourse> courses =  userCourseRepository.findByUserIdOrdered(userId);
 
         // Transform DTOs
         List<CourseDto> courseDtos = courses.stream()
