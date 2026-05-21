@@ -22,18 +22,18 @@ public class UserCourseService {
     private final UserService userService;
 
     public UserCourse save(UserCourse userCourse) {
-        boolean existsInSameSemester = userCourseRepository.existsByUserIdAndCourseIdAndSemester(
+        UserCourse existingCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
                 userCourse.getUserId(),
                 userCourse.getCourseId(),
                 userCourse.getSemester()
         );
 
-        // If this is just a duplicate course, don't save it and return a blank course
-        if(existsInSameSemester) {
-            return new UserCourse();
+        // If this is a duplicate entry for the same semester, return the existing row instead of a blank object.
+        if(existingCourse != null) {
+            return hydrateCourse(existingCourse);
         }
 
-        return userCourseRepository.save(userCourse);
+        return hydrateCourse(userCourseRepository.save(userCourse));
     }
 
     public Map<Semester, List<CourseDto>> getAllCoursesForUser(String userId) {
@@ -41,6 +41,7 @@ public class UserCourseService {
 
         // Transform DTOs
         List<CourseDto> courseDtos = courses.stream()
+                .map(this::hydrateCourse)
                 .map(CourseDto::fromUserCourse)
                 .toList();
 
@@ -81,12 +82,14 @@ public class UserCourseService {
     public List<TransferCreditDto> getTransferCreditsForUser(String userId) {
         List<UserCourse> transferCourses =  userCourseRepository.findTransferCreditsByUserId(userId);
 
-        return transferCourses.stream().map((course) -> new TransferCreditDto(
-                course.getTransferCreditName(),
-                course.getCourse(),
-                course.getSemester(),
-                course.getTransferGenEdsOverride()
-        )).toList();
+        return transferCourses.stream()
+                .map(this::hydrateCourse)
+                .map((course) -> new TransferCreditDto(
+                        course.getTransferCreditName(),
+                        course.getCourse(),
+                        course.getSemester(),
+                        course.getTransferGenEdsOverride()
+                )).toList();
     }
 
     public ULConcentrationDTO getULConcentrationAndCourses(String userId) {
@@ -98,6 +101,7 @@ public class UserCourseService {
 
         // Remove duplicate courses
         courses = courses.stream()
+                .map(this::hydrateCourse)
                 .collect(Collectors.toMap(
                         UserCourse::getCourseId,
                         Function.identity(),
@@ -117,5 +121,17 @@ public class UserCourseService {
                 .toList();
 
         return new ULConcentrationDTO(concentration, coursesDTO);
+    }
+
+    private UserCourse hydrateCourse(UserCourse userCourse) {
+        if (userCourse == null) {
+            return null;
+        }
+
+        if (userCourse.getCourse() == null && userCourse.getCourseId() != null && !userCourse.getCourseId().isBlank()) {
+            userCourse.setCourse(courseService.findById(userCourse.getCourseId()));
+        }
+
+        return userCourse;
     }
 }
