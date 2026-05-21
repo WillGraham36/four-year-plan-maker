@@ -34,7 +34,7 @@ const SelectGenEdHighlight = ({
           {selectButton}
         </TooltipTrigger>
         <TooltipContent className="text-center">
-          Automatically assigned based on your full plan
+          Automatically assigned based on your plan
         </TooltipContent>
       </Tooltip>
     );
