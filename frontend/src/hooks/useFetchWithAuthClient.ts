@@ -18,16 +18,24 @@ export function useFetchWithAuth() {
       }
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/${route}?${params.toString()}`;
-
-      const res = await fetch(url, {
+      const fetchWithToken = (bearerToken: string) => fetch(url, {
         ...init,
         headers: {
           ...init.headers,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${bearerToken}`,
         },
         credentials: "include",
         cache: "no-cache",
       });
+
+      let res = await fetchWithToken(token);
+
+      if (res.status === 401) {
+        const freshToken = await getToken();
+        if (freshToken && freshToken !== token) {
+          res = await fetchWithToken(freshToken);
+        }
+      }
 
       const data = await res.json();
 

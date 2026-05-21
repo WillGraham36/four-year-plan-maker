@@ -1,18 +1,9 @@
-"use client"
-import {
-  toast
-} from "sonner"
-import {
-  useFieldArray,
-  useForm
-} from "react-hook-form"
-import {
-  zodResolver
-} from "@hookform/resolvers/zod"
-import * as z from "zod"
-import {
-  Button
-} from "@/components/ui/button"
+"use client";
+import { toast } from "sonner";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -21,24 +12,33 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import { Course, CustomServerResponse, GenEd, termOrder } from "@/lib/utils/types"
-import { Input } from "../ui/input"
-import { Plus, Trash2 } from "lucide-react"
-import { MajorMinorCombobox } from "./major-minor-combobox"
-import { submitOnboardingForm, SubmitOnboardingFormProps } from "@/lib/api/forms/onboarding-form.server"
-import { useRouter } from "next/navigation"
-import LoadingButton from "../ui/loading-button"
-import { useCourseApi } from "@/lib/api/planner/planner.client"
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Course,
+  CustomServerResponse,
+  GenEd,
+  Term,
+  termOrder,
+} from "@/lib/utils/types";
+import { Input } from "../ui/input";
+import { Plus, Trash2 } from "lucide-react";
+import { MajorMinorCombobox } from "./major-minor-combobox";
+import {
+  submitOnboardingForm,
+  SubmitOnboardingFormProps,
+} from "@/lib/api/forms/onboarding-form.server";
+import { useRouter } from "next/navigation";
+import LoadingButton from "../ui/loading-button";
+import { useCourseApi } from "@/lib/api/planner/planner.client";
 
-export type CsSpecializations = 
+export type CsSpecializations =
   | "GENERAL"
   | "DATA_SCIENCE"
   | "QUANTUM"
@@ -53,104 +53,193 @@ const csSpecializationOptions: { value: CsSpecializations; label: string }[] = [
   { value: "ML", label: "Machine Learning" },
 ];
 
-const baseOnboardingFormSchema = z.object({
-  startTerm: z.string(),
-  startYear: z.string(),
-  endTerm: z.string(),
-  endYear: z.string(),
-  major: z.string(),
-  csSpecialization: z.string().optional(),
-  minor: z.string().optional(),
-  transferCredits: z.array(z.object({
-    name: z.string().optional(),
-    courseId: z.string().optional(),
-    genEds: z.string().optional(),
-  }))
-  .optional()
-  .transform((credits) => {
-    // Filter out completely empty entries
-    if (!credits) return undefined;
-    const filtered = credits.filter(credit => 
-      (credit.name && credit.name.trim()) || (credit.courseId && credit.courseId.trim())
-    );
-    return filtered.length > 0 ? filtered : undefined;
+const completedCourseTermOrder: Record<string, number> = {
+  SPRING: 1,
+  SUMMER: 2,
+  FALL: 3,
+  WINTER: 4,
+};
+
+const baseOnboardingFormSchema = z
+  .object({
+    startTerm: z.string(),
+    startYear: z.string(),
+    endTerm: z.string(),
+    endYear: z.string(),
+    major: z.string(),
+    csSpecialization: z.string().optional(),
+    minor: z.string().optional(),
+    transferCredits: z
+      .array(
+        z.object({
+          name: z.string().optional(),
+          courseId: z.string().optional(),
+          genEds: z.string().optional(),
+        }),
+      )
+      .optional()
+      .transform((credits) => {
+        // Filter out completely empty entries
+        if (!credits) return undefined;
+        const filtered = credits.filter(
+          (credit) =>
+            (credit.name && credit.name.trim()) ||
+            (credit.courseId && credit.courseId.trim()),
+        );
+        return filtered.length > 0 ? filtered : undefined;
+      })
+      .pipe(
+        z
+          .array(
+            z.object({
+              name: z
+                .string()
+                .max(100, {
+                  message: "Course name must be 100 characters or less",
+                })
+                .refine((val) => val.trim().length > 0, {
+                  message: "Course name is required",
+                }),
+              courseId: z.string().refine((val) => val.trim().length > 0, {
+                message: "Course ID is required",
+              }),
+              genEds: z.string().optional(),
+            }),
+          )
+          .optional(),
+      ),
+    completedCourses: z
+      .array(
+        z.object({
+          courseId: z.string().optional(),
+          term: z.string().optional(),
+          year: z.preprocess((val) => {
+            if (typeof val === "number") return val.toString();
+            return val;
+          }, z.string().optional()),
+        }),
+      )
+      .optional()
+      .transform((courses) => {
+        if (!courses) return undefined;
+        const filtered = courses.filter(
+          (course) =>
+            (course.courseId && course.courseId.trim()) ||
+            (course.term && course.term.trim()) ||
+            (course.year && course.year.trim()),
+        );
+        return filtered.length > 0 ? filtered : undefined;
+      })
+      .pipe(
+        z
+          .array(
+            z.object({
+              courseId: z.string().refine((val) => val.trim().length > 0, {
+                message: "Course ID is required",
+              }),
+              term: z
+                .string()
+                .refine(
+                  (val) => ["SPRING", "SUMMER", "FALL", "WINTER"].includes(val),
+                  {
+                    message: "Term is required",
+                  },
+                ),
+              year: z.string().refine((val) => /^\d{4}$/.test(val), {
+                message: "Year is required",
+              }),
+            }),
+          )
+          .optional(),
+      ),
   })
-  .pipe(
-    z.array(z.object({
-      name: z.string().max(100, {
-        message: "Course name must be 100 characters or less",
-      }).refine((val) => val.trim().length > 0, {
-        message: "Course name is required",
-      }),
-      courseId: z.string().refine((val) => val.trim().length > 0, {
-        message: "Course ID is required",
-      }),
-      genEds: z.string().optional(),
-    })).optional()
-  ),
-})
-.refine((data) => {
-  // Validate start and end terms and years
-  if (data.startYear > data.endYear) return false;
-  if (data.startYear === data.endYear) {
-    // Compare term order in same year
-    return termOrder[data.startTerm as keyof typeof termOrder] < termOrder[data.endTerm as keyof typeof termOrder];
-  }
-  return true;
-}, {
-  message: "Start semester must be before end semester",
-  path: ["endTerm"],
-})
-.refine((data) => {
-    // Validate start and end terms and years
-    if (data.startYear > data.endYear) return false;
-    if (data.startYear === data.endYear) {
-      // Compare term order in same year
-      return termOrder[data.startTerm as keyof typeof termOrder] < termOrder[data.endTerm as keyof typeof termOrder];
-    }
-    return true;
-}, {
-  message: "",
-  path: ["endYear"],
-})
-.refine((data) => {
-  // CS specialization is required if major is Computer Science
-  if (data.major === "Computer Science" && !data.csSpecialization) {
-    return false;
-  }
-  return true;
-}, {
-  message: "Computer Science specialization is required",
-  path: ["csSpecialization"],
-});
+  .refine(
+    (data) => {
+      // Validate start and end terms and years
+      if (data.startYear > data.endYear) return false;
+      if (data.startYear === data.endYear) {
+        // Compare term order in same year
+        return (
+          termOrder[data.startTerm as keyof typeof termOrder] <
+          termOrder[data.endTerm as keyof typeof termOrder]
+        );
+      }
+      return true;
+    },
+    {
+      message: "Start semester must be before end semester",
+      path: ["endTerm"],
+    },
+  )
+  .refine(
+    (data) => {
+      // Validate start and end terms and years
+      if (data.startYear > data.endYear) return false;
+      if (data.startYear === data.endYear) {
+        // Compare term order in same year
+        return (
+          termOrder[data.startTerm as keyof typeof termOrder] <
+          termOrder[data.endTerm as keyof typeof termOrder]
+        );
+      }
+      return true;
+    },
+    {
+      message: "",
+      path: ["endYear"],
+    },
+  )
+  .refine(
+    (data) => {
+      // CS specialization is required if major is Computer Science
+      if (data.major === "Computer Science" && !data.csSpecialization) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Computer Science specialization is required",
+      path: ["csSpecialization"],
+    },
+  );
 
 export type OnboardingFormValues = z.infer<typeof baseOnboardingFormSchema>;
 
-export default function OnboardingForm({ formInputs, backButton }: {formInputs?: OnboardingFormValues, backButton?: React.ReactNode}) {
+export default function OnboardingForm({
+  formInputs,
+  backButton,
+}: {
+  formInputs?: OnboardingFormValues;
+  backButton?: React.ReactNode;
+}) {
   const router = useRouter();
-  const { getMultipleCourseInfos } = useCourseApi();
-  const form = useForm<z.infer<typeof baseOnboardingFormSchema>> ({
+  const { getMultipleCourseInfos, saveCoursePlacements } = useCourseApi();
+  const form = useForm<z.infer<typeof baseOnboardingFormSchema>>({
     resolver: zodResolver(baseOnboardingFormSchema),
-    defaultValues: formInputs || {
-      transferCredits: [
-        { name: "", courseId: "", genEds: "" },
-      ],
-    }
+    defaultValues: {
+      transferCredits: [{ name: "", courseId: "", genEds: "" }],
+      completedCourses: [],
+      ...formInputs,
+    },
   });
 
   const { isSubmitting } = form.formState;
   const watchedMajor = form.watch("major");
 
-  async function onSubmit(values:z.infer<typeof baseOnboardingFormSchema >) {
+  async function onSubmit(values: z.infer<typeof baseOnboardingFormSchema>) {
     try {
       const errors: Record<number, string> = {};
-      let coursesInfo: CustomServerResponse<Course[]> = { ok: true, message: "", data: [] };
+      let coursesInfo: CustomServerResponse<Course[]> = {
+        ok: true,
+        message: "",
+        data: [],
+      };
 
       // If there are transfer credits, ensure they are trimmed and formatted correctly
       // Then validate
-      const courseToGenEdMap: Record<string, string[][]> = {}
+      const courseToGenEdMap: Record<string, string[][]> = {};
       if (values.transferCredits && values.transferCredits.length > 0) {
-        values.transferCredits = values.transferCredits.map(credit => ({
+        values.transferCredits = values.transferCredits.map((credit) => ({
           name: credit.name?.trim() || "",
           courseId: credit.courseId?.trim().toUpperCase() || "",
           genEds: credit.genEds?.trim().toUpperCase() || "",
@@ -167,16 +256,16 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
           // Convert genEds to format expected by backend, add them to map
           // Format: [["DSHS"], ["DSSP", "DSHU"]]
           let formattedGenEds = [[]] as string[][];
-          if(credit.genEds && credit.genEds.length > 0) {
+          if (credit.genEds && credit.genEds.length > 0) {
             formattedGenEds = credit.genEds
               .split("OR")
-              .map(group =>
+              .map((group) =>
                 group
                   .split(",")
-                  .map(s => s.trim())
-                  .filter(Boolean)
+                  .map((s) => s.trim())
+                  .filter(Boolean),
               )
-              .filter(arr => arr.length > 0);
+              .filter((arr) => arr.length > 0);
           }
           if (formattedGenEds.length > 0) {
             courseToGenEdMap[credit.courseId] = formattedGenEds;
@@ -191,69 +280,71 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               {
                 type: "manual",
                 message,
-              }
+              },
             );
           });
           return;
         }
 
-        if (!values.transferCredits || values.transferCredits.length === 0) { return;}
-        const courseIds = values.transferCredits.map(credit => credit.courseId);
+        if (!values.transferCredits || values.transferCredits.length === 0) {
+          return;
+        }
+        const courseIds = values.transferCredits.map(
+          (credit) => credit.courseId,
+        );
         coursesInfo = await getMultipleCourseInfos(courseIds);
 
         if (!coursesInfo.ok || !Array.isArray(coursesInfo.data)) {
           values.transferCredits.forEach((_, idx) => {
-            form.setError(
-              `transferCredits.${idx}.courseId` as const,
-              {
-                type: "manual",
-                message: "Course could not be found",
-              }
-            );
+            form.setError(`transferCredits.${idx}.courseId` as const, {
+              type: "manual",
+              message: "Course could not be found",
+            });
           });
           return;
         } else {
           // coursesInfo.data should be an array of found course objects with courseId property
-          const foundIds = new Set(coursesInfo.data.map((course: any) => course.courseId));
+          const foundIds = new Set(
+            coursesInfo.data.map((course: any) => course.courseId),
+          );
           values.transferCredits.forEach((credit, idx) => {
             if (!foundIds.has(credit.courseId)) {
-              form.setError(
-                `transferCredits.${idx}.courseId` as const,
-                {
-                  type: "manual",
-                  message: "Course could not be found",
-                }
-              );
+              form.setError(`transferCredits.${idx}.courseId` as const, {
+                type: "manual",
+                message: "Course could not be found",
+              });
             }
             // If genEds were provided, validate against the course's genEds
             if (credit.genEds && courseToGenEdMap[credit.courseId]) {
               // Get genEds from backend course info
-              const backendGenEds: string[][] = coursesInfo.data?.find((c: any) => c.courseId === credit.courseId)?.genEds || [];
+              const backendGenEds: string[][] =
+                coursesInfo.data?.find(
+                  (c: any) => c.courseId === credit.courseId,
+                )?.genEds || [];
               const userGenEds: string[][] = courseToGenEdMap[credit.courseId];
 
               // For each group in userGenEds, at least one value must be present in some group in backendGenEds
-              const allValid = userGenEds.every(userGroup =>
-              backendGenEds.some(backendGroup =>
-                userGroup.every(userGenEd =>
-                backendGroup.includes(userGenEd)
-                )
-              )
+              const allValid = userGenEds.every((userGroup) =>
+                backendGenEds.some((backendGroup) =>
+                  userGroup.every((userGenEd) =>
+                    backendGroup.includes(userGenEd),
+                  ),
+                ),
               );
 
               if (!allValid) {
-              form.setError(
-                `transferCredits.${idx}.genEds` as const,
-                {
-                type: "manual",
-                message: "Gen Eds do not match any available options for this course",
-                }
-              );
+                form.setError(`transferCredits.${idx}.genEds` as const, {
+                  type: "manual",
+                  message:
+                    "Gen Eds do not match any available options for this course",
+                });
               }
             }
-
           });
           // If any errors were set, stop submission
-          if (Object.keys(form.formState.errors.transferCredits || {}).length > 0) {
+          if (
+            Object.keys(form.formState.errors.transferCredits || {}).length > 0
+          ) {
             return;
           }
         }
@@ -261,33 +352,119 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
         // If no transfer credits, set to empty array
         values.transferCredits = [];
       }
-      
+
+      let completedCoursesInfo: CustomServerResponse<Course[]> = {
+        ok: true,
+        message: "",
+        data: [],
+      };
+      if (values.completedCourses && values.completedCourses.length > 0) {
+        values.completedCourses = values.completedCourses.map((course) => ({
+          ...course,
+          courseId: course.courseId.trim().toUpperCase(),
+          term: course.term.toUpperCase(),
+          year: course.year.trim(),
+        }));
+
+        let hasInvalidCompletedCourse = false;
+        values.completedCourses.forEach((course, index) => {
+          if (!course.courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
+            hasInvalidCompletedCourse = true;
+            form.setError(`completedCourses.${index}.courseId` as const, {
+              type: "manual",
+              message: "Invalid course ID format",
+            });
+          }
+        });
+
+        if (hasInvalidCompletedCourse) return;
+
+        const completedCourseIds = values.completedCourses.map(
+          (course) => course.courseId,
+        );
+        completedCoursesInfo = await getMultipleCourseInfos([
+          ...new Set(completedCourseIds),
+        ]);
+
+        if (
+          !completedCoursesInfo.ok ||
+          !Array.isArray(completedCoursesInfo.data)
+        ) {
+          values.completedCourses.forEach((_, idx) => {
+            form.setError(`completedCourses.${idx}.courseId` as const, {
+              type: "manual",
+              message: "Course could not be found",
+            });
+          });
+          return;
+        }
+
+        const foundIds = new Set(
+          completedCoursesInfo.data.map((course) => course.courseId),
+        );
+        let hasMissingCompletedCourse = false;
+        values.completedCourses.forEach((course, idx) => {
+          if (!foundIds.has(course.courseId)) {
+            hasMissingCompletedCourse = true;
+            form.setError(`completedCourses.${idx}.courseId` as const, {
+              type: "manual",
+              message: "Course could not be found",
+            });
+          }
+        });
+        if (hasMissingCompletedCourse) return;
+      } else {
+        values.completedCourses = [];
+      }
+
       // All validation passed
+      const { completedCourses, ...onboardingValues } = values;
       const submitValues: SubmitOnboardingFormProps = {
-        ...values,
-        track: values.csSpecialization as CsSpecializations || null,
+        ...onboardingValues,
+        track: (values.csSpecialization as CsSpecializations) || null,
         startTerm: values.startTerm.toUpperCase(),
         endTerm: values.endTerm.toUpperCase(),
-        transferCredits: values.transferCredits.map(credit => ({
+        transferCredits: values.transferCredits.map((credit) => ({
           name: credit.name!,
-          course: coursesInfo.data.find((course: any) => course.courseId === credit.courseId)!,
+          course: coursesInfo.data.find(
+            (course: any) => course.courseId === credit.courseId,
+          )!,
           semester: {
             term: "TRANSFER",
             year: -1,
           },
-          genEdOverrides: courseToGenEdMap[credit.courseId] as GenEd[][] || [[]],
+          genEdOverrides: (courseToGenEdMap[credit.courseId] as GenEd[][]) || [
+            [],
+          ],
         })),
-      }
+      };
       const res = await submitOnboardingForm(submitValues);
       if (!res.ok) {
-        toast.error(res.message || "Failed to submit the form. Please try again");
+        toast.error(
+          res.message || "Failed to submit the form. Please try again",
+        );
       } else {
+        if (completedCourses.length > 0) {
+          const completedCoursesSaveResult = await saveCompletedCourses(
+            completedCourses,
+            completedCoursesInfo.data,
+            saveCoursePlacements,
+          );
+
+          if (!completedCoursesSaveResult.ok) {
+            toast.error(
+              completedCoursesSaveResult.message ||
+                "Failed to save completed courses",
+            );
+            return;
+          }
+        }
         toast.success(res.message || "Onboarding form submitted successfully", {
           description: "You can always change this later in the settings",
           classNames: {
             title: "font-bold",
             description: "!text-muted-foreground font-semibold",
-          }
+          },
         });
         router.push("/planner");
       }
@@ -302,9 +479,29 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
     name: "transferCredits",
   });
 
+  const {
+    fields: completedCourseFields,
+    append: appendCompletedCourse,
+    remove: removeCompletedCourse,
+  } = useFieldArray({
+    control: form.control,
+    name: "completedCourses",
+  });
+  const completedCourseValues = useWatch({
+    control: form.control,
+    name: "completedCourses",
+  });
+  const completedCourseGroups = groupCompletedCoursesBySemester(
+    completedCourseFields,
+    completedCourseValues,
+  );
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-3xl mx-auto py-10 px-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 max-w-3xl mx-auto py-10 px-4"
+      >
         <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <FormField
             control={form.control}
@@ -313,7 +510,9 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               <FormItem>
                 <FormLabel>
                   Start Semester{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
+                  <span aria-hidden="true" className="text-red-600">
+                    *
+                  </span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -327,12 +526,12 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                     <SelectItem value="spring">Spring</SelectItem>
                   </SelectContent>
                 </Select>
-                  
+
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="startYear"
@@ -348,20 +547,20 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                     {Array.from({ length: 11 }).map((_, i) => {
                       const year = new Date().getFullYear() - 5 + i;
                       return (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
                       );
                     })}
                   </SelectContent>
                 </Select>
-                  
+
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2 sm:gap-6">
           <FormField
             control={form.control}
@@ -370,7 +569,9 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               <FormItem>
                 <FormLabel>
                   Graduation Semester{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
+                  <span aria-hidden="true" className="text-red-600">
+                    *
+                  </span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -388,7 +589,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="endYear"
@@ -404,32 +605,38 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                     {Array.from({ length: 11 }).map((_, i) => {
                       const year = new Date().getFullYear() - 5 + i;
                       return (
-                      <SelectItem key={year} value={year.toString()}>
-                        {year}
-                      </SelectItem>
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
                       );
                     })}
                   </SelectContent>
                 </Select>
-                  
+
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        
+
         <FormField
           control={form.control}
           name="major"
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                  Major{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
-                  <span className="sr-only">(required)</span>
-                </FormLabel>
-                <MajorMinorCombobox type="major" value={field.value} setValueStateAction={field.onChange} />
-                {/* {field.value !== "Computer Science" && (
+                Major{" "}
+                <span aria-hidden="true" className="text-red-600">
+                  *
+                </span>
+                <span className="sr-only">(required)</span>
+              </FormLabel>
+              <MajorMinorCombobox
+                type="major"
+                value={field.value}
+                setValueStateAction={field.onChange}
+              />
+              {/* {field.value !== "Computer Science" && (
                   <FormDescription><span className="font-bold">Note:</span> This site is designed with CS majors in mind (for now), all other majors can still use this site but some info might be inaccurate</FormDescription>
                 )} */}
               <FormMessage />
@@ -445,7 +652,9 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               <FormItem>
                 <FormLabel>
                   Specialization{" "}
-                  <span aria-hidden="true" className="text-red-600">*</span>
+                  <span aria-hidden="true" className="text-red-600">
+                    *
+                  </span>
                   <span className="sr-only">(required)</span>
                 </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
@@ -467,14 +676,18 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
             )}
           />
         )}
-        
+
         <FormField
           control={form.control}
           name="minor"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Minor</FormLabel>
-              <MajorMinorCombobox type="minor" value={field.value || ""} setValueStateAction={field.onChange} />
+              <MajorMinorCombobox
+                type="minor"
+                value={field.value || ""}
+                setValueStateAction={field.onChange}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -488,7 +701,8 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
               <FormItem>
                 <FormLabel>Transfer Credits</FormLabel>
                 <FormDescription>
-                  You can find this information in your unofficial transcript from Testudo
+                  You can find this information in your unofficial transcript
+                  from Testudo
                 </FormDescription>
                 <FormControl>
                   <div className="border rounded-md bg-card p-2">
@@ -501,7 +715,10 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
 
                     {/* Dynamic Rows */}
                     {fields.map((course, index) => (
-                      <div key={course.id} className="grid grid-cols-[1fr_1fr_1fr_2.5rem] py-2 gap-2">
+                      <div
+                        key={course.id}
+                        className="grid grid-cols-[1fr_1fr_1fr_2.5rem] py-2 gap-2"
+                      >
                         <FormField
                           control={form.control}
                           name={`transferCredits.${index}.name`}
@@ -517,7 +734,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name={`transferCredits.${index}.courseId`}
@@ -541,10 +758,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                           render={({ field: genEds }) => (
                             <FormItem>
                               <FormControl>
-                                <Input
-                                  placeholder="e.g. DSHS"
-                                  {...genEds}
-                                />
+                                <Input placeholder="e.g. DSHS" {...genEds} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -560,7 +774,7 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                           className="text-red-600 hover:text-red-800 h-10"
                         >
                           <Trash2 className="h-4 w-4" />
-                          </Button>
+                        </Button>
                       </div>
                     ))}
 
@@ -578,12 +792,112 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
                 </FormControl>
                 <FormMessage />
               </FormItem>
-            )
+            );
           }}
         />
-        <div className={`w-full flex -mt-3 ${backButton ? "justify-between" : "justify-end"}`}>
+        <FormField
+          control={form.control}
+          name="completedCourses"
+          render={() => (
+            <FormItem>
+              <FormLabel>Completed Courses</FormLabel>
+              <FormControl>
+                <div className="border rounded-md bg-card p-2">
+                  {completedCourseFields.length === 0 && (
+                    <div className="px-3 py-5 text-sm text-muted-foreground">
+                      No completed or in-progress courses were found
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    {completedCourseGroups.map((group) => (
+                      <div
+                        key={group.key}
+                        className="rounded-md border bg-background/50"
+                      >
+                        <div className="border-b px-3 py-2 text-sm font-medium">
+                          {formatSemesterHeading(group.term, group.year)}
+                        </div>
+                        <div className="p-2">
+                          {group.courses.map(({ field, index }) => (
+                            <div
+                              key={field.id}
+                              className="grid grid-cols-[1fr_2.5rem] py-2 gap-2"
+                            >
+                              <FormField
+                                control={form.control}
+                                name={`completedCourses.${index}.courseId`}
+                                render={({ field: courseIdField }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        placeholder="e.g. CMSC131"
+                                        {...courseIdField}
+                                        className={
+                                          courseIdField.value ? "uppercase" : ""
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <input
+                                type="hidden"
+                                {...form.register(
+                                  `completedCourses.${index}.term`,
+                                )}
+                              />
+                              <input
+                                type="hidden"
+                                {...form.register(
+                                  `completedCourses.${index}.year`,
+                                )}
+                              />
+
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeCompletedCourse(index)}
+                                className="text-red-600 hover:text-red-800 h-10"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      appendCompletedCourse({
+                        courseId: "",
+                        term: "FALL",
+                        year: new Date().getFullYear().toString(),
+                      })
+                    }
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Completed Course
+                  </Button>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <div
+          className={`w-full flex -mt-3 ${backButton ? "justify-between" : "justify-end"}`}
+        >
           {backButton ? backButton : null}
-          <LoadingButton 
+          <LoadingButton
             type="submit"
             disabled={isSubmitting}
             className="flex items-center gap-4 w-30"
@@ -594,5 +908,104 @@ export default function OnboardingForm({ formInputs, backButton }: {formInputs?:
         </div>
       </form>
     </Form>
-  )
+  );
+}
+
+type CompletedCourseField = {
+  id: string;
+  courseId?: string;
+  term?: string;
+  year?: string;
+};
+
+type CompletedCourseValue = NonNullable<
+  OnboardingFormValues["completedCourses"]
+>[number];
+
+function groupCompletedCoursesBySemester(
+  fields: CompletedCourseField[],
+  values: CompletedCourseValue[] | undefined,
+) {
+  const groups = new Map<
+    string,
+    {
+      key: string;
+      term: string;
+      year: string;
+      sortYear: number;
+      sortTerm: number;
+      courses: { field: CompletedCourseField; index: number }[];
+    }
+  >();
+
+  fields.forEach((field, index) => {
+    const value = values?.[index];
+    const term = (value?.term || field.term || "FALL").toUpperCase();
+    const year = value?.year || field.year || "";
+    const key = `${year}-${term}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        term,
+        year,
+        sortYear: Number(year) || Number.MAX_SAFE_INTEGER,
+        sortTerm: completedCourseTermOrder[term] ?? Number.MAX_SAFE_INTEGER,
+        courses: [],
+      });
+    }
+
+    groups.get(key)?.courses.push({ field, index });
+  });
+
+  return Array.from(groups.values()).sort((a, b) => {
+    if (a.sortYear !== b.sortYear) return a.sortYear - b.sortYear;
+    return a.sortTerm - b.sortTerm;
+  });
+}
+
+function formatSemesterHeading(term: string, year: string) {
+  const formattedTerm =
+    term.charAt(0).toUpperCase() + term.slice(1).toLowerCase();
+  return `${formattedTerm} ${year || ""}`.trim();
+}
+
+async function saveCompletedCourses(
+  completedCourses: NonNullable<OnboardingFormValues["completedCourses"]>,
+  courseInfos: Course[],
+  saveCoursePlacements: ReturnType<typeof useCourseApi>["saveCoursePlacements"],
+) {
+  const courseInfoMap = new Map(
+    courseInfos.map((course) => [course.courseId, course]),
+  );
+  const semesterIndexes = new Map<string, number>();
+  const placements: {
+    course: Course;
+    term: Term;
+    year: number;
+    index: number;
+  }[] = [];
+
+  completedCourses.forEach((course) => {
+    const courseInfo = courseInfoMap.get(course.courseId);
+    if (!courseInfo) return;
+
+    const term = course.term as Term;
+    const year = Number(course.year);
+    const semesterKey = `${term}-${year}`;
+    const index = semesterIndexes.get(semesterKey) ?? 0;
+
+    placements.push({ course: courseInfo, term, year, index });
+    semesterIndexes.set(semesterKey, index + 1);
+  });
+
+  if (placements.length === 0) {
+    return {
+      ok: true,
+      message: "No completed courses to save",
+      data: undefined,
+    };
+  }
+
+  return saveCoursePlacements(placements);
 }

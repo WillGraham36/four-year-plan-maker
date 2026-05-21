@@ -71,6 +71,25 @@ export function useCourseApi() {
     );
   };
 
+  const saveCoursePlacements = async (
+    placements: { course: Course; term: Term; year: number; index: number }[]
+  ) => {
+    const body = JSON.stringify(
+      placements.map(({ course, term, year, index }) =>
+        courseAndSemesterToDto(course, term, year, index)
+      )
+    );
+
+    return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      }
+    );
+  };
+
   const deleteSemesterCourses = async (courseIds: string[], term: Term, year: number) => {
     const body = JSON.stringify(
       courseIds.map((courseId) => ({
@@ -382,6 +401,7 @@ export function useCourseApi() {
     saveCourse,
     saveCourseAndReturnUpdated,
     saveSemester,
+    saveCoursePlacements,
     deleteSemesterCoursesAndReturnUpdated,
     deleteSemesterCourses,
     getAllSemesters,
