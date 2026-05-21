@@ -35,7 +35,7 @@ const AuditPage = async () => {
   if (!academicInfo) {
     return <PageError error={"Failed to load page"} />;
   }
-  const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
+  const { semesters, genEdRequirements, ULCourses: courses, userInfo } = academicInfo;
   
   const allCourses = Object.entries(semesters)
     .flatMap(([semesterName, courses]) => 
@@ -48,7 +48,7 @@ const AuditPage = async () => {
   return (
     <main className='mx-4 flex flex-col gap-4 mt-4 mb-8 min-h-[calc(100vh-8.75rem)]'>
       <RequirementsProvider 
-        initialGenEds={genEds} 
+        initialGenEdRequirements={genEdRequirements} 
         initialULCourses={courses.courses} 
         initialTotalCredits={totalCredits}
         userInfo={userInfo}

@@ -4,7 +4,6 @@ import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.Term;
 import com.willgraham.four_year_planner.model.UserCourse;
-import com.willgraham.four_year_planner.projection.CourseProjection;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,41 +15,65 @@ import java.util.List;
 public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     boolean existsByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
 
+    UserCourse findByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
+
     List<UserCourse> findByUserIdAndCourseIdOrderBySemesterDesc(String userId, String courseId);
 
     List<UserCourse> findByUserIdAndCourse_CourseIdOrderBySemesterDesc(String userId, String courseId);
 
     List<UserCourse> findByUserId(String userId);
 
-    List<UserCourse> findByUserIdOrderBySemesterAsc(String userId);
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        WHERE uc.userId = :userId
+        ORDER BY
+            uc.semester.year ASC,
+            CASE
+                WHEN uc.semester.term = 'TRANSFER' THEN 0
+                WHEN uc.semester.term = 'SPRING' THEN 1
+                WHEN uc.semester.term = 'SUMMER' THEN 2
+                WHEN uc.semester.term = 'FALL' THEN 3
+                WHEN uc.semester.term = 'WINTER' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(uc.index, 2147483647) ASC,
+            uc.id ASC
+        """)
+    List<UserCourse> findByUserIdOrdered(@Param("userId") String userId);
 
     UserCourse findByUserIdAndCourse_CourseId(String userId, String courseId);
 
     // Get courses that satisfy a certain UL concentration prefix ("ENES", "CMSC" ...)
-    List<UserCourse> findByUserIdAndCourseIdStartingWith(String userId, String concentrationIdPrefix);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE UserCourse uc SET uc.selectedGenEds = :selectedGenEds " +
-            "WHERE uc.userId = :userId AND uc.course.courseId = :courseId")
-    int updateSelectedGenEdsByUserIdAndCourseId(@Param("selectedGenEds") List<String> selectedGenEds,
-                                                @Param("userId") String userId,
-                                                @Param("courseId") String courseId);
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        AND uc.courseId LIKE CONCAT(:concentrationIdPrefix, '%')
+        ORDER BY
+            uc.semester.year ASC,
+            CASE
+                WHEN uc.semester.term = 'TRANSFER' THEN 0
+                WHEN uc.semester.term = 'SPRING' THEN 1
+                WHEN uc.semester.term = 'SUMMER' THEN 2
+                WHEN uc.semester.term = 'FALL' THEN 3
+                WHEN uc.semester.term = 'WINTER' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(uc.index, 2147483647) ASC,
+            uc.id ASC
+        """)
+    List<UserCourse> findULCoursesByUserIdAndConcentration(
+            @Param("userId") String userId,
+            @Param("concentrationIdPrefix") String concentrationIdPrefix
+    );
 
     @Modifying
     @Transactional
     int deleteByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
 
     List<Course> findCoursesByUserId(String userId);
-
-    @Query(value = "SELECT c.gen_eds as genEds, c.course_id as courseId, " +
-            "uc.term, uc.year, uc.selected_gen_eds as selectedGenEds, uc.transfer_gen_eds_override as genEdOverrides, uc.transfer_credit_name as transferCreditName " +
-            "FROM user_courses uc " +
-            "JOIN courses c ON uc.course_id = c.course_id " +
-            "WHERE uc.user_id = :userId ",
-            nativeQuery = true)
-    List<CourseProjection> findAllCoursesWithInfoByUser(@Param("userId") String userId);
-
 
     @Query("""
         SELECT uc
@@ -60,6 +83,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
             uc.semester.term = 'TRANSFER'
             OR uc.transferCreditName IS NOT NULL
         )
+        ORDER BY COALESCE(uc.index, 2147483647) ASC, uc.id ASC
         """)
     List<UserCourse> findTransferCreditsByUserId(@Param("userId") String userId);
 

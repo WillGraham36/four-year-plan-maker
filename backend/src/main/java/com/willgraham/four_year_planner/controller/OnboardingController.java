@@ -1,11 +1,6 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
-import com.willgraham.four_year_planner.model.Course;
-import com.willgraham.four_year_planner.model.Semester;
-import com.willgraham.four_year_planner.model.User;
-import com.willgraham.four_year_planner.model.UserCourse;
-import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
@@ -28,6 +23,9 @@ public class OnboardingController {
     private final UserCourseService userCourseService;
     private static final Logger logger = LoggerFactory.getLogger(OnboardingController.class);
 
+    /**
+     * Called when the account setup form submits onboarding choices and transfer credits
+     */
     @PostMapping
     public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -55,6 +53,9 @@ public class OnboardingController {
 
     }
 
+    /**
+     * Called when the account setup page loads existing onboarding values for editing
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);

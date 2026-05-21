@@ -4,7 +4,7 @@ import { SemesterDateDescriptor, UserInfo } from "@/lib/utils/types";
 import Year from "./year";
 import { Semester } from "./semester";
 import { cn, extractSemester } from "@/lib/utils";
-import { GenEdList, SemesterSchema } from "@/lib/utils/schemas";
+import { SemesterSchema } from "@/lib/utils/schemas";
 import { Button, buttonVariants } from "../ui/button";
 import { Plus } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

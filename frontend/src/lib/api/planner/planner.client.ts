@@ -3,8 +3,8 @@
 
 import { useFetchWithAuth } from "@/hooks/useFetchWithAuthClient";
 import { courseAndSemesterToDto } from "@/lib/utils";
-import { CourseInfoSchema, GenEd as GenEdSchema, GenEdList, GenEdListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
-import { Course, CourseWithSemester, CsSpecializations, CustomServerResponse, GenEd, Term, UserInfo } from "@/lib/utils/types";
+import { CourseInfoSchema, GenEdRequirementList, GenEdRequirementListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, CourseWithSemester, CsSpecializations, CustomServerResponse, Term, UserInfo } from "@/lib/utils/types";
 
 // Save a course
 export function useCourseApi() {
@@ -31,7 +31,7 @@ export function useCourseApi() {
 
   interface ReturnUpdatedResponse {
     savedCourses: CourseWithSemester[];
-    updatedGenEds: GenEdList;
+    updatedGenEdRequirements: GenEdRequirementList;
     updatedULConcentration: {
       concentration: string;
       courses: ULCoursesInfo;
@@ -70,37 +70,6 @@ export function useCourseApi() {
       }
     );
   };
-
-  const updateCourseSelectedGenEds = async (courseId: string, selectedGenEds: GenEd[]) => {
-    const body = JSON.stringify({
-      courseId: courseId,
-      selectedGenEds: selectedGenEds,
-    });
-  
-   return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: body,
-      }
-    );
-  };
-
-  const updateCourseSelectedGenEdsAndReturnUpdated = async (courseId: string, selectedGenEds: GenEd[]): Promise<CustomServerResponse<ReturnUpdatedResponse>> => {
-    const body = JSON.stringify({
-      courseId: courseId,
-      selectedGenEds: selectedGenEds,
-    });
-  
-   return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: body,
-    });
-  }
 
   const deleteSemesterCourses = async (courseIds: string[], term: Term, year: number) => {
     const body = JSON.stringify(
@@ -150,10 +119,10 @@ export function useCourseApi() {
     return courses.data || {} as SemesterSchema;
   };
   
-  const getAllGenEds = async () => {
+  const getAllGenEdRequirements = async () => {
     const res = await fetchWithAuth("v1/geneds");
-    const genEdList = GenEdListSchema.safeParse(res.data);
-    return genEdList.data || [];
+    const genEdRequirements = GenEdRequirementListSchema.safeParse(res.data);
+    return genEdRequirements.data || [];
   };
   
   const getAllULCourses = async () => {
@@ -222,7 +191,7 @@ export function useCourseApi() {
         courseId: parsedData.course_id,
         name: parsedData.name,
         credits: parsedData.credits,
-        genEds: (parsedData.gen_ed?.length !== 0 ? parsedData.gen_ed : [[]]) as GenEd[][],
+        genEds: parsedData.gen_ed && parsedData.gen_ed.length > 0 ? parsedData.gen_ed : [[]],
       };
       return {
         ok: true,
@@ -273,8 +242,7 @@ export function useCourseApi() {
           courseId: parsedData.course_id,
           name: parsedData.name,
           credits: parsedData.credits,
-          genEds: (parsedData.gen_ed?.length !== 0 ? parsedData.gen_ed : [[]]) as GenEd[][],
-          selectedGenEds: parsedData.gen_ed?.length ? parsedData.gen_ed[0] as GenEd[] : [],
+          genEds: parsedData.gen_ed && parsedData.gen_ed.length > 0 ? parsedData.gen_ed : [[]],
         } satisfies Course;
       });
 
@@ -414,12 +382,10 @@ export function useCourseApi() {
     saveCourse,
     saveCourseAndReturnUpdated,
     saveSemester,
-    updateCourseSelectedGenEds,
-    updateCourseSelectedGenEdsAndReturnUpdated,
     deleteSemesterCoursesAndReturnUpdated,
     deleteSemesterCourses,
     getAllSemesters,
-    getAllGenEds,
+    getAllGenEdRequirements,
     getAllULCourses,
     getUserInfo,
     updateULConcentration,

@@ -16,9 +16,10 @@ const getAllULCourses = async () => {
 
 interface AcademicInfo {
   semesters: SemesterSchema;
-  genEds: {
+  genEdRequirements: {
+    requirementName: string;
+    satisfiedByGenEd: string;
     courseId: string;
-    genEd: string;
     semesterName: string;
     transferCreditName?: string | null | undefined;
   }[];
@@ -40,7 +41,7 @@ export const getAllAcademicInfo = async () => {
     message: "Successfully fetched academic info",
     data: {
       semesters: res.data.allSemesters,
-      genEds: res.data.genEds,
+      genEdRequirements: res.data.genEdRequirements,
       ULCourses: res.data.upperLevelConcentrationCourses,
       userInfo: res.data.userInfo,
     } as AcademicInfo,

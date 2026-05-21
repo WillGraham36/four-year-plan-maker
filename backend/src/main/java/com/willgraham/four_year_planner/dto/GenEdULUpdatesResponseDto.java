@@ -10,6 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GenEdULUpdatesResponseDto {
-    private List<GenEdDto> updatedGenEds;
+    private List<GenEdRequirementDto> updatedGenEdRequirements;
     private ULConcentrationDTO updatedULConcentration;
 }

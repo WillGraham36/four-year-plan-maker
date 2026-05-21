@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 public class UserCourseWithUpdatesResponseDto {
     private List<UserCourseResponseDto> savedCourses;
-    private List<GenEdDto> updatedGenEds;
+    private List<GenEdRequirementDto> updatedGenEdRequirements;
     private ULConcentrationDTO updatedULConcentration;
 }

@@ -13,7 +13,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class AcademicOverviewResponseDto {
     private Map<Semester, List<CourseDto>> allSemesters;
-    private List<GenEdDto> genEds;
+    private List<GenEdRequirementDto> genEdRequirements;
     private ULConcentrationDTO upperLevelConcentrationCourses;
     private GetUserInfoResponseDto userInfo;
 }

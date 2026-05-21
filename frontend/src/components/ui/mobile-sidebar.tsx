@@ -30,7 +30,7 @@ export const MobileSidebar = ({
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { setTheme, theme } = useTheme();
   const { openUserProfile, user } = useClerk();
-  const { getAllGenEds, getAllSemesters, getUserInfo } = useCourseApi();
+  const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
 
   const handleThemeToggle = () => {
@@ -43,10 +43,10 @@ export const MobileSidebar = ({
   const handleDownloadClick = async () => {
     setGeneratingPdf(true);
     try {
-      const [userInfo, semesters, genEds] = await Promise.all([
+      const [userInfo, semesters, genEdRequirements] = await Promise.all([
         getUserInfo(),
         getAllSemesters(),
-        getAllGenEds(),
+        getAllGenEdRequirements(),
       ]);
       const userData = userInfo.data;
       if(!userData) throw new Error("User data not found");
@@ -55,7 +55,7 @@ export const MobileSidebar = ({
       const totalCredits = Object.values(semesters)
         .flat()
         .reduce((sum, course) => sum + course.credits, 0);
-      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEds, fullName });
+      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
     } catch (error) {
       toast.error("Failed to generate PDF");
     } finally {

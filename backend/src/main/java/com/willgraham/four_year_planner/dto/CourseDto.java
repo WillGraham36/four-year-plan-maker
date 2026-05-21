@@ -17,7 +17,8 @@ public class CourseDto {
     private String name;
     private Integer credits;
     private List<List<String>> genEds;
-    private List<String> selectedGenEds;
+    private List<String> assignedGenEds;
+    private Integer assignedGenEdBranchIndex;
     private Semester semester;
     private Integer index;
 
@@ -32,10 +33,24 @@ public class CourseDto {
         } else {
             dto.setGenEds(userCourse.getCourse().getGenEds());
         }
-        dto.setSelectedGenEds(userCourse.getSelectedGenEds());
+        dto.setAssignedGenEds(userCourse.getSelectedGenEds());
+        dto.setAssignedGenEdBranchIndex(findAssignedBranchIndex(dto.getGenEds(), userCourse.getSelectedGenEds()));
         dto.setSemester(userCourse.getSemester());
         dto.setIndex(userCourse.getIndex());
         return dto;
     }
 
+    private static Integer findAssignedBranchIndex(List<List<String>> genEdGroups, List<String> assignedGenEds) {
+        if (genEdGroups == null || assignedGenEds == null || assignedGenEds.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < genEdGroups.size(); i++) {
+            if (genEdGroups.get(i).equals(assignedGenEds)) {
+                return i;
+            }
+        }
+
+        return null;
+    }
 }

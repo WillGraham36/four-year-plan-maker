@@ -1,17 +1,13 @@
 import { extractSemester, termYearToString } from "@/lib/utils";
-import { GenEdList, SemesterSchema } from "@/lib/utils/schemas";
+import { GenEdRequirementList, SemesterSchema } from "@/lib/utils/schemas";
 import { UserInfo } from "@/lib/utils/types";
-import {
-  assignGenEdsToRequirements,
-  GenEdListForRendering,
-} from "../gen-eds/gen-eds-container";
 import { generateAcademicYears } from "./tabbed-planner";
 
 interface FillPDFFormParams {
   userInfo: UserInfo;
   semesters: SemesterSchema;
   totalCredits: number;
-  genEds: GenEdList;
+  genEdRequirements: GenEdRequirementList;
   fullName: string | undefined | null;
 }
 
@@ -23,7 +19,7 @@ export default async function fillPDFForm({
   userInfo,
   semesters,
   totalCredits,
-  genEds,
+  genEdRequirements,
   fullName,
 }: FillPDFFormParams) {
   const academicYears = generateAcademicYears(userInfo);
@@ -177,8 +173,8 @@ export default async function fillPDFForm({
           .setText(course.courseId);
 
         let cleanedGenEds;
-        if (course.selectedGenEds) {
-          cleanedGenEds = course.selectedGenEds
+        if (course.assignedGenEds) {
+          cleanedGenEds = course.assignedGenEds
             .map((genEd: string) => genEd.split("|")[0])
             .join(", ");
         } else {
@@ -213,9 +209,7 @@ export default async function fillPDFForm({
   form.getTextField("GE Course").setText("GenEd Course 1");
   form.getTextField("Semester").setText("GenEd Semester 1");
 
-  GenEdListForRendering.map((genEd, i) => {
-    const { courseId, semesterName, transferCreditName } =
-      assignGenEdsToRequirements(genEds)[i];
+  genEdRequirements.map(({ courseId, semesterName, transferCreditName }, i) => {
     const courseName = termYearToString(semesterName);
     form
       .getTextField(i === 0 ? "GE Course" : `GE Course_${i + 1}`)
