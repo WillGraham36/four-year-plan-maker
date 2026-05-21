@@ -25,19 +25,22 @@ public class AcademicInfoController {
     private final UserCourseService userCourseService;
     private final GenEdService genEdService;
 
+    /**
+     * Called when the planner and audit pages first load
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
+        List<GenEdRequirementDto> genEdRequirements = genEdService.recalculateAndGetRequirements(userId);
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
-        List<GenEdDto> genEds = genEdService.getAllGenEds(userId);
         ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId);
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
 
 
         AcademicOverviewResponseDto dto = new AcademicOverviewResponseDto(
                 courses,
-                genEds,
+                genEdRequirements,
                 concentrationDTO,
                 userInfo
         );

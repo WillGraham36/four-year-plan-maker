@@ -13,7 +13,7 @@ const PlannerPage = async () => {
   if (!academicInfo) {
     return <PageError error={"Failed to load page"} />;
   }
-  const { semesters, genEds, ULCourses: courses, userInfo } = academicInfo;
+  const { semesters, genEdRequirements, ULCourses: courses, userInfo } = academicInfo;
   const concentration = courses?.concentration;
   
   const totalCredits = Object.values(semesters)
@@ -23,7 +23,7 @@ const PlannerPage = async () => {
   return (
     <main className='mx-4 mt-2 min-h-[calc(100vh-9.25rem)]'>
       <RequirementsProvider
-        initialGenEds={genEds}
+        initialGenEdRequirements={genEdRequirements}
         initialULCourses={courses.courses}
         initialTotalCredits={totalCredits}
         userInfo={userInfo}

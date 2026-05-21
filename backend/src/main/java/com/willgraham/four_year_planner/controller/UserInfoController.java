@@ -23,6 +23,9 @@ public class UserInfoController {
 
     private final UserService userService;
 
+    /**
+     * Called when planner setup, planner export, and other authenticated pages need the current user info
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<GetUserInfoResponseDto>> getUserInfo(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -32,6 +35,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(userInfo));
     }
 
+    /**
+     * Called when the planner UI adds a Summer or Winter off-term
+     */
     @PostMapping("/offterms")
     public ResponseEntity<ApiResponse<String>> createOffTerm(@RequestBody CreateOffTermRequestDto request, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -41,6 +47,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success("Created off term successfully"));
     }
 
+    /**
+     * Called when the planner UI removes a Summer or Winter off-term
+     */
     @DeleteMapping("/offterms")
     public ResponseEntity<ApiResponse<String>> deleteOffTerm(@RequestParam("term") Term term, @RequestParam("year") Integer year, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -50,6 +59,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success("Deleted off term successfully"));
     }
 
+    /**
+     * Called by any frontend that wants only the completed-semester list without the full user payload
+     */
     @GetMapping("/semesters/completion")
     public ResponseEntity<ApiResponse<List<Semester>>> getCompletedSemesters(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -59,6 +71,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(completedSemesters));
     }
 
+    /**
+     * Called when the planner marks a semester complete or incomplete
+     */
     @PutMapping("/semesters/{term}/{year}/completion")
     public ResponseEntity<ApiResponse<String>> upsertSemesterCompletion(
             @PathVariable Term term,
@@ -72,6 +87,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success(String.format("Updated %s %d status successfully to %s", term, year, request.isCompleted())));
     }
 
+    /**
+     * Called when the planner notes panel autosaves the user's notes
+     */
     @PutMapping("/notes")
     public ResponseEntity<ApiResponse<String>> upsertNote(@RequestBody UpdateNoteDto dto, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -84,6 +102,9 @@ public class UserInfoController {
         return ResponseEntity.ok(ApiResponse.success("Updated user note successfully"));
     }
 
+    /**
+     * Called when the audit page changes the selected CS track
+     */
     @PutMapping("/track")
     public ResponseEntity<ApiResponse<String>> updateUserTrack(@RequestBody UpdateTrackDto track, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);

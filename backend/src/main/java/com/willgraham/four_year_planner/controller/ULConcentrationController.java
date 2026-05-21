@@ -1,10 +1,6 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
-import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
-import com.willgraham.four_year_planner.model.Semester;
-import com.willgraham.four_year_planner.model.UserCourse;
-import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
@@ -22,6 +18,9 @@ public class ULConcentrationController {
     private final UserService userService;
 
 
+    /**
+     * Called when the planner, audit page, or export flow needs the current UL concentration summary
+     */
     @GetMapping
     public ResponseEntity<ApiResponse<ULConcentrationDTO>> getUserULConcentrationAndCourses(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
@@ -29,6 +28,9 @@ public class ULConcentrationController {
         return ResponseEntity.ok(ApiResponse.success(coursesAndConcentration));
     }
 
+    /**
+     * Called when the planner or audit UI updates the selected UL concentration area
+     */
     @PatchMapping
     public ResponseEntity<ApiResponse<String>> updateUserULConcentration(@RequestBody UpdateConcentrationRequestDTO request, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);

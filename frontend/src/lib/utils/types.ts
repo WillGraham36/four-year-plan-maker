@@ -13,8 +13,9 @@ export type Course = {
   // e.g. [["FSAW", "FSPW"], ["DSNL", "DSNS"]]
   // Each inner array represents gen-eds that a course can use simultaneously
   // Each seperate inner array represents the OR relationship between the gen-eds
-  genEds: GenEd[][]
-  selectedGenEds?: GenEd[]
+  genEds: string[][]
+  assignedGenEds?: string[] | null
+  assignedGenEdBranchIndex?: number | null
   index?: number // Used to track the order of courses in a semester
 }
 

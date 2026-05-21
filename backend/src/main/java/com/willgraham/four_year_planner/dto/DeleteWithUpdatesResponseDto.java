@@ -11,6 +11,6 @@ import java.util.List;
 @NoArgsConstructor
 public class DeleteWithUpdatesResponseDto {
     private int deletedCount;
-    private List<GenEdDto> updatedGenEds;
+    private List<GenEdRequirementDto> updatedGenEdRequirements;
     private ULConcentrationDTO updatedULConcentration;
 }

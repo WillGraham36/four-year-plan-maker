@@ -3,7 +3,6 @@ import { Course } from "@/lib/utils/types";
 import { createContext, useContext, useMemo } from "react";
 import { useRequirements } from "@/components/context/requirements-context";
 import { useMajorRequirements } from "@/components/context/major-requirements-context";
-import { assignGenEdsToRequirements, GenEdListForRendering } from "@/components/gen-eds/gen-eds-container";
 
 interface ChartData {
   category: string;
@@ -73,7 +72,7 @@ export const ChartsInfoProvider = ({ children, allCourses = [] }: ChartsInfoProv
 
 // Wrapper component that handles the computation logic
 const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) => {
-  const { completedSemesters, ULCourses, genEds } = useRequirements();
+  const { completedSemesters, ULCourses, genEdRequirements } = useRequirements();
   const { chartSummary: majorChartSummary } = useMajorRequirements();
   const context = useContext(ChartsInfoContext);
   
@@ -138,13 +137,10 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
     };
 
     // Gen Eds computation
-    const assignedGenEds = assignGenEdsToRequirements(genEds);
     let completedGenEds = 0;
     let plannedGenEds = 0;
 
-    GenEdListForRendering.forEach((requiredGenEd, index) => {
-      const assignment = assignedGenEds[index];
-      
+    genEdRequirements.forEach((assignment) => {
       if (assignment && assignment.courseId && assignment.courseId.trim() !== '') {
         const [term, year] = assignment.semesterName.split(' ');
         const isCompleted = assignment.semesterName === 'TRANSFER -1' || 
@@ -160,12 +156,13 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
       }
     });
 
+    const totalGenEdRequirements = Math.max(genEdRequirements.length, 1);
     const genEdsData = {
       completed: completedGenEds,
       planned: plannedGenEds,
-      total: GenEdListForRendering.length,
-      completedPercentage: Math.round((completedGenEds / GenEdListForRendering.length) * 100),
-      plannedPercentage: Math.round((plannedGenEds / GenEdListForRendering.length) * 100)
+      total: genEdRequirements.length,
+      completedPercentage: Math.round((completedGenEds / totalGenEdRequirements) * 100),
+      plannedPercentage: Math.round((plannedGenEds / totalGenEdRequirements) * 100)
     };
 
     // Major Requirements computation (from context) - UPDATED
@@ -234,7 +231,7 @@ const ChartsComputationWrapper = ({ children }: { children: React.ReactNode }) =
       upperLevelCreditsData,
       majorRequirementsData
     };
-  }, [allCourses, completedSemesters, ULCourses, genEds, majorChartSummary]);
+  }, [allCourses, completedSemesters, ULCourses, genEdRequirements, majorChartSummary]);
 
   return (
     <ChartsInfoContext.Provider value={computedData}>

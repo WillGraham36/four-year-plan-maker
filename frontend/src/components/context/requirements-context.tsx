@@ -1,16 +1,15 @@
 'use client';
 import { useCourseApi } from "@/lib/api/planner/planner.client";
-import { GenEd, GenEdList, ULCoursesInfo } from "@/lib/utils/schemas";
-import { Course, GenEd as GenEdListType, SemesterDateDescriptor, Term, UserInfo } from "@/lib/utils/types";
+import { GenEdRequirementList, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, SemesterDateDescriptor, Term, UserInfo } from "@/lib/utils/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface RequirementsContextProps {
   saveNewCourseAndRefreshGenEdsAndULCourses: (course: Course, term: Term, year: number, index: number) => Promise<void>;
-  updateCourseSelectedGenEdsAndRefreshGenEds: (courseId: string, selectedGenEds: GenEdListType[]) => Promise<void>;
   deleteSemesterCoursesAndRefreshGenEdsAndULCourses: (courseIds: string[], term: Term, year: number) => Promise<void>;
-  genEds: GenEdList;
+  genEdRequirements: GenEdRequirementList;
 
   refreshULCourses: () => Promise<void>;
   ULCourses: ULCoursesInfo;
@@ -22,27 +21,25 @@ interface RequirementsContextProps {
 
   completedSemesters: SemesterDateDescriptor[];
   updateCompletedSemesters: (semesters: SemesterDateDescriptor, isRemoval?: boolean) => void;
-
-  updateGenEdsOptimistic: (updatedGenEds: GenEd[]) => void;
 }
 
 const RequirementsContext = createContext<RequirementsContextProps | undefined>(undefined);
 
 interface RequirementsProviderProps {
   children: React.ReactNode;
-  initialGenEds: GenEdList;
+  initialGenEdRequirements: GenEdRequirementList;
   initialULCourses: ULCoursesInfo;
   initialTotalCredits?: number;
   userInfo: UserInfo | null;
   redirectIfNotCS?: boolean;
 }
 
-export const RequirementsProvider = ({ children, initialGenEds, initialULCourses, initialTotalCredits, userInfo, redirectIfNotCS }: RequirementsProviderProps) => {
+export const RequirementsProvider = ({ children, initialGenEdRequirements, initialULCourses, initialTotalCredits, userInfo, redirectIfNotCS }: RequirementsProviderProps) => {
   const [completedSemesters, setCompletedSemesters] = useState<SemesterDateDescriptor[]>(userInfo?.completedSemesters || []);
-  const [genEds, setGenEds] = useState<GenEdList>(initialGenEds || []);
+  const [genEdRequirements, setGenEdRequirements] = useState<GenEdRequirementList>(initialGenEdRequirements || []);
   const [ULCourses, setULCourses] = useState<ULCoursesInfo>(initialULCourses || []);
   const [totalCredits, setTotalCredits] = useState<number>(initialTotalCredits || 0);
-  const { getAllGenEds, getAllULCourses, saveCourseAndReturnUpdated, updateCourseSelectedGenEdsAndReturnUpdated, deleteSemesterCoursesAndReturnUpdated } = useCourseApi();
+  const { getAllGenEdRequirements, getAllULCourses, saveCourseAndReturnUpdated, deleteSemesterCoursesAndReturnUpdated } = useCourseApi();
 
   const router = useRouter();
   useEffect(() => {
@@ -55,7 +52,23 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
       toast.info("Sorry, this feature is only available for Computer Science majors for right now");
       router.push("/planner");
     }
-  }, [userInfo, router]);
+  }, [userInfo, router, redirectIfNotCS]);
+
+  useEffect(() => {
+    setCompletedSemesters(userInfo?.completedSemesters || []);
+  }, [userInfo?.completedSemesters]);
+
+  useEffect(() => {
+    setGenEdRequirements(initialGenEdRequirements || []);
+  }, [initialGenEdRequirements]);
+
+  useEffect(() => {
+    setULCourses(initialULCourses || []);
+  }, [initialULCourses]);
+
+  useEffect(() => {
+    setTotalCredits(initialTotalCredits || 0);
+  }, [initialTotalCredits]);
 
   // prevent flicker of this page if user info is not available
   if (!userInfo || !userInfo.startSemester || !userInfo.endSemester) {
@@ -68,31 +81,15 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
       toast.error("Failed to save course. Please try again.");
       return;
     }
-    const { savedCourses, updatedGenEds, updatedULConcentration } = res.data;
-    setGenEds(updatedGenEds);
+    const { updatedGenEdRequirements, updatedULConcentration } = res.data;
+    setGenEdRequirements(updatedGenEdRequirements);
     setULCourses(updatedULConcentration.courses);
-  }
-
-  const updateCourseSelectedGenEdsAndRefreshGenEds = async (courseId: string, selectedGenEds: GenEdListType[]) => {
-    const res = await updateCourseSelectedGenEdsAndReturnUpdated(courseId, selectedGenEds);
-    if(!res.ok) {
-      toast.error("Failed to save course. Please try again.");
-      return;
-    }
-    const { savedCourses, updatedGenEds, updatedULConcentration } = res.data;
-    setGenEds(updatedGenEds);
-    setULCourses(updatedULConcentration.courses);
+    router.refresh();
   }
 
   const refreshGenEds = async () => {
-    const newGenEds = await getAllGenEds();
-    setGenEds(newGenEds);
-  };
-
-  const updateGenEdsOptimistic = (updatedGenEds: GenEd[]) => {
-    setGenEds(prev => {
-      return [...prev, ...updatedGenEds.filter(ug => !prev.some(g => g.courseId === ug.courseId))];
-    });
+    const newRequirements = await getAllGenEdRequirements();
+    setGenEdRequirements(newRequirements);
   };
 
   const refreshULCourses = async () => {
@@ -110,9 +107,10 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
       toast.error("Failed to delete courses. Please try again.");
       return;
     }
-    const { updatedGenEds, updatedULConcentration } = res.data;
-    setGenEds(updatedGenEds);
+    const { updatedGenEdRequirements, updatedULConcentration } = res.data;
+    setGenEdRequirements(updatedGenEdRequirements);
     setULCourses(updatedULConcentration.courses);
+    router.refresh();
   }
 
   const updateCompletedSemesters = (semester: SemesterDateDescriptor, isRemoval?: boolean) => {
@@ -133,9 +131,8 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
     <RequirementsContext.Provider
       value={{ 
         saveNewCourseAndRefreshGenEdsAndULCourses,
-        updateCourseSelectedGenEdsAndRefreshGenEds,
         deleteSemesterCoursesAndRefreshGenEdsAndULCourses,
-        genEds, 
+        genEdRequirements, 
         refreshULCourses, 
         ULCourses, 
         refreshAllRequirements, 
@@ -143,8 +140,6 @@ export const RequirementsProvider = ({ children, initialGenEds, initialULCourses
         updateTotalCredits, 
         completedSemesters,
         updateCompletedSemesters,
-
-        updateGenEdsOptimistic,
       }}
     >
       {children}

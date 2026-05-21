@@ -1,6 +1,6 @@
 "use client";
 import { Course, Term } from "@/lib/utils/types";
-import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo, useEffect } from 'react';
 import { useRequirements } from "../context/requirements-context";
 
 interface SemesterContextProps {
@@ -31,6 +31,10 @@ export const SemesterProvider = ({
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const { updateTotalCredits } = useRequirements();
 
+  useEffect(() => {
+    setCourses(initialCourses);
+  }, [initialCourses]);
+
   const addCourse = useCallback((course: Course) => {
     setCourses(prevCourses => {
       // Double-check for duplicates before adding
@@ -48,30 +52,7 @@ const removeCourse = useCallback((courseId: string) => {
     if (!courseToRemove) return prevCourses;
     
     // Remove the course with the given courseId
-    const filteredCourses = prevCourses.filter(c => c.courseId !== courseId);
-
-    // Then check if this course is a dependency for any other courses AND that dependency is selected
-    // If it is, update the selectedGenEds of those courses to the non dependent ones
-    const updatedCourses = filteredCourses.map((c) => {
-      if(c.selectedGenEds 
-        && c.selectedGenEds.length > 0 
-        && c.selectedGenEds.some(genEd => genEd.includes("|") && genEd.split("|")[1] === courseId)
-      ) {
-        // Find the first non-dependent gen ed group
-        const nonDependentGenEds = c.genEds.find(genEdGroup => 
-          !genEdGroup.some(genEd => genEd.includes("|"))
-        ) || c.genEds[0];
-        
-        return {
-          ...c,
-          selectedGenEds: nonDependentGenEds
-        };
-      } else {
-        return c;
-      }
-    });
-    
-    return updatedCourses;
+    return prevCourses.filter(c => c.courseId !== courseId);
   });
   
   // Update total credits when removing a course

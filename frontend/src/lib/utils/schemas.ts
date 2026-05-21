@@ -15,7 +15,8 @@ export const CourseSchema = z.object({
   name: z.string(),
   credits: z.number(),
   genEds: z.array(z.array(z.string())),
-  selectedGenEds: z.array(z.string()).optional().nullable(),
+  assignedGenEds: z.array(z.string()).optional().nullable(),
+  assignedGenEdBranchIndex: z.number().optional().nullable(),
   index: z.number().optional().nullable(),
 });
 
@@ -38,15 +39,16 @@ export type ULCoursesInfo = z.infer<typeof ULConcentrationSchema.shape.courses>;
 
 export type Semesters = z.infer<typeof SemestersSchema>;
 
-export const GenEdListSchema = z.array(z.object({
-  genEd: z.string(),
+export const GenEdRequirementListSchema = z.array(z.object({
+  requirementName: z.string(),
+  satisfiedByGenEd: z.string(),
   courseId: z.string(),
   semesterName: z.string(),
   transferCreditName: z.string().optional().nullable(),
 }));
 
-export type GenEdList = z.infer<typeof GenEdListSchema>;
-export type GenEd = z.infer<typeof GenEdListSchema>[number];
+export type GenEdRequirementList = z.infer<typeof GenEdRequirementListSchema>;
+export type GenEdRequirement = z.infer<typeof GenEdRequirementListSchema>[number];
 
 export const OnboardingFormInitialValuesSchema = z.object({
   startTerm: z.string(),
