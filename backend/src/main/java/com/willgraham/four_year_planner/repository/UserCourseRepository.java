@@ -45,7 +45,29 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     UserCourse findByUserIdAndCourse_CourseId(String userId, String courseId);
 
     // Get courses that satisfy a certain UL concentration prefix ("ENES", "CMSC" ...)
-    List<UserCourse> findByUserIdAndCourseIdStartingWith(String userId, String concentrationIdPrefix);
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        AND uc.courseId LIKE CONCAT(:concentrationIdPrefix, '%')
+        ORDER BY
+            uc.semester.year ASC,
+            CASE
+                WHEN uc.semester.term = 'TRANSFER' THEN 0
+                WHEN uc.semester.term = 'SPRING' THEN 1
+                WHEN uc.semester.term = 'SUMMER' THEN 2
+                WHEN uc.semester.term = 'FALL' THEN 3
+                WHEN uc.semester.term = 'WINTER' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(uc.index, 2147483647) ASC,
+            uc.id ASC
+        """)
+    List<UserCourse> findULCoursesByUserIdAndConcentration(
+            @Param("userId") String userId,
+            @Param("concentrationIdPrefix") String concentrationIdPrefix
+    );
 
     @Modifying
     @Transactional

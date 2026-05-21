@@ -60,10 +60,10 @@ public class UserCourseService {
     }
 
     public List<UserCourse> getULCourses(String userId, String concentration) {
-        if(concentration.isEmpty() || concentration.length() > 4) {
+        if(concentration == null || concentration.isEmpty() || concentration.length() > 4) {
             return List.of();
         }
-        return userCourseRepository.findByUserIdAndCourseIdStartingWith(userId, concentration);
+        return userCourseRepository.findULCoursesByUserIdAndConcentration(userId, concentration);
     }
 
     public void processTransferCreditDto(TransferCreditDto dto, String userId) {
@@ -96,12 +96,15 @@ public class UserCourseService {
         String concentration = userService.findById(userId).getULConcentration();
         List<UserCourse> courses = getULCourses(userId, concentration);
 
-        //Filter out courses that are not 3 or 400 level
-        courses = courses.stream().filter(c -> c.getCourseId().charAt(4) == '3' || c.getCourseId().charAt(4) == '4').toList();
+        // Filter out malformed rows and courses that are not 3 or 400 level.
+        courses = courses.stream()
+                .map(this::hydrateCourse)
+                .filter(this::hasUsableCourse)
+                .filter(c -> c.getCourseId().charAt(4) == '3' || c.getCourseId().charAt(4) == '4')
+                .toList();
 
         // Remove duplicate courses
         courses = courses.stream()
-                .map(this::hydrateCourse)
                 .collect(Collectors.toMap(
                         UserCourse::getCourseId,
                         Function.identity(),
@@ -133,5 +136,13 @@ public class UserCourseService {
         }
 
         return userCourse;
+    }
+
+    private boolean hasUsableCourse(UserCourse userCourse) {
+        return userCourse != null
+                && userCourse.getCourseId() != null
+                && userCourse.getCourseId().length() >= 5
+                && userCourse.getCourse() != null
+                && userCourse.getCourse().getCredits() != null;
     }
 }
