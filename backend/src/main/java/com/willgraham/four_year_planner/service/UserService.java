@@ -25,6 +25,8 @@ import java.util.Optional;
 @Service
 public class UserService {
 
+    private static final int MAX_NOTE_LENGTH = 50000;
+
     private final UserRepository userRepository;
     private final UserCourseRepository userCourseRepository;
 
@@ -192,7 +194,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
 
-        if(note.length() > 1000) throw new InvalidInputException("Note cannot be longer than 1000 characters");
+        if(note.length() > MAX_NOTE_LENGTH) throw new InvalidInputException("Note cannot be longer than " + MAX_NOTE_LENGTH + " characters");
         note = note.trim();
 
 
