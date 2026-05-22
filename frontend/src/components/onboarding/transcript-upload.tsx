@@ -1,105 +1,55 @@
-'use client';
+"use client";
 
 import { FileWithPreview, useFileUpload } from "@/hooks/use-file-upload";
 import { parseTranscript } from "@/lib/api/forms/parse-transcript";
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { AlertCircleIcon, Check, ImageUpIcon, LoaderCircleIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  Check,
+  ImageUpIcon,
+  LoaderCircleIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { OnboardingFormValues } from "./onboarding-form";
+import { CsSpecializations, OnboardingFormValues } from "./onboarding-form";
 import { Term } from "@/lib/utils/types";
-import { useCourseApi } from "@/lib/api/planner/planner.client";
 
-const maxSizeMB = 10
-const maxSize = maxSizeMB * 1024 * 1024 // 5MB default
-
+const maxSizeMB = 10;
+const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
 
 interface TranscriptUploadProps {
   incrementStep: () => void;
   setTranscriptValues: (values: OnboardingFormValues | undefined) => void;
 }
 
-const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUploadProps) => {
+const TranscriptUpload = ({
+  incrementStep,
+  setTranscriptValues,
+}: TranscriptUploadProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { saveSemester, getMultipleCourseInfos } = useCourseApi();
 
   const handleFileUpload = async (files: FileWithPreview[]) => {
     setLoading(true);
     setError(null);
     const values = await parseTranscript(files[0].file as File);
-    if(values.error) {
+    if ("error" in values) {
       setError(values.error);
       removeFile(files[0].id);
+      setLoading(false);
+      return;
     }
-
-    const completedCourses = values.parsed?.completedCourses.map(course => ({
-      term: course.term.toUpperCase() as Term,
-      year: course.year,
-      courseId: course.courseId,
-    }));
-
-    if(completedCourses && completedCourses.length > 0) {
-      const completedCourseIds = completedCourses.map(course => course.courseId);
-      const completedCourseInfosResponse = await getMultipleCourseInfos(completedCourseIds);
-      
-      if(completedCourseInfosResponse.ok) {
-        const completedCourseInfos = completedCourseInfosResponse.data;
-        
-        // Create a map to store course info by courseId for quick lookup
-        const courseInfoMap = new Map();
-        completedCourseInfos.forEach(courseInfo => {
-          courseInfoMap.set(courseInfo.courseId, courseInfo);
-        });
-        
-        // Group courses by semester (term + year)
-        const semesterMap = new Map();
-        completedCourses.forEach(course => {
-          const semesterKey = `${course.term}-${course.year}`;
-          
-          if (!semesterMap.has(semesterKey)) {
-            semesterMap.set(semesterKey, {
-              term: course.term,
-              year: course.year,
-              courses: []
-            });
-          }
-          
-          // Add the course with its info to the semester
-          const courseInfo = courseInfoMap.get(course.courseId);
-          if (courseInfo) {
-            semesterMap.get(semesterKey).courses.push({
-              ...courseInfo,
-              // Add any additional properties you need
-            });
-          }
-        });
-
-        // Convert to array and save all semesters using Promise.all
-        const semesterPromises = Array.from(semesterMap.values()).map(semester => 
-          saveSemester(semester.courses, semester.term, semester.year)
-        );
-        
-        try {
-          await Promise.all(semesterPromises);
-        } catch (error) {
-          console.error('Error saving semesters:', error);
-          // Handle the error as needed
-        }
-      }
-    }
-
 
     // Helper to transform names like "AP HUMAN GEOG" to "AP Human Geog"
     function formatCourseName(name: string): string {
       return name
-      .split(" ")
-      .map(word =>
-        word.length <= 2
-        ? word.toUpperCase()
-        : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      )
-      .join(" ");
+        .split(" ")
+        .map((word) =>
+          word.length <= 2
+            ? word.toUpperCase()
+            : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ");
     }
 
     const transcriptValues: OnboardingFormValues = {
@@ -108,18 +58,24 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
       startYear: values.parsed?.startYear?.toString() || "",
       endYear: values.parsed?.endYear?.toString() || "",
       major: values.parsed?.major || "",
-      minor: "",
-      transferCredits: values.parsed?.transferCredits.map(credit => ({
-      name: formatCourseName(credit.name),
-      courseId: credit.courseId,
-      genEds: credit.genEds,
-      })) || [{ name: "", courseId: "", genEds: "" }]
+      csSpecialization: mapSpecialization(values.parsed?.specialization),
+      minor: values.parsed?.minor || "",
+      transferCredits: values.parsed?.transferCredits.map((credit) => ({
+        name: formatCourseName(credit.name),
+        courseId: credit.courseId,
+        genEds: credit.genEds,
+      })) || [{ name: "", courseId: "", genEds: "" }],
+      completedCourses:
+        values.parsed?.completedCourses.map((course) => ({
+          courseId: course.courseId,
+          term: course.term,
+          year: course.year.toString(),
+        })) || [],
     };
     setTranscriptValues(transcriptValues);
 
-
     setLoading(false);
-  }
+  };
 
   const [
     { files, isDragging, errors },
@@ -137,14 +93,30 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
     maxSize,
     multiple: false,
     onFilesAdded: handleFileUpload,
-  })
+  });
 
-  
   return (
     <section className="mt-10">
       <div className="text-center mb-8 space-y-2">
-        <p>Upload the PDF version of your unofficial transcript to autofill values or click next to skip this step</p>
-        <p>You can find your transcript <Link href={"https://app.testudo.umd.edu/main/uotrans"} target="_blank" className="underline">here</Link>, click <span className="font-semibold bg-card p-1 px-1.5 rounded-lg">Print this Document</span> in the top right corner</p>
+        <p>
+          Upload the PDF version of your unofficial transcript to autofill
+          values or click next to skip this step
+        </p>
+        <p>
+          You can find your transcript{" "}
+          <Link
+            href={"https://app.testudo.umd.edu/main/uotrans"}
+            target="_blank"
+            className="underline"
+          >
+            here
+          </Link>
+          , click{" "}
+          <span className="font-semibold bg-card p-1 px-1.5 rounded-lg">
+            Print this Document
+          </span>{" "}
+          in the top right corner
+        </p>
       </div>
       <div className="flex flex-col gap-2">
         <div className="relative">
@@ -165,21 +137,30 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
               aria-label="Upload file"
             />
             {loading ? (
-              <LoaderCircleIcon
-                className="animate-spin text-primary"
-                size={24}
-                aria-hidden="true"
-              />
+              <div className="flex flex-col items-center gap-3 text-sm text-muted-foreground">
+                <LoaderCircleIcon
+                  className="animate-spin text-primary"
+                  size={24}
+                  aria-hidden="true"
+                />
+                <span>Parsing transcript...</span>
+              </div>
             ) : (
               <div className="flex flex-col items-center justify-center px-4 py-3 text-center">
                 <div
                   className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
                   aria-hidden="true"
                 >
-                  {files.length > 0 ? <Check className="size-5 text-green-500"/> : <ImageUpIcon className="size-4 opacity-60" />}
+                  {files.length > 0 ? (
+                    <Check className="size-5 text-green-500" />
+                  ) : (
+                    <ImageUpIcon className="size-4 opacity-60" />
+                  )}
                 </div>
                 <p className="mb-1.5 text-sm font-medium">
-                  {files.length > 0 ? files[0].file.name : "Drag and drop your transcript PDF here or click to select"}
+                  {files.length > 0
+                    ? files[0].file.name
+                    : "Drag and drop your transcript PDF here or click to select"}
                 </p>
                 <p className="text-muted-foreground text-xs">
                   Max size: {maxSizeMB}MB
@@ -207,16 +188,25 @@ const TranscriptUpload = ({ incrementStep, setTranscriptValues }: TranscriptUplo
             <span>{error}</span>
           </div>
         )}
-        <Button 
-          onClick={incrementStep}
-          disabled={loading}
-          className="mt-2"
-        >
+        <Button onClick={incrementStep} disabled={loading} className="mt-2">
           Next
         </Button>
       </div>
     </section>
-  )
+  );
+};
+
+function mapSpecialization(
+  value: string | null | undefined,
+): CsSpecializations | undefined {
+  if (!value) return undefined;
+  const lowerValue = value.toLowerCase();
+  if (lowerValue.includes("machine")) return "ML";
+  if (lowerValue.includes("data")) return "DATA_SCIENCE";
+  if (lowerValue.includes("quantum")) return "QUANTUM";
+  if (lowerValue.includes("cyber")) return "CYBERSECURITY";
+  if (lowerValue.includes("general")) return "GENERAL";
+  return undefined;
 }
 
-export default TranscriptUpload
+export default TranscriptUpload;

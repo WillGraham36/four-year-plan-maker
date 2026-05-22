@@ -1,12 +1,12 @@
-'use client'
+"use client";
 import { useState } from "react";
 import {
   Stepper,
   StepperIndicator,
   StepperItem,
   StepperSeparator,
-  StepperTitle
-} from "@/components/ui/stepper"
+  StepperTitle,
+} from "@/components/ui/stepper";
 import { Button } from "../ui/button";
 import TranscriptUpload from "./transcript-upload";
 import OnboardingForm, { OnboardingFormValues } from "./onboarding-form";
@@ -22,9 +22,15 @@ const steps = [
   },
 ];
 
-const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormValues | null}) => {
+const MultiStageOnboardingForm = ({
+  formInputs,
+}: {
+  formInputs?: OnboardingFormValues | null;
+}) => {
   const [step, setStep] = useState<number>(formInputs ? 2 : 1);
-  const [transcriptValues, setTranscriptValues] = useState<OnboardingFormValues | undefined>(formInputs || undefined);
+  const [transcriptValues, setTranscriptValues] = useState<
+    OnboardingFormValues | undefined
+  >(formInputs || undefined);
 
   return (
     <main className="max-w-3xl mx-auto py-5 px-4 min-h-[calc(100vh-8.75rem)]">
@@ -45,26 +51,34 @@ const MultiStageOnboardingForm = ({ formInputs }: {formInputs?: OnboardingFormVa
       </Stepper>
 
       {step === 1 && (
-        <TranscriptUpload 
-          incrementStep={() => setStep(step + 1)} 
+        <TranscriptUpload
+          incrementStep={() => setStep(step + 1)}
           setTranscriptValues={setTranscriptValues}
         />
       )}
       {step == 2 && (
         <>
           <p className="text-center mb-4 space-y-2 mt-10">
-            Double check any information and update any fields that are incorrect
+            Double check the information and update any fields that are
+            incorrect
           </p>
           <hr />
           <OnboardingForm
             formInputs={transcriptValues}
-            backButton={<Button variant="outline" className="w-30" onClick={() => setStep(step - 1)}>Back</Button>}
+            backButton={
+              <Button
+                variant="outline"
+                className="w-30"
+                onClick={() => setStep(step - 1)}
+              >
+                Back
+              </Button>
+            }
           />
         </>
       )}
-
     </main>
-  )
-}
+  );
+};
 
-export default MultiStageOnboardingForm
+export default MultiStageOnboardingForm;

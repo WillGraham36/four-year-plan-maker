@@ -16,7 +16,7 @@ type TransferCreditWithDetails = Omit<
   genEdOverrides: string[][];
 };
 
-export type SubmitOnboardingFormProps = Omit<OnboardingFormValues, "transferCredits"> & {
+export type SubmitOnboardingFormProps = Omit<OnboardingFormValues, "transferCredits" | "completedCourses"> & {
   transferCredits: TransferCreditWithDetails[];
   track: CsSpecializations | undefined;
 };
