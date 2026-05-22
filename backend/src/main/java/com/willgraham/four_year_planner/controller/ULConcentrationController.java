@@ -42,4 +42,30 @@ public class ULConcentrationController {
         return ResponseEntity.ok(ApiResponse.success(concentration));
     }
 
+    /**
+     * Marks an existing planner course as an explicit UL concentration course
+     */
+    @PostMapping("/custom-courses")
+    public ResponseEntity<ApiResponse<ULConcentrationDTO>> addCustomULCourse(
+            @RequestBody CourseIdentifierDto request,
+            Authentication authentication) {
+
+        String userId = AuthUtils.getCurrentUserId(authentication);
+        ULConcentrationDTO updatedULConcentration = userCourseService.addCustomULCourse(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(updatedULConcentration));
+    }
+
+    /**
+     * Removes the explicit UL concentration mark without deleting the planner course
+     */
+    @DeleteMapping("/custom-courses")
+    public ResponseEntity<ApiResponse<ULConcentrationDTO>> removeCustomULCourse(
+            @RequestBody CourseIdentifierDto request,
+            Authentication authentication) {
+
+        String userId = AuthUtils.getCurrentUserId(authentication);
+        ULConcentrationDTO updatedULConcentration = userCourseService.removeCustomULCourse(userId, request);
+        return ResponseEntity.ok(ApiResponse.success(updatedULConcentration));
+    }
+
 }

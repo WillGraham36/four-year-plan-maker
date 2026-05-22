@@ -186,6 +186,54 @@ export function useCourseApi() {
     return res;
   };
 
+  const addCustomULCourse = async (courseId: string, term: Term, year: number) => {
+    const res = await fetchWithAuth('v1/ulconcentration/custom-courses', new URLSearchParams(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseId,
+          semester: { term, year },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to add custom upper level concentration course");
+    }
+
+    const ULCourses = ULConcentrationSchema.safeParse(res.data);
+    return ULCourses.data || {
+      concentration: "",
+      courses: [],
+    };
+  };
+
+  const removeCustomULCourse = async (courseId: string, term: Term, year: number) => {
+    const res = await fetchWithAuth('v1/ulconcentration/custom-courses', new URLSearchParams(), {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courseId,
+          semester: { term, year },
+        }),
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error("Failed to remove custom upper level concentration course");
+    }
+
+    const ULCourses = ULConcentrationSchema.safeParse(res.data);
+    return ULCourses.data || {
+      concentration: "",
+      courses: [],
+    };
+  };
+
   const getCourseInfo = async (courseId: string): Promise<CustomServerResponse<Course>> => {
     const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);
     if (response.status === 404) {
@@ -409,6 +457,8 @@ export function useCourseApi() {
     getAllULCourses,
     getUserInfo,
     updateULConcentration,
+    addCustomULCourse,
+    removeCustomULCourse,
     getCourseInfo,
     getMultipleCourseInfos,
     createOffTerm,

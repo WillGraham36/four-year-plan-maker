@@ -64,6 +64,7 @@ public class User {
     })
     private List<Semester> completedSemesters = new ArrayList<>();
 
+    @Column(name = "note", columnDefinition = "TEXT")
     private String note = "";
     private CsTrack track;
 

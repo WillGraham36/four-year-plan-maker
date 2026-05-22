@@ -1,6 +1,7 @@
 package com.willgraham.four_year_planner.service;
 
 import com.willgraham.four_year_planner.dto.*;
+import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.UserCourse;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @AllArgsConstructor
 @Service
@@ -66,6 +68,38 @@ public class UserCourseService {
         return userCourseRepository.findULCoursesByUserIdAndConcentration(userId, concentration);
     }
 
+    public ULConcentrationDTO addCustomULCourse(String userId, CourseIdentifierDto courseIdentifier) {
+        UserCourse userCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
+                userId,
+                courseIdentifier.getCourseId(),
+                courseIdentifier.getSemester()
+        );
+
+        userCourse = hydrateCourse(userCourse);
+        if (!isUpperLevelCourse(userCourse)) {
+            throw new InvalidInputException("Only planner courses at the 300 level or above can be added to the upper level concentration");
+        }
+
+        userCourse.setCustomUlConcentration(true);
+        userCourseRepository.save(userCourse);
+        return getULConcentrationAndCourses(userId);
+    }
+
+    public ULConcentrationDTO removeCustomULCourse(String userId, CourseIdentifierDto courseIdentifier) {
+        UserCourse userCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
+                userId,
+                courseIdentifier.getCourseId(),
+                courseIdentifier.getSemester()
+        );
+
+        if (userCourse != null) {
+            userCourse.setCustomUlConcentration(false);
+            userCourseRepository.save(userCourse);
+        }
+
+        return getULConcentrationAndCourses(userId);
+    }
+
     public void processTransferCreditDto(TransferCreditDto dto, String userId) {
         Course course = courseService.findOrCreateCourse(dto.getCourse());
 
@@ -94,13 +128,14 @@ public class UserCourseService {
 
     public ULConcentrationDTO getULConcentrationAndCourses(String userId) {
         String concentration = userService.findById(userId).getULConcentration();
-        List<UserCourse> courses = getULCourses(userId, concentration);
+        List<UserCourse> concentrationCourses = getULCourses(userId, concentration);
+        List<UserCourse> customCourses = userCourseRepository.findCustomULCoursesByUserId(userId);
+        List<UserCourse> courses = Stream.concat(concentrationCourses.stream(), customCourses.stream()).toList();
 
-        // Filter out malformed rows and courses that are not 3 or 400 level.
+        // Filter out malformed rows and courses that are not 300 level or above.
         courses = courses.stream()
                 .map(this::hydrateCourse)
-                .filter(this::hasUsableCourse)
-                .filter(c -> c.getCourseId().charAt(4) == '3' || c.getCourseId().charAt(4) == '4')
+                .filter(this::isUpperLevelCourse)
                 .toList();
 
         // Remove duplicate courses
@@ -108,7 +143,7 @@ public class UserCourseService {
                 .collect(Collectors.toMap(
                         UserCourse::getCourseId,
                         Function.identity(),
-                        (existing, replacement) -> existing,
+                        (existing, replacement) -> Boolean.TRUE.equals(existing.getCustomUlConcentration()) ? existing : replacement,
                         LinkedHashMap::new))
                 .values()
                 .stream()
@@ -119,7 +154,8 @@ public class UserCourseService {
                 .map(c -> new ULCourseInfoDTO(
                         c.getCourseId(),
                         c.getSemester(),
-                        c.getCourse().getCredits()
+                        c.getCourse().getCredits(),
+                        Boolean.TRUE.equals(c.getCustomUlConcentration())
                 ))
                 .toList();
 
@@ -144,5 +180,19 @@ public class UserCourseService {
                 && userCourse.getCourseId().length() >= 5
                 && userCourse.getCourse() != null
                 && userCourse.getCourse().getCredits() != null;
+    }
+
+    private boolean isUpperLevelCourse(UserCourse userCourse) {
+        if (!hasUsableCourse(userCourse)) {
+            return false;
+        }
+
+        return userCourse.getCourseId()
+                .chars()
+                .filter(Character::isDigit)
+                .map(Character::getNumericValue)
+                .findFirst()
+                .stream()
+                .anyMatch(level -> level >= 3);
     }
 }

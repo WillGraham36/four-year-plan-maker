@@ -10,4 +10,5 @@ public class ULCourseInfoDTO {
     private String courseId;
     private Semester semester;
     private int credits;
+    private boolean custom;
 }

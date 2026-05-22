@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,5 +54,38 @@ class UserCourseServiceTest {
         assertEquals(1, result.getCourses().size());
         assertEquals("CMSC330", result.getCourses().getFirst().getCourseId());
         assertEquals(3, result.getCourses().getFirst().getCredits());
+    }
+
+    @Test
+    void getULConcentrationAndCoursesIncludesCustomNonPrefixCourses() {
+        String userId = "user_123";
+        User user = new User();
+        user.setULConcentration("CMSC");
+
+        Course customCourse = new Course();
+        customCourse.setCourseId("MATH401");
+        customCourse.setName("Applications of Linear Algebra");
+        customCourse.setCredits(3);
+        customCourse.setGenEds(List.of(List.of("NONE")));
+
+        UserCourse customUserCourse = new UserCourse();
+        customUserCourse.setId(1L);
+        customUserCourse.setUserId(userId);
+        customUserCourse.setCourseId("MATH401");
+        customUserCourse.setCourse(customCourse);
+        customUserCourse.setSemester(new Semester(Term.SPRING, 2026));
+        customUserCourse.setCustomUlConcentration(true);
+
+        when(userService.findById(userId)).thenReturn(user);
+        when(userCourseRepository.findULCoursesByUserIdAndConcentration(userId, "CMSC"))
+                .thenReturn(List.of());
+        when(userCourseRepository.findCustomULCoursesByUserId(userId))
+                .thenReturn(List.of(customUserCourse));
+
+        ULConcentrationDTO result = userCourseService.getULConcentrationAndCourses(userId);
+
+        assertEquals(1, result.getCourses().size());
+        assertEquals("MATH401", result.getCourses().getFirst().getCourseId());
+        assertTrue(result.getCourses().getFirst().isCustom());
     }
 }

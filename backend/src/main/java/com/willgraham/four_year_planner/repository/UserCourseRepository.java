@@ -69,6 +69,27 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
             @Param("concentrationIdPrefix") String concentrationIdPrefix
     );
 
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        AND uc.customUlConcentration = true
+        ORDER BY
+            uc.semester.year ASC,
+            CASE
+                WHEN uc.semester.term = 'TRANSFER' THEN 0
+                WHEN uc.semester.term = 'SPRING' THEN 1
+                WHEN uc.semester.term = 'SUMMER' THEN 2
+                WHEN uc.semester.term = 'FALL' THEN 3
+                WHEN uc.semester.term = 'WINTER' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(uc.index, 2147483647) ASC,
+            uc.id ASC
+        """)
+    List<UserCourse> findCustomULCoursesByUserId(@Param("userId") String userId);
+
     @Modifying
     @Transactional
     int deleteByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
