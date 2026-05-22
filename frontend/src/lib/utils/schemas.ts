@@ -33,6 +33,7 @@ export const ULConcentrationSchema = z.object({
       year: z.number(),
     }),
     credits: z.number(),
+    custom: z.boolean().optional().default(false),
   })),
 })
 

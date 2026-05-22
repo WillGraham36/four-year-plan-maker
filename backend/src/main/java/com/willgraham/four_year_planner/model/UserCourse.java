@@ -35,6 +35,9 @@ public class UserCourse {
     @Column(name = "transfer_credit_name")
     private String transferCreditName;
 
+    @Column(name = "custom_ul_concentration")
+    private Boolean customUlConcentration = false;
+
     @Convert(converter = ListOfListStringConverter.class)
     @Column(columnDefinition = "TEXT") // Ensure enough space for JSON storage
     private List<List<String>> transferGenEdsOverride;

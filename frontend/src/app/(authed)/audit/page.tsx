@@ -65,6 +65,7 @@ const AuditPage = async () => {
             </section>
             <ResponsiveAuditLayout
               concentration={courses.concentration}
+              semesters={semesters}
               initialTrack={userInfo?.track}
             />
           </ChartsInfoProvider>

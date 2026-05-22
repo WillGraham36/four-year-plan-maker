@@ -8,14 +8,16 @@ import AreaRequirements from '@/components/audit/area-requirements';
 import LowerLevelRequirements from '@/components/audit/lower-level-reqs';
 import TrackRequirements from '@/components/audit/track-requirements';
 import UpperLevelConcentrationContainer from '@/components/ul-concentration/ul-concentration';
+import { Semesters } from "@/lib/utils/schemas";
 import { CsSpecializations } from "@/lib/utils/types";
 
 interface ResponsiveAuditLayoutProps {
   concentration: string;
+  semesters: Semesters;
   initialTrack?: CsSpecializations;
 }
 
-const ResponsiveAuditLayout = ({ concentration, initialTrack }: ResponsiveAuditLayoutProps) => {
+const ResponsiveAuditLayout = ({ concentration, semesters, initialTrack }: ResponsiveAuditLayoutProps) => {
   return (
     <>
       {/* Mobile/Tablet Layout - Tabs (visible below md) */}
@@ -42,7 +44,7 @@ const ResponsiveAuditLayout = ({ concentration, initialTrack }: ResponsiveAuditL
           
           <TabsContent value="upper-level" className="min-h-[400px]">
             <div className="space-y-4">
-              <UpperLevelConcentrationContainer concentration={concentration} />
+              <UpperLevelConcentrationContainer concentration={concentration} semesters={semesters} />
             </div>
           </TabsContent>
           
@@ -62,7 +64,7 @@ const ResponsiveAuditLayout = ({ concentration, initialTrack }: ResponsiveAuditL
         </section>
         <section className="flex flex-col gap-4 flex-1">
           <TrackRequirements initialTrack={initialTrack} />
-          <UpperLevelConcentrationContainer concentration={concentration} />
+          <UpperLevelConcentrationContainer concentration={concentration} semesters={semesters} />
         </section>
       </div>
     </>
