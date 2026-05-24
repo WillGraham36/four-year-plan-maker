@@ -21,6 +21,20 @@ export const CourseSchema = z.object({
   index: z.number().optional().nullable(),
 });
 
+export const CourseAutocompleteSuggestionSchema = z.object({
+  courseId: z.string(),
+  name: z.string().nullable().optional().default(""),
+  credits: z.number().nullable().optional().default(null),
+});
+
+export const CourseAutocompleteSuggestionListSchema = z.array(CourseAutocompleteSuggestionSchema);
+
+export const CourseSyncSummarySchema = z.object({
+  syncedDepartments: z.array(z.string()),
+  coursesInsertedOrUpdated: z.number(),
+  errors: z.array(z.string()),
+});
+
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
 export type SemesterSchema = z.infer<typeof SemestersSchema>;
 

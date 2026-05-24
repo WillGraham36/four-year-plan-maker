@@ -11,4 +11,15 @@ public class AuthUtils {
         }
         return (String) authentication.getPrincipal();
     }
+
+    public static void requireAdmin(Authentication authentication) {
+        getCurrentUserId(authentication);
+
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+
+        if (!isAdmin) {
+            throw new JwtAuthenticationException("Admin access required");
+        }
+    }
 }

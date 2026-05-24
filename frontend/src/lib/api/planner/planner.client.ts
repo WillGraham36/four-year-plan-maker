@@ -3,8 +3,8 @@
 
 import { useFetchWithAuth } from "@/hooks/useFetchWithAuthClient";
 import { courseAndSemesterToDto } from "@/lib/utils";
-import { CourseInfoSchema, GenEdRequirementList, GenEdRequirementListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
-import { Course, CourseWithSemester, CsSpecializations, CustomServerResponse, Term, UserInfo } from "@/lib/utils/types";
+import { CourseAutocompleteSuggestionListSchema, CourseSchema, CourseSyncSummarySchema, GenEdRequirementList, GenEdRequirementListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, CourseAutocompleteSuggestion, CourseSyncSummary, CourseWithSemester, CsSpecializations, CustomServerResponse, Term, UserInfo } from "@/lib/utils/types";
 
 // Save a course
 export function useCourseApi() {
@@ -235,30 +235,20 @@ export function useCourseApi() {
   };
 
   const getCourseInfo = async (courseId: string): Promise<CustomServerResponse<Course>> => {
-    const response = await fetch(`https://api.umd.io/v1/courses/${courseId}`);
-    if (response.status === 404) {
-      return {
-        ok: false,
-        message: "Course not found",
-        data: null,
-      }
-    }
+    const response = await fetchWithAuth(`courses/${encodeURIComponent(courseId)}`);
     if (!response.ok) {
       return {
         ok: false,
-        message: `Something went wrong: Error status ${response.status}`,
+        message: response.message || "Course not found",
         data: null,
       }
     }
   
-    const data = await response.json();
     try {
-      const parsedData = CourseInfoSchema.parse(data[0]);
+      const parsedCourse = CourseSchema.parse(response.data);
       const courseInfo: Course = {
-        courseId: parsedData.course_id,
-        name: parsedData.name,
-        credits: parsedData.credits,
-        genEds: parsedData.gen_ed && parsedData.gen_ed.length > 0 ? parsedData.gen_ed : [[]],
+        ...parsedCourse,
+        index: parsedCourse.index ?? undefined,
       };
       return {
         ok: true,
@@ -290,28 +280,19 @@ export function useCourseApi() {
       };
     }
 
-    const joinedIds = courseIds.map(encodeURIComponent).join(",");
-    const response = await fetch(`https://api.umd.io/v1/courses/${joinedIds}`);
-
-    if (!response.ok) {
-      return {
-        ok: false,
-        message: `Something went wrong: Error status ${response.status}`,
-        data: null,
-      };
-    }
-
     try {
-      const data = await response.json();
-      const parsedCourses = data.map((raw: any) => {
-        const parsedData = CourseInfoSchema.parse(raw);
+      const results = await Promise.all(courseIds.map((courseId) => getCourseInfo(courseId)));
+      const parsedCourses = results
+        .filter((result): result is CustomServerResponse<Course> & { ok: true } => result.ok)
+        .map((result) => result.data);
+
+      if (parsedCourses.length === 0) {
         return {
-          courseId: parsedData.course_id,
-          name: parsedData.name,
-          credits: parsedData.credits,
-          genEds: parsedData.gen_ed && parsedData.gen_ed.length > 0 ? parsedData.gen_ed : [[]],
-        } satisfies Course;
-      });
+          ok: false,
+          message: "No valid courses found",
+          data: null,
+        };
+      }
 
       return {
         ok: true,
@@ -443,6 +424,59 @@ export function useCourseApi() {
       data: "User track updated successfully",
     };
   }
+
+  const autocompleteCourses = async (query: string): Promise<CustomServerResponse<CourseAutocompleteSuggestion[]>> => {
+    const params = new URLSearchParams({ q: query });
+    const res = await fetchWithAuth("courses/autocomplete", params);
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        message: res.message,
+        data: null,
+      };
+    }
+
+    const parsedSuggestions = CourseAutocompleteSuggestionListSchema.safeParse(res.data);
+    return {
+      ok: true,
+      message: "Successfully fetched course suggestions",
+      data: parsedSuggestions.success ? parsedSuggestions.data : [],
+    };
+  };
+
+  const syncCourseDepartments = async (departments: string[]): Promise<CustomServerResponse<CourseSyncSummary>> => {
+    const res = await fetchWithAuth("admin/courses/sync", new URLSearchParams(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ departments }),
+    });
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        message: res.message || "Failed to sync courses",
+        data: null,
+      };
+    }
+
+    const parsedSummary = CourseSyncSummarySchema.safeParse(res.data);
+    if (!parsedSummary.success) {
+      return {
+        ok: false,
+        message: "Unexpected sync response",
+        data: null,
+      };
+    }
+
+    return {
+      ok: true,
+      message: "Successfully synced courses",
+      data: parsedSummary.data,
+    };
+  };
   
 
   return {
@@ -465,6 +499,8 @@ export function useCourseApi() {
     deleteOffTerm,
     updateSemesterCompletion,
     updateUserNote,
-    updateUserTrack
+    updateUserTrack,
+    autocompleteCourses,
+    syncCourseDepartments
   };
 }

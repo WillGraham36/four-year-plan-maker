@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class JwtService {
@@ -28,6 +30,15 @@ public class JwtService {
 
     public String validateTokenAndGetUserId(String token) {
         try {
+            return validateTokenAndGetClaims(token).getSubject();
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public JWTClaimsSet validateTokenAndGetClaims(String token) {
+        try {
             SignedJWT signedJWT = SignedJWT.parse(token);
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
 
@@ -37,12 +48,44 @@ public class JwtService {
                     new JWSVerificationKeySelector<>(header.getAlgorithm(), jwkSource);
 
             // If we get here without exceptions, token is valid
-            // Extract and return the user ID from the claims
-            return claimsSet.getSubject();
-
+            return claimsSet;
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public boolean isAdmin(JWTClaimsSet claimsSet) {
+        if (claimsSet == null) {
+            return false;
+        }
+
+        return isAdminValue(claimsSet.getClaim("role"))
+                || isAdminValue(claimsSet.getClaim("status"))
+                || metadataHasAdminValue(claimsSet.getClaim("public_metadata"))
+                || metadataHasAdminValue(claimsSet.getClaim("private_metadata"))
+                || metadataHasAdminValue(claimsSet.getClaim("unsafe_metadata"));
+    }
+
+    private boolean metadataHasAdminValue(Object metadata) {
+        if (!(metadata instanceof Map<?, ?> map)) {
+            return false;
+        }
+
+        return isAdminValue(map.get("role"))
+                || isAdminValue(map.get("status"))
+                || isAdminValue(map.get("isAdmin"));
+    }
+
+    private boolean isAdminValue(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
+        }
+
+        if (value == null) {
+            return false;
+        }
+
+        return Objects.equals(value.toString().trim().toUpperCase(), "ADMIN");
     }
 
 

@@ -2,11 +2,13 @@ package com.willgraham.four_year_planner.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
+import com.nimbusds.jwt.JWTClaimsSet;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -34,11 +37,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                String userId = jwtService.validateTokenAndGetUserId(token);
+                JWTClaimsSet claimsSet = jwtService.validateTokenAndGetClaims(token);
+                String userId = claimsSet == null ? null : claimsSet.getSubject();
 
                 if (userId != null) {
+                    List<SimpleGrantedAuthority> authorities = jwtService.isAdmin(claimsSet)
+                            ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                            : Collections.emptyList();
                     UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+                            new UsernamePasswordAuthenticationToken(userId, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }

@@ -24,6 +24,10 @@ const Navbar = () => {
       headerTitle = "Account Setup";
       headerSubtitle = "Upload your transcript and configure your account";
       break;
+    case "/admin/course-sync":
+      headerTitle = "Course Sync";
+      headerSubtitle = "Refresh local course autocomplete data";
+      break;
     default:
       headerTitle = "Terp Planner";
       headerSubtitle = undefined;

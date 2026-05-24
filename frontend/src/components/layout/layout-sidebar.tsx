@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SideBarClickableItem, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
-import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, User } from "lucide-react";
+import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, ShieldCheck, User } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { ThemeToggleIcon } from "../ui/toggle";
@@ -37,6 +37,11 @@ function LayoutSidebar() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
+  const metadata = user?.publicMetadata || user?.unsafeMetadata;
+  const isAdmin =
+    metadata?.role?.toString().toUpperCase() === "ADMIN" ||
+    metadata?.status?.toString().toUpperCase() === "ADMIN" ||
+    metadata?.isAdmin === true;
 
   const handleThemeToggle = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -76,6 +81,17 @@ function LayoutSidebar() {
             {navbarLinks.map((link, idx) => (
               <SidebarLink key={idx} link={link} />
             ))}
+            {isAdmin && (
+              <SidebarLink
+                link={{
+                  label: "Course Sync",
+                  href: "/admin/course-sync",
+                  icon: (
+                    <ShieldCheck className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                  ),
+                }}
+              />
+            )}
             <hr />
             <SideBarClickableItem
               label={generatingPdf ? "Generating PDF..." : "Download Grad Plan"}

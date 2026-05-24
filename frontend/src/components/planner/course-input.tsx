@@ -1,7 +1,6 @@
 "use client";
 import { Course } from "@/lib/utils/types";
 import React, { useEffect, useRef, useState } from "react";
-import { Input } from "../ui/input";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +13,8 @@ import { arraysEqual } from "@/lib/utils";
 import { useRequirements } from "../context/requirements-context";
 import { useSemester } from "../context/semester-context";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
+import { CourseAutocomplete } from "./course-autocomplete";
+import { normalizeCourseQuery } from "@/lib/courses/departments";
 
 const MAX_COURSE_ID_LENGTH = 9;
 
@@ -110,10 +111,8 @@ const CourseInput = ({
     await removeVerifiedCourse();
   };
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const courseId = e.target.value
-      .toUpperCase()
-      .slice(0, MAX_COURSE_ID_LENGTH);
+  const handleCourseIdChange = async (value: string) => {
+    const courseId = normalizeCourseQuery(value).slice(0, MAX_COURSE_ID_LENGTH);
 
     courseIdInputRef.current = courseId;
     setCourseIdInput(courseId);
@@ -273,10 +272,12 @@ const CourseInput = ({
               </TooltipContent>
             </Tooltip>
           )}
-          <Input
+          <CourseAutocomplete
             className="p-0 px-3 h-8 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border disabled:cursor-default disabled:opacity-100 disabled:text-muted-foreground"
             value={courseIdInput}
-            onChange={handleInputChange}
+            onValueChange={(value) => {
+              void handleCourseIdChange(value);
+            }}
             maxLength={MAX_COURSE_ID_LENGTH}
             disabled={disabled}
           />

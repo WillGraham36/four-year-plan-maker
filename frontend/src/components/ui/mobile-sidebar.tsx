@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Download, LoaderCircleIcon, Menu, Settings, User } from "lucide-react";
+import { Download, LoaderCircleIcon, Menu, Settings, ShieldCheck, User } from "lucide-react";
 import { buttonVariants } from "./button";
 import { navbarLinks } from "../layout/layout-sidebar";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,11 @@ export const MobileSidebar = ({
   const { openUserProfile, user } = useClerk();
   const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
+  const metadata = user?.publicMetadata || user?.unsafeMetadata;
+  const isAdmin =
+    metadata?.role?.toString().toUpperCase() === "ADMIN" ||
+    metadata?.status?.toString().toUpperCase() === "ADMIN" ||
+    metadata?.isAdmin === true;
 
   const handleThemeToggle = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -92,6 +97,19 @@ export const MobileSidebar = ({
                 <p>{link.label}</p>
               </Link>
             ))}
+            {isAdmin && (
+              <Link href="/admin/course-sync"
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "flex items-center justify-start gap-2 group/sidebar ",
+                  className
+                )}
+                onClick={() => setOpen(false)}
+              >
+                <ShieldCheck className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                <p>Course Sync</p>
+              </Link>
+            )}
             <hr />
             <div 
               className={cn(
