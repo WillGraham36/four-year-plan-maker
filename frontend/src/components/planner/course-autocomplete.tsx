@@ -33,6 +33,7 @@ type CourseAutocompleteProps = {
   value: string;
   onValueChange: (value: string) => void;
   onCourseSelect?: (courseId: string) => void;
+  acceptedCourseId?: string;
   disabled?: boolean;
   maxLength?: number;
   className?: string;
@@ -44,6 +45,7 @@ export function CourseAutocomplete({
   value,
   onValueChange,
   onCourseSelect,
+  acceptedCourseId,
   disabled,
   maxLength,
   className,
@@ -59,6 +61,7 @@ export function CourseAutocomplete({
   const requestId = useRef(0);
 
   const normalizedValue = normalizeCourseQuery(value);
+  const normalizedAcceptedCourseId = normalizeCourseQuery(acceptedCourseId ?? "");
   const deptPrefix = normalizedValue.slice(0, 4);
   const shouldShowDepartments =
     normalizedValue.length > 0 &&
@@ -112,6 +115,30 @@ export function CourseAutocomplete({
 
     return () => window.clearTimeout(timeout);
   }, [normalizedValue, shouldSearchCourses]);
+
+  useEffect(() => {
+    if (
+      !open ||
+      loading ||
+      !shouldSearchCourses ||
+      normalizedAcceptedCourseId === "" ||
+      normalizedAcceptedCourseId !== normalizedValue ||
+      courseSuggestions.length !== 1 ||
+      courseSuggestions[0].courseId !== normalizedAcceptedCourseId
+    ) {
+      return;
+    }
+
+    setHasTyped(false);
+    setOpen(false);
+  }, [
+    courseSuggestions,
+    loading,
+    normalizedAcceptedCourseId,
+    normalizedValue,
+    open,
+    shouldSearchCourses,
+  ]);
 
   const suggestions: Suggestion[] = shouldShowDepartments
     ? departmentSuggestions

@@ -50,6 +50,9 @@ const CourseInput = ({
   const [courseIdInput, setCourseIdInput] = useState<string>(
     initialCourse?.courseId || "",
   );
+  const [acceptedCourseId, setAcceptedCourseId] = useState<string>(
+    initialCourse?.courseId || "",
+  );
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
   const courseIdInputRef = useRef<string>(initialCourse?.courseId || "");
@@ -107,6 +110,7 @@ const CourseInput = ({
   };
 
   const resetCourseFields = async (courseId: string = "") => {
+    setAcceptedCourseId("");
     setCourse(emptyCourse(courseId));
     await removeVerifiedCourse();
   };
@@ -134,6 +138,7 @@ const CourseInput = ({
           c.courseId === courseId && c.courseId !== previousVerifiedCourseId,
       )
     ) {
+      setAcceptedCourseId("");
       setErrorMessage("Course already added");
       return;
     }
@@ -153,6 +158,7 @@ const CourseInput = ({
         }
 
         if (!courseInfo.ok) {
+          setAcceptedCourseId("");
           setErrorMessage(courseInfo.message);
           await resetCourseFields(courseId);
           return;
@@ -161,6 +167,7 @@ const CourseInput = ({
           ...courseInfo.data,
         });
         addCourse(courseInfo.data);
+        setAcceptedCourseId(courseId);
         await saveNewCourseAndRefreshGenEdsAndULCourses(
           { ...courseInfo.data },
           term,
@@ -176,12 +183,14 @@ const CourseInput = ({
             year,
           );
           setCourse(emptyCourse(courseIdInputRef.current));
+          setAcceptedCourseId("");
           return;
         }
 
         verifiedCourseId.current = courseId;
       } catch (e) {
         if (courseIdInputRef.current === courseId) {
+          setAcceptedCourseId("");
           setErrorMessage("Error fetching course information");
         }
       }
@@ -278,6 +287,7 @@ const CourseInput = ({
             onValueChange={(value) => {
               void handleCourseIdChange(value);
             }}
+            acceptedCourseId={acceptedCourseId}
             maxLength={MAX_COURSE_ID_LENGTH}
             disabled={disabled}
           />
