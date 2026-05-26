@@ -38,7 +38,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 JWTClaimsSet claimsSet = jwtService.validateTokenAndGetClaims(token);
-                String userId = claimsSet == null ? null : claimsSet.getSubject();
+                if (claimsSet == null) {
+                    throw new JwtAuthenticationException("Authentication failed");
+                }
+
+                String userId = claimsSet.getSubject();
 
                 if (userId != null) {
                     List<SimpleGrantedAuthority> authorities = jwtService.isAdmin(claimsSet)
@@ -49,13 +53,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
-
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            logger.error("Authentication error: {}", e);
+        } catch (JwtAuthenticationException e) {
+            logger.error("Authentication error: " + e.getMessage());
             SecurityContextHolder.clearContext();
-            handleAuthenticationException(response, "Authentication failed");
+            handleAuthenticationException(response, e.getMessage());
+            return;
         }
+
+        filterChain.doFilter(request, response);
     }
 
     private void handleAuthenticationException(HttpServletResponse response, String message) throws IOException {
