@@ -1,6 +1,7 @@
 "use client";
 import { Course } from "@/lib/utils/types";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "use-debounce";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +18,7 @@ import { CourseAutocomplete } from "./course-autocomplete";
 import { normalizeCourseQuery } from "@/lib/courses/departments";
 
 const MAX_COURSE_ID_LENGTH = 9;
+const FULL_COURSE_ID_REGEX = /^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/;
 
 const emptyCourse = (courseId: string = ""): Course => ({
   courseId,
@@ -53,10 +55,18 @@ const CourseInput = ({
   const [acceptedCourseId, setAcceptedCourseId] = useState<string>(
     initialCourse?.courseId || "",
   );
+  const [courseIdToVerify, setCourseIdToVerify] = useState<string>("");
+  const [debouncedCourseIdToVerify] = useDebounce(courseIdToVerify, 250);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
   const courseIdInputRef = useRef<string>(initialCourse?.courseId || "");
   const lookupRequestId = useRef<number>(0);
+  const pendingReset = useRef<Promise<void>>(Promise.resolve());
+
+  const courseIds = useMemo(
+    () => new Set(courses.map((semesterCourse) => semesterCourse.courseId)),
+    [courses],
+  );
 
   useEffect(() => {
     const updatedCourse = courses.find(
@@ -118,14 +128,22 @@ const CourseInput = ({
   const handleCourseIdChange = async (value: string) => {
     const courseId = normalizeCourseQuery(value).slice(0, MAX_COURSE_ID_LENGTH);
 
+    lookupRequestId.current += 1;
     courseIdInputRef.current = courseId;
     setCourseIdInput(courseId);
+    setCourseIdToVerify("");
     setErrorMessage("");
 
     const previousVerifiedCourseId = verifiedCourseId.current;
 
     if (courseId !== verifiedCourseId.current) {
-      await resetCourseFields(courseId);
+      const reset = resetCourseFields(courseId);
+      pendingReset.current = reset;
+      await reset;
+    }
+
+    if (courseIdInputRef.current !== courseId) {
+      return;
     }
 
     if (courseId.length < 7) {
@@ -143,11 +161,49 @@ const CourseInput = ({
       return;
     }
 
-    if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
+    if (FULL_COURSE_ID_REGEX.test(courseId)) {
+      setCourseIdToVerify(courseId);
+    }
+  };
+
+  useEffect(() => {
+    const courseId = debouncedCourseIdToVerify;
+
+    if (!FULL_COURSE_ID_REGEX.test(courseId)) {
+      return;
+    }
+
+    if (courseIdInputRef.current !== courseId) {
+      return;
+    }
+
+    const previousVerifiedCourseId = verifiedCourseId.current;
+
+    if (
+      courses.some(
+        (c) =>
+          c.courseId === courseId && c.courseId !== previousVerifiedCourseId,
+      )
+    ) {
+      setAcceptedCourseId("");
+      setErrorMessage("Course already added");
+      return;
+    }
+
+    const verifyCourse = async () => {
       const requestId = lookupRequestId.current + 1;
       lookupRequestId.current = requestId;
 
       try {
+        await pendingReset.current;
+
+        if (
+          lookupRequestId.current !== requestId ||
+          courseIdInputRef.current !== courseId
+        ) {
+          return;
+        }
+
         const courseInfo = await getCourseInfo(courseId);
         const isCurrentRequest =
           lookupRequestId.current === requestId &&
@@ -194,8 +250,10 @@ const CourseInput = ({
           setErrorMessage("Error fetching course information");
         }
       }
-    }
-  };
+    };
+
+    void verifyCourse();
+  }, [debouncedCourseIdToVerify]);
 
   const displayGenEds = () => {
     if (course.genEds[0][0] === "NONE") {
@@ -214,9 +272,7 @@ const CourseInput = ({
                   <React.Fragment key={`${groupIndex}-${genEdIndex}`}>
                     {genEdIndex > 0 && ", "}
                     {genEd.length > 4 ? (
-                      !courses.some(
-                        (course) => course.courseId === genEd.slice(5),
-                      ) ? (
+                      !courseIds.has(genEd.slice(5)) ? (
                         <Tooltip>
                           <TooltipTrigger className="text-orange-500 flex items-center gap-1 cursor-pointer">
                             <Info size={16} className="inline" />

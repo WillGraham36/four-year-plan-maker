@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { CourseAutocompleteSuggestion } from "@/lib/utils/types";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "use-debounce";
 
 type DepartmentSuggestion = {
   type: "department";
@@ -59,8 +60,12 @@ export function CourseAutocomplete({
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const requestId = useRef(0);
+  const blurTimeout = useRef<number | null>(null);
+  const autocompleteCoursesRef = useRef(autocompleteCourses);
+  autocompleteCoursesRef.current = autocompleteCourses;
 
   const normalizedValue = normalizeCourseQuery(value);
+  const [debouncedCourseSearchValue] = useDebounce(normalizedValue, 250);
   const normalizedAcceptedCourseId = normalizeCourseQuery(acceptedCourseId ?? "");
   const deptPrefix = normalizedValue.slice(0, 4);
   const shouldShowDepartments =
@@ -91,13 +96,26 @@ export function CourseAutocomplete({
       return;
     }
 
-    const currentRequestId = requestId.current + 1;
-    requestId.current = currentRequestId;
+    requestId.current += 1;
     setLoading(true);
+  }, [normalizedValue, shouldSearchCourses]);
 
-    const timeout = window.setTimeout(async () => {
-      const response = await autocompleteCourses(normalizedValue);
-      if (requestId.current !== currentRequestId) {
+  useEffect(() => {
+    if (
+      !shouldSearchCourses ||
+      debouncedCourseSearchValue !== normalizedValue
+    ) {
+      return;
+    }
+
+    const currentRequestId = requestId.current;
+    let isCurrent = true;
+
+    const loadSuggestions = async () => {
+      const response =
+        await autocompleteCoursesRef.current(debouncedCourseSearchValue);
+
+      if (!isCurrent || requestId.current !== currentRequestId) {
         return;
       }
 
@@ -111,10 +129,22 @@ export function CourseAutocomplete({
       );
       setLoading(false);
       setHighlightedIndex(0);
-    }, 250);
+    };
 
-    return () => window.clearTimeout(timeout);
-  }, [normalizedValue, shouldSearchCourses]);
+    void loadSuggestions();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [debouncedCourseSearchValue, normalizedValue, shouldSearchCourses]);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeout.current != null) {
+        window.clearTimeout(blurTimeout.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (
@@ -180,7 +210,15 @@ export function CourseAutocomplete({
               setOpen(true);
             }}
             onBlur={() => {
-              window.setTimeout(() => setOpen(false), 120);
+              if (blurTimeout.current != null) {
+                window.clearTimeout(blurTimeout.current);
+              }
+
+              // Keep this short delay so pointer clicks can select dropdown items before it closes.
+              blurTimeout.current = window.setTimeout(() => {
+                setOpen(false);
+                blurTimeout.current = null;
+              }, 120);
             }}
             onKeyDown={(event) => {
               if (!showDropdown || suggestions.length === 0) {
