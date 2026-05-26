@@ -27,8 +27,5 @@ public class Course {
     @Column(columnDefinition = "TEXT") // Ensure enough space for JSON storage
     private List<List<String>> genEds;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     private Instant lastSyncedAt;
 }

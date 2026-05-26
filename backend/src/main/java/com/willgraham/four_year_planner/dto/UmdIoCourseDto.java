@@ -7,7 +7,6 @@ public record UmdIoCourseDto(
         String name,
         String deptId,
         Integer credits,
-        List<List<String>> genEds,
-        String description
+        List<List<String>> genEds
 ) {
 }

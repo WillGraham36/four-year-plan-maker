@@ -9,6 +9,7 @@ import com.willgraham.four_year_planner.repository.CourseRepository;
 import com.willgraham.four_year_planner.utils.DepartmentCodes;
 
 import lombok.AllArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +43,7 @@ public class CourseService {
 
         return courseRepository.findByCourseIdIgnoreCase(normalizedCourseId)
                 .map(existingCourse -> updateExistingCourse(existingCourse, course))
-                .orElseGet(() -> courseRepository.save(course));
+                .orElseGet(() -> saveCourseHandlingConcurrentInsert(course));
     }
 
     public List<CourseAutocompleteDto> autocomplete(String rawQuery) {
@@ -57,19 +58,7 @@ public class CourseService {
         }
 
         List<Course> localMatches = searchLocal(query);
-        if (localMatches.size() >= 3) {
-            return toAutocompleteDtos(localMatches);
-        }
-
-        String suffix = query.substring(4);
-        int digitCount = countDigits(suffix);
-        boolean exactExistsLocally = COMPLETE_COURSE_ID.matcher(query).matches()
-                && courseRepository.findByCourseIdIgnoreCase(query).isPresent();
-
-        if ((digitCount >= 1 && digitCount <= 2 && localMatches.size() < 3)) {
-            upsertCourses(umdIoCourseClient.fetchMinifiedDepartmentCourses(deptId));
-            localMatches = searchLocal(query);
-        } else if (digitCount >= 3 && !exactExistsLocally && COMPLETE_COURSE_ID.matcher(query).matches()) {
+        if (COMPLETE_COURSE_ID.matcher(query).matches() && !hasExactLocalMatch(query, localMatches)) {
             UmdIoCourseDto course = umdIoCourseClient.fetchCourse(query);
             if (course != null) {
                 upsertCourse(course);
@@ -148,16 +137,13 @@ public class CourseService {
             }
         }
 
-        List<Course> courses = uniqueCourses.values().stream()
-                .map(this::mergeCourse)
-                .toList();
-        courseRepository.saveAll(courses);
-        return courses.size();
+        uniqueCourses.values().forEach(this::upsertCourse);
+        return uniqueCourses.size();
     }
 
     private Course upsertCourse(UmdIoCourseDto umdIoCourse) {
         Course course = mergeCourse(umdIoCourse);
-        return courseRepository.save(course);
+        return saveCourseHandlingConcurrentInsert(course);
     }
 
     private Course mergeCourse(UmdIoCourseDto umdIoCourse) {
@@ -175,12 +161,19 @@ public class CourseService {
         if (umdIoCourse.genEds() != null) {
             course.setGenEds(umdIoCourse.genEds());
         }
-        if (umdIoCourse.description() != null) {
-            course.setDescription(umdIoCourse.description());
-        }
         course.setLastSyncedAt(Instant.now());
 
         return course;
+    }
+
+    private Course saveCourseHandlingConcurrentInsert(Course course) {
+        try {
+            return courseRepository.saveAndFlush(course);
+        } catch (DataIntegrityViolationException e) {
+            return courseRepository.findByCourseIdIgnoreCase(course.getCourseId())
+                    .map(existingCourse -> updateExistingCourse(existingCourse, course))
+                    .orElseThrow(() -> e);
+        }
     }
 
     private Course updateExistingCourse(Course existingCourse, Course incomingCourse) {
@@ -196,11 +189,11 @@ public class CourseService {
         if (incomingCourse.getGenEds() != null) {
             existingCourse.setGenEds(incomingCourse.getGenEds());
         }
-        if (incomingCourse.getDescription() != null) {
-            existingCourse.setDescription(incomingCourse.getDescription());
+        if (incomingCourse.getLastSyncedAt() != null) {
+            existingCourse.setLastSyncedAt(incomingCourse.getLastSyncedAt());
         }
 
-        return courseRepository.save(existingCourse);
+        return courseRepository.saveAndFlush(existingCourse);
     }
 
     private boolean hasFullCourseDetails(Course course) {
@@ -214,8 +207,9 @@ public class CourseService {
         return query.length() >= 4 && NORMALIZED_COURSE_QUERY.matcher(query).matches();
     }
 
-    private int countDigits(String value) {
-        return (int) value.chars().filter(Character::isDigit).count();
+    private boolean hasExactLocalMatch(String query, List<Course> localMatches) {
+        return localMatches.stream()
+                .anyMatch(course -> query.equalsIgnoreCase(course.getCourseId()));
     }
 
     private String deptIdFor(String courseId) {

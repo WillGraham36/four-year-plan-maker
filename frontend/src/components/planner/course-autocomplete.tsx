@@ -2,6 +2,11 @@
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
 import {
   DEPARTMENT_CODES,
@@ -11,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CourseAutocompleteSuggestion } from "@/lib/utils/types";
 import { LoaderCircle } from "lucide-react";
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type DepartmentSuggestion = {
   type: "department";
@@ -34,7 +39,6 @@ type CourseAutocompleteProps = {
 };
 
 const MAX_SUGGESTIONS = 10;
-const COMPACT_DROPDOWN_WIDTH = 180;
 
 export function CourseAutocomplete({
   value,
@@ -45,14 +49,14 @@ export function CourseAutocomplete({
   className,
 }: CourseAutocompleteProps) {
   const { autocompleteCourses } = useCourseApi();
-  const [courseSuggestions, setCourseSuggestions] = useState<CourseSuggestion[]>([]);
+  const [courseSuggestions, setCourseSuggestions] = useState<
+    CourseSuggestion[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [hasTyped, setHasTyped] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const [dropdownStyle, setDropdownStyle] = useState<CSSProperties | null>(null);
   const requestId = useRef(0);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const normalizedValue = normalizeCourseQuery(value);
   const deptPrefix = normalizedValue.slice(0, 4);
@@ -71,8 +75,7 @@ export function CourseAutocomplete({
       return [];
     }
 
-    return DEPARTMENT_CODES
-      .filter((code) => code.startsWith(normalizedValue))
+    return DEPARTMENT_CODES.filter((code) => code.startsWith(normalizedValue))
       .slice(0, MAX_SUGGESTIONS)
       .map((code) => ({ type: "department", code }));
   }, [normalizedValue, shouldShowDepartments]);
@@ -123,50 +126,6 @@ export function CourseAutocomplete({
   const showDropdown =
     open && !disabled && (loading || suggestions.length > 0 || showEmptyState);
 
-  useEffect(() => {
-    if (!showDropdown) {
-      setDropdownStyle(null);
-      return;
-    }
-
-    const updateDropdownPosition = () => {
-      const rect = inputRef.current?.getBoundingClientRect();
-      if (!rect) {
-        return;
-      }
-
-      const width = COMPACT_DROPDOWN_WIDTH;
-      const viewportPadding = 8;
-      const left = Math.max(
-        viewportPadding,
-        Math.min(rect.left, window.innerWidth - width - viewportPadding),
-      );
-
-      const nextStyle = {
-        left,
-        top: rect.bottom,
-        width,
-      };
-
-      setDropdownStyle((currentStyle) =>
-        currentStyle?.left === nextStyle.left &&
-        currentStyle?.top === nextStyle.top &&
-        currentStyle?.width === nextStyle.width
-          ? currentStyle
-          : nextStyle,
-      );
-    };
-
-    updateDropdownPosition();
-    window.addEventListener("resize", updateDropdownPosition);
-    window.addEventListener("scroll", updateDropdownPosition, true);
-
-    return () => {
-      window.removeEventListener("resize", updateDropdownPosition);
-      window.removeEventListener("scroll", updateDropdownPosition, true);
-    };
-  }, [showDropdown]);
-
   const selectSuggestion = (suggestion: Suggestion) => {
     if (suggestion.type === "department") {
       onValueChange(suggestion.code);
@@ -182,51 +141,57 @@ export function CourseAutocomplete({
   };
 
   return (
-    <div className="w-full">
-      <Input
-        ref={inputRef}
-        className={className}
-        value={value}
-        onChange={(event) => {
-          onValueChange(event.target.value);
-          setHasTyped(true);
-          setOpen(true);
-        }}
-        onBlur={() => {
-          window.setTimeout(() => setOpen(false), 120);
-        }}
-        onKeyDown={(event) => {
-          if (!showDropdown || suggestions.length === 0) {
-            return;
-          }
+    <Popover open={showDropdown}>
+      <PopoverAnchor asChild>
+        <div className="w-full">
+          <Input
+            className={className}
+            value={value}
+            onChange={(event) => {
+              onValueChange(event.target.value);
+              setHasTyped(true);
+              setOpen(true);
+            }}
+            onBlur={() => {
+              window.setTimeout(() => setOpen(false), 120);
+            }}
+            onKeyDown={(event) => {
+              if (!showDropdown || suggestions.length === 0) {
+                return;
+              }
 
-          if (event.key === "ArrowDown") {
-            event.preventDefault();
-            setHighlightedIndex((current) => (current + 1) % suggestions.length);
-          } else if (event.key === "ArrowUp") {
-            event.preventDefault();
-            setHighlightedIndex((current) =>
-              current === 0 ? suggestions.length - 1 : current - 1,
-            );
-          } else if (event.key === "Enter") {
-            event.preventDefault();
-            selectSuggestion(suggestions[highlightedIndex]);
-          } else if (event.key === "Escape") {
-            setOpen(false);
-          }
-        }}
-        maxLength={maxLength}
-        disabled={disabled}
-        autoComplete="off"
-      />
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                setHighlightedIndex(
+                  (current) => (current + 1) % suggestions.length,
+                );
+              } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                setHighlightedIndex((current) =>
+                  current === 0 ? suggestions.length - 1 : current - 1,
+                );
+              } else if (event.key === "Enter") {
+                event.preventDefault();
+                selectSuggestion(suggestions[highlightedIndex]);
+              } else if (event.key === "Escape") {
+                setOpen(false);
+              }
+            }}
+            maxLength={maxLength}
+            disabled={disabled}
+            autoComplete="off"
+          />
+        </div>
+      </PopoverAnchor>
 
-      {showDropdown && dropdownStyle && (
-        <Card
-          className="fixed z-[10000] max-h-[25rem] gap-0 overflow-y-auto rounded-md border-border bg-popover py-0 text-popover-foreground shadow-md"
-          style={dropdownStyle}
-        >
+      <PopoverContent
+        align="start"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        className="z-10000 w-48 max-h-60 overflow-y-auto p-0"
+      >
+        <Card className="gap-0 rounded-md border-0 bg-popover py-0 text-popover-foreground shadow-none">
           {loading && (
-            <div className="flex h-9 items-center gap-2 px-3 text-muted-foreground">
+            <div className="flex h-12 items-center gap-2 px-3 text-muted-foreground">
               <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
               <span>Loading</span>
             </div>
@@ -236,10 +201,15 @@ export function CourseAutocomplete({
             suggestions.map((suggestion, index) => (
               <button
                 type="button"
-                key={suggestion.type === "department" ? suggestion.code : suggestion.courseId}
+                key={
+                  suggestion.type === "department"
+                    ? suggestion.code
+                    : suggestion.courseId
+                }
                 className={cn(
-                  "flex h-10 w-full items-center justify-between gap-3 px-3 text-left text-xs hover:bg-accent hover:text-accent-foreground md:text-sm",
-                  highlightedIndex === index && "bg-accent text-accent-foreground",
+                  "flex h-12 w-full items-center justify-between gap-3 px-3 text-left hover:bg-accent hover:text-accent-foreground md:text-sm",
+                  highlightedIndex === index &&
+                    "bg-accent text-accent-foreground",
                 )}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => selectSuggestion(suggestion)}
@@ -253,12 +223,12 @@ export function CourseAutocomplete({
             ))}
 
           {showEmptyState && (
-            <div className="flex h-9 items-center px-3 text-xs text-muted-foreground">
+            <div className="flex h-12 items-center px-3 text-sm text-muted-foreground">
               No matches
             </div>
           )}
         </Card>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

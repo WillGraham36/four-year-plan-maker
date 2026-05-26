@@ -23,23 +23,16 @@ public class UmdIoCourseClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Map<String, CacheEntry> cache = new ConcurrentHashMap<>();
 
-    public List<UmdIoCourseDto> fetchMinifiedDepartmentCourses(String deptId) {
-        String cacheKey = "minified:" + deptId;
+    public List<UmdIoCourseDto> fetchFullDepartmentCourses(String deptId) {
+        String cacheKey = "full:" + deptId;
         CacheEntry cached = cache.get(cacheKey);
         if (cached != null && !cached.isExpired()) {
             return cached.courses();
         }
 
-        List<UmdIoCourseDto> courses = onlyDepartmentCourses(fetchDepartmentPages(deptId, true), deptId);
-        if (courses.isEmpty()) {
-            courses = onlyDepartmentCourses(fetchDepartmentPages(deptId, false), deptId);
-        }
+        List<UmdIoCourseDto> courses = onlyDepartmentCourses(fetchDepartmentPages(deptId), deptId);
         cache.put(cacheKey, new CacheEntry(courses, Instant.now().plus(CACHE_TTL)));
         return courses;
-    }
-
-    public List<UmdIoCourseDto> fetchFullDepartmentCourses(String deptId) {
-        return onlyDepartmentCourses(fetchDepartmentPages(deptId, false), deptId);
     }
 
     public UmdIoCourseDto fetchCourse(String courseId) {
@@ -52,13 +45,13 @@ public class UmdIoCourseClient {
         }
     }
 
-    private List<UmdIoCourseDto> fetchDepartmentPages(String deptId, boolean minified) {
+    private List<UmdIoCourseDto> fetchDepartmentPages(String deptId) {
         List<UmdIoCourseDto> courses = new ArrayList<>();
         int page = 1;
 
         while (true) {
             String url = UriComponentsBuilder
-                    .fromHttpUrl(minified ? API_BASE_URL + "/list" : API_BASE_URL)
+                    .fromHttpUrl(API_BASE_URL)
                     .queryParam("dept_id", deptId)
                     .queryParam("page", page)
                     .queryParam("per_page", PER_PAGE)
@@ -131,8 +124,7 @@ public class UmdIoCourseClient {
                 textValue(node, "name"),
                 deptId,
                 intValue(node, "credits"),
-                genEdsValue(node.get("gen_ed")),
-                textValue(node, "description")
+                genEdsValue(node.get("gen_ed"))
         ));
     }
 
