@@ -1,7 +1,7 @@
 "use client";
 import { Course } from "@/lib/utils/types";
-import React, { useEffect, useRef, useState } from "react";
-import { Input } from "../ui/input";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useDebounce } from "use-debounce";
 import {
   Tooltip,
   TooltipContent,
@@ -14,8 +14,11 @@ import { arraysEqual } from "@/lib/utils";
 import { useRequirements } from "../context/requirements-context";
 import { useSemester } from "../context/semester-context";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
+import { CourseAutocomplete } from "./course-autocomplete";
+import { normalizeCourseQuery } from "@/lib/courses/departments";
 
 const MAX_COURSE_ID_LENGTH = 9;
+const FULL_COURSE_ID_REGEX = /^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/;
 
 const emptyCourse = (courseId: string = ""): Course => ({
   courseId,
@@ -49,10 +52,21 @@ const CourseInput = ({
   const [courseIdInput, setCourseIdInput] = useState<string>(
     initialCourse?.courseId || "",
   );
+  const [acceptedCourseId, setAcceptedCourseId] = useState<string>(
+    initialCourse?.courseId || "",
+  );
+  const [courseIdToVerify, setCourseIdToVerify] = useState<string>("");
+  const [debouncedCourseIdToVerify] = useDebounce(courseIdToVerify, 250);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
   const courseIdInputRef = useRef<string>(initialCourse?.courseId || "");
   const lookupRequestId = useRef<number>(0);
+  const pendingReset = useRef<Promise<void>>(Promise.resolve());
+
+  const courseIds = useMemo(
+    () => new Set(courses.map((semesterCourse) => semesterCourse.courseId)),
+    [courses],
+  );
 
   useEffect(() => {
     const updatedCourse = courses.find(
@@ -106,23 +120,30 @@ const CourseInput = ({
   };
 
   const resetCourseFields = async (courseId: string = "") => {
+    setAcceptedCourseId("");
     setCourse(emptyCourse(courseId));
     await removeVerifiedCourse();
   };
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const courseId = e.target.value
-      .toUpperCase()
-      .slice(0, MAX_COURSE_ID_LENGTH);
+  const handleCourseIdChange = async (value: string) => {
+    const courseId = normalizeCourseQuery(value).slice(0, MAX_COURSE_ID_LENGTH);
 
+    lookupRequestId.current += 1;
     courseIdInputRef.current = courseId;
     setCourseIdInput(courseId);
+    setCourseIdToVerify("");
     setErrorMessage("");
 
     const previousVerifiedCourseId = verifiedCourseId.current;
 
     if (courseId !== verifiedCourseId.current) {
-      await resetCourseFields(courseId);
+      const reset = resetCourseFields(courseId);
+      pendingReset.current = reset;
+      await reset;
+    }
+
+    if (courseIdInputRef.current !== courseId) {
+      return;
     }
 
     if (courseId.length < 7) {
@@ -135,15 +156,54 @@ const CourseInput = ({
           c.courseId === courseId && c.courseId !== previousVerifiedCourseId,
       )
     ) {
+      setAcceptedCourseId("");
       setErrorMessage("Course already added");
       return;
     }
 
-    if (courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
+    if (FULL_COURSE_ID_REGEX.test(courseId)) {
+      setCourseIdToVerify(courseId);
+    }
+  };
+
+  useEffect(() => {
+    const courseId = debouncedCourseIdToVerify;
+
+    if (!FULL_COURSE_ID_REGEX.test(courseId)) {
+      return;
+    }
+
+    if (courseIdInputRef.current !== courseId) {
+      return;
+    }
+
+    const previousVerifiedCourseId = verifiedCourseId.current;
+
+    if (
+      courses.some(
+        (c) =>
+          c.courseId === courseId && c.courseId !== previousVerifiedCourseId,
+      )
+    ) {
+      setAcceptedCourseId("");
+      setErrorMessage("Course already added");
+      return;
+    }
+
+    const verifyCourse = async () => {
       const requestId = lookupRequestId.current + 1;
       lookupRequestId.current = requestId;
 
       try {
+        await pendingReset.current;
+
+        if (
+          lookupRequestId.current !== requestId ||
+          courseIdInputRef.current !== courseId
+        ) {
+          return;
+        }
+
         const courseInfo = await getCourseInfo(courseId);
         const isCurrentRequest =
           lookupRequestId.current === requestId &&
@@ -154,6 +214,7 @@ const CourseInput = ({
         }
 
         if (!courseInfo.ok) {
+          setAcceptedCourseId("");
           setErrorMessage(courseInfo.message);
           await resetCourseFields(courseId);
           return;
@@ -162,6 +223,7 @@ const CourseInput = ({
           ...courseInfo.data,
         });
         addCourse(courseInfo.data);
+        setAcceptedCourseId(courseId);
         await saveNewCourseAndRefreshGenEdsAndULCourses(
           { ...courseInfo.data },
           term,
@@ -177,17 +239,21 @@ const CourseInput = ({
             year,
           );
           setCourse(emptyCourse(courseIdInputRef.current));
+          setAcceptedCourseId("");
           return;
         }
 
         verifiedCourseId.current = courseId;
       } catch (e) {
         if (courseIdInputRef.current === courseId) {
+          setAcceptedCourseId("");
           setErrorMessage("Error fetching course information");
         }
       }
-    }
-  };
+    };
+
+    void verifyCourse();
+  }, [debouncedCourseIdToVerify]);
 
   const displayGenEds = () => {
     if (course.genEds[0][0] === "NONE") {
@@ -206,9 +272,7 @@ const CourseInput = ({
                   <React.Fragment key={`${groupIndex}-${genEdIndex}`}>
                     {genEdIndex > 0 && ", "}
                     {genEd.length > 4 ? (
-                      !courses.some(
-                        (course) => course.courseId === genEd.slice(5),
-                      ) ? (
+                      !courseIds.has(genEd.slice(5)) ? (
                         <Tooltip>
                           <TooltipTrigger className="text-orange-500 flex items-center gap-1 cursor-pointer">
                             <Info size={16} className="inline" />
@@ -273,10 +337,13 @@ const CourseInput = ({
               </TooltipContent>
             </Tooltip>
           )}
-          <Input
+          <CourseAutocomplete
             className="p-0 px-3 h-8 rounded-none w-full focus-visible:ring-0 focus-visible:ring-offset-0 border-x-0 border-t-0 border-b text-xs md:text-sm !bg-card !border-border disabled:cursor-default disabled:opacity-100 disabled:text-muted-foreground"
             value={courseIdInput}
-            onChange={handleInputChange}
+            onValueChange={(value) => {
+              void handleCourseIdChange(value);
+            }}
+            acceptedCourseId={acceptedCourseId}
             maxLength={MAX_COURSE_ID_LENGTH}
             disabled={disabled}
           />

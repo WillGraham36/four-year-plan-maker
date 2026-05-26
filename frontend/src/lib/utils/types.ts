@@ -20,6 +20,18 @@ export type Course = {
   index?: number // Used to track the order of courses in a semester
 }
 
+export type CourseAutocompleteSuggestion = {
+  courseId: string
+  name: string | null
+  credits: number | null
+}
+
+export type CourseSyncSummary = {
+  syncedDepartments: string[]
+  coursesInsertedOrUpdated: number
+  errors: string[]
+}
+
 export type CourseWithSemester = {
   course: Course
   semester: {

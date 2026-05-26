@@ -5,7 +5,6 @@ import { z } from "zod";
 export const CourseInfoSchema = z.object({
   course_id: z.string(),
   name: z.string(),
-  description: z.string(),
   credits: z.union([z.string(), z.number()]).transform((val) => Number(val)),
   gen_ed: z.array(z.array(z.string())).optional(),
 })
@@ -19,6 +18,20 @@ export const CourseSchema = z.object({
   assignedGenEds: z.array(z.string()).optional().nullable(),
   assignedGenEdBranchIndex: z.number().optional().nullable(),
   index: z.number().optional().nullable(),
+});
+
+export const CourseAutocompleteSuggestionSchema = z.object({
+  courseId: z.string(),
+  name: z.string().nullable().optional().default(""),
+  credits: z.number().nullable().optional().default(null),
+});
+
+export const CourseAutocompleteSuggestionListSchema = z.array(CourseAutocompleteSuggestionSchema);
+
+export const CourseSyncSummarySchema = z.object({
+  syncedDepartments: z.array(z.string()),
+  coursesInsertedOrUpdated: z.number(),
+  errors: z.array(z.string()),
 });
 
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
