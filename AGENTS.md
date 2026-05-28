@@ -43,3 +43,5 @@ Backend:
 - Avoid giant service classes
 - Use TypeScript strict typing
 - Prefer composition over inheritance
+- Use tailwind always
+- Prefer the use of existing frontend components and functions
