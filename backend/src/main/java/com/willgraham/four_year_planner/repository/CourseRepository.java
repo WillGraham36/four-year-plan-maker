@@ -20,4 +20,20 @@ public interface CourseRepository extends JpaRepository<Course, String> {
             """)
     List<Course> findCourseIdPrefixMatches(String query, Pageable pageable);
 
+    @Query("""
+            SELECT c FROM Course c
+            WHERE LOWER(c.courseId) LIKE LOWER(CONCAT('%', :query, '%'))
+               OR LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
+               OR LOWER(c.deptId) LIKE LOWER(CONCAT('%', :query, '%'))
+            ORDER BY c.courseId ASC
+            """)
+    List<Course> searchCourses(String query, Pageable pageable);
+
+    @Query("""
+            SELECT c FROM Course c
+            WHERE c.deptId IN :departments
+            ORDER BY c.courseId ASC
+            """)
+    List<Course> findByDepartments(List<String> departments, Pageable pageable);
+
 }

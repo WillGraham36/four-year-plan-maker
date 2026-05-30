@@ -30,6 +30,7 @@ Backend:
 - Do not add new dependencies unless necessary
 - Use DTOs for API responses
 - Never expose entity models directly
+- Never run frontend server locally, linting and building to check if the changes pass is ok but do not run a live server
 
 ## Database
 

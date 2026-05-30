@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/components/context/theme-provider";
+import PlannerChatWidget from "@/components/chat/planner-chat-widget";
 import Footer from "@/components/layout/footer";
 import LayoutSidebar from "@/components/layout/layout-sidebar";
 import Navbar from "@/components/layout/navbar";
@@ -25,6 +26,7 @@ export default function AuthedLayout({
           {children}
           <Footer />
         </main>
+        <PlannerChatWidget />
       </div>
     </ThemeProvider>
   )

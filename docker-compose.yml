@@ -20,6 +20,8 @@ services:
     build:
       context: ./backend
     container_name: terpplanner-backend
+    env_file:
+      - ./backend/.env
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-four_year_planner}
