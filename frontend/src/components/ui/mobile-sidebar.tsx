@@ -107,7 +107,7 @@ export const MobileSidebar = ({
                 onClick={() => setOpen(false)}
               >
                 <ShieldCheck className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-                <p>Course Sync</p>
+                <p>Admin Sync</p>
               </Link>
             )}
             <hr />

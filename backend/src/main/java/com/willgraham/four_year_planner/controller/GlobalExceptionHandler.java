@@ -4,6 +4,7 @@ import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
+import com.willgraham.four_year_planner.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +28,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CourseNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleCourseNotFoundException(CourseNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiResponse<String>> handleNotFoundException(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
     }
 

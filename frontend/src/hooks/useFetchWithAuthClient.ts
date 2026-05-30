@@ -37,13 +37,18 @@ export function useFetchWithAuth() {
         }
       }
 
-      const data = await res.json();
+      const isJsonResponse = res.headers.get("content-type")?.includes("application/json");
+      const data = isJsonResponse ? await res.json() : null;
 
       if (!res.ok) {
-        return { ok: false, message: data.message, data: null };
+        return {
+          ok: false,
+          message: data?.message || res.statusText || `Request failed with status ${res.status}`,
+          data: null,
+        };
       }
 
-      return { ok: true, message: data.message, data: data.data };
+      return { ok: true, message: data?.message, data: data?.data ?? null };
     } catch (err) {
       return { ok: false, message: "An error occurred, please try again", data: null };
     }

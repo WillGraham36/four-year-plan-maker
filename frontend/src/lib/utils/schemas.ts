@@ -34,6 +34,46 @@ export const CourseSyncSummarySchema = z.object({
   errors: z.array(z.string()),
 });
 
+export const RequirementProgramTypeSchema = z.enum(["MAJOR", "MINOR", "CERTIFICATE", "PROGRAM"]);
+export const RequirementReviewStatusSchema = z.enum(["DRAFT", "APPROVED", "PARSE_ERROR"]);
+
+export const CatalogProgramSchema = z.object({
+  programName: z.string(),
+  catalogTitle: z.string(),
+  programType: RequirementProgramTypeSchema,
+  sourceUrl: z.string(),
+  catalogYear: z.string().nullable().optional().default(null),
+});
+
+export const CatalogProgramListSchema = z.array(CatalogProgramSchema);
+
+export const CurriculumRequirementSummarySchema = z.object({
+  id: z.number(),
+  programName: z.string(),
+  catalogTitle: z.string(),
+  programType: RequirementProgramTypeSchema,
+  status: RequirementReviewStatusSchema,
+  catalogYear: z.string().nullable().optional().default(null),
+  sourceUrl: z.string(),
+  lastSyncedAt: z.string().nullable().optional().default(null),
+  approvedAt: z.string().nullable().optional().default(null),
+  updatedAt: z.string().nullable().optional().default(null),
+});
+
+export const CurriculumRequirementSummaryListSchema = z.array(CurriculumRequirementSummarySchema);
+
+export const CurriculumRequirementDetailSchema = CurriculumRequirementSummarySchema.extend({
+  rawRequirementsText: z.string().nullable().optional().default(null),
+  structuredRequirements: z.unknown().optional().default({}),
+  parseWarnings: z.array(z.string()).optional().default([]),
+  approvedBy: z.string().nullable().optional().default(null),
+});
+
+export const CurriculumRequirementSyncSummarySchema = z.object({
+  syncedPrograms: z.array(CurriculumRequirementSummarySchema),
+  errors: z.array(z.string()),
+});
+
 export const SemestersSchema = z.record(z.string(), z.array(CourseSchema));
 export type SemesterSchema = z.infer<typeof SemestersSchema>;
 

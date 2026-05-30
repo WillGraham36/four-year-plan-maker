@@ -32,6 +32,43 @@ export type CourseSyncSummary = {
   errors: string[]
 }
 
+export type RequirementProgramType = "MAJOR" | "MINOR" | "CERTIFICATE" | "PROGRAM"
+
+export type RequirementReviewStatus = "DRAFT" | "APPROVED" | "PARSE_ERROR"
+
+export type CatalogProgram = {
+  programName: string
+  catalogTitle: string
+  programType: RequirementProgramType
+  sourceUrl: string
+  catalogYear: string | null
+}
+
+export type CurriculumRequirementSummary = {
+  id: number
+  programName: string
+  catalogTitle: string
+  programType: RequirementProgramType
+  status: RequirementReviewStatus
+  catalogYear: string | null
+  sourceUrl: string
+  lastSyncedAt: string | null
+  approvedAt: string | null
+  updatedAt: string | null
+}
+
+export type CurriculumRequirementDetail = CurriculumRequirementSummary & {
+  rawRequirementsText: string | null
+  structuredRequirements?: unknown
+  parseWarnings: string[]
+  approvedBy: string | null
+}
+
+export type CurriculumRequirementSyncSummary = {
+  syncedPrograms: CurriculumRequirementSummary[]
+  errors: string[]
+}
+
 export type CourseWithSemester = {
   course: Course
   semester: {

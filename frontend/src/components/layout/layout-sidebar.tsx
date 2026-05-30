@@ -84,7 +84,7 @@ function LayoutSidebar() {
             {isAdmin && (
               <SidebarLink
                 link={{
-                  label: "Course Sync",
+                  label: "Admin Sync",
                   href: "/admin/course-sync",
                   icon: (
                     <ShieldCheck className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
