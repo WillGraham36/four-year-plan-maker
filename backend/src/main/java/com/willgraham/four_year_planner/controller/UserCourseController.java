@@ -82,7 +82,7 @@ public class UserCourseController {
     @GetMapping
     public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
 
         return ResponseEntity.ok(ApiResponse.success(courses));

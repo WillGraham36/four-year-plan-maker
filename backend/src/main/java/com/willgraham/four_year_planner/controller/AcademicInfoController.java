@@ -34,7 +34,7 @@ public class AcademicInfoController {
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
-        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
         User user = userService.findById(userId);
         List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());

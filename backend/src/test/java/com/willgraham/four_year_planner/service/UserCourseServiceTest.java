@@ -16,6 +16,8 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -143,5 +145,8 @@ class UserCourseServiceTest {
         Map<Semester, List<CourseDto>> result = userCourseService.getAllCoursesForUser(List.of(cmscCourse, mathCourse));
 
         assertEquals(2, result.get(new Semester(Term.FALL, 2025)).size());
+        verify(courseService).findByIds(List.of("CMSC330", "MATH401"));
+        verify(courseService, never()).findById("CMSC330");
+        verify(courseService, never()).findById("MATH401");
     }
 }

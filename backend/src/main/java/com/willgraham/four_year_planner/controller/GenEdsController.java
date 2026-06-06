@@ -26,7 +26,7 @@ import java.util.List;
     @GetMapping
     public ResponseEntity<ApiResponse<List<GenEdRequirementDto>>> getAllGenEdsForUser(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        List<GenEdRequirementDto> result = genEdService.recalculateAndGetRequirements(userId);
+        List<GenEdRequirementDto> result = genEdService.getRequirements(userId);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 }

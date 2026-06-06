@@ -21,7 +21,13 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
 
     List<UserCourse> findByUserIdAndCourse_CourseIdOrderBySemesterDesc(String userId, String courseId);
 
-    List<UserCourse> findByUserId(String userId);
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        """)
+    List<UserCourse> findByUserId(@Param("userId") String userId);
 
     @Query("""
         SELECT uc
@@ -46,6 +52,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     @Query("""
         SELECT uc
         FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
         WHERE uc.userId = :userId
         ORDER BY
             uc.semester.year ASC,
@@ -119,6 +126,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     @Query("""
         SELECT uc
         FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
         WHERE uc.userId = :userId
         AND (
             uc.semester.term = 'TRANSFER'
