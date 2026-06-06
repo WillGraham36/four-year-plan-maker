@@ -14,6 +14,7 @@ import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import com.willgraham.four_year_planner.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class UserService {
 
     private static final int MAX_NOTE_LENGTH = 50000;
@@ -31,8 +33,11 @@ public class UserService {
     private final UserCourseRepository userCourseRepository;
 
     public User findById(String id) {
-        return userRepository.findById(id)
+        long dbStart = System.nanoTime();
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found with ID: " + id));
+        log.info("UserRepository.findById completed in {} ms (userId={})", elapsedMs(dbStart), id);
+        return user;
     }
 
     public void updateULConcentrationById(String userId, String concentration) {
@@ -216,6 +221,10 @@ public class UserService {
         }
         user.setTrack(track);
         userRepository.save(user);
+    }
+
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 
 }

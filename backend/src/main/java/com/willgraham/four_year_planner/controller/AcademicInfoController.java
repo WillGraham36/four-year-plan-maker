@@ -9,6 +9,7 @@ import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,6 +23,7 @@ import java.util.Map;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/academic/overview")
+@Slf4j
 public class AcademicInfoController {
 
     private final UserService userService;
@@ -33,24 +35,45 @@ public class AcademicInfoController {
      */
     @GetMapping
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(@AuthenticationPrincipal Jwt jwt) {
+        long requestStart = System.nanoTime();
         String userId = AuthUtils.getCurrentUserId(jwt);
+        log.info("GET /api/v1/academic/overview started (userId={})", userId);
 
-        GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
-        User user = userService.findById(userId);
-        List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
-        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
-        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(user, genEdResult.userCourses());
-        GetUserInfoResponseDto userInfo = userService.getUserInfo(user);
+        try {
+            long genEdStart = System.nanoTime();
+            GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
+            log.info("Academic overview gen-ed requirements completed in {} ms (userCourses={})",
+                    elapsedMs(genEdStart),
+                    genEdResult.userCourses().size());
 
+            long userStart = System.nanoTime();
+            User user = userService.findById(userId);
+            log.info("Academic overview user lookup completed in {} ms", elapsedMs(userStart));
 
-        AcademicOverviewResponseDto dto = new AcademicOverviewResponseDto(
-                courses,
-                genEdRequirements,
-                concentrationDTO,
-                userInfo
-        );
+            long dtoStart = System.nanoTime();
+            List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
+            Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
+            ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(user, genEdResult.userCourses());
+            GetUserInfoResponseDto userInfo = userService.getUserInfo(user);
+            log.info("Academic overview DTO assembly completed in {} ms", elapsedMs(dtoStart));
 
-        return ResponseEntity.ok(ApiResponse.success(dto));
+            AcademicOverviewResponseDto dto = new AcademicOverviewResponseDto(
+                    courses,
+                    genEdRequirements,
+                    concentrationDTO,
+                    userInfo
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(dto));
+        } finally {
+            log.info("GET /api/v1/academic/overview completed in {} ms (userId={})",
+                    elapsedMs(requestStart),
+                    userId);
+        }
+    }
+
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 
 }

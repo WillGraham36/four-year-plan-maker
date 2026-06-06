@@ -5,6 +5,7 @@ import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.Objects;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class GenEdService {
     private final UserCourseRepository userCourseRepository;
     private final GenEdAssignmentService genEdAssignmentService;
@@ -41,12 +43,25 @@ public class GenEdService {
     }
 
     private GenEdCalculationResult calculateAndGetRequirementsWithCourses(String userId, boolean persistAssignments) {
+        long dbStart = System.nanoTime();
         List<UserCourse> courses = new ArrayList<>(userCourseRepository.findByUserIdWithCoursesOrdered(userId));
+        log.info("UserCourseRepository.findByUserIdWithCoursesOrdered completed in {} ms (userId={}, rows={})",
+                elapsedMs(dbStart),
+                userId,
+                courses.size());
+
         if (!persistAssignments) {
             courses.forEach(entityManager::detach);
         }
 
+        long calculationStart = System.nanoTime();
         List<GenEdRequirementDto> genEdRequirements = recalculateAndGetRequirements(courses, persistAssignments);
+        log.info("Gen-ed requirement calculation completed in {} ms (userId={}, courses={}, persistAssignments={})",
+                elapsedMs(calculationStart),
+                userId,
+                courses.size(),
+                persistAssignments);
+
         return new GenEdCalculationResult(genEdRequirements, courses);
     }
 
@@ -72,7 +87,11 @@ public class GenEdService {
         }
 
         if (persistAssignments && !changedCourses.isEmpty()) {
+            long dbStart = System.nanoTime();
             userCourseRepository.saveAll(changedCourses);
+            log.info("UserCourseRepository.saveAll gen-ed assignments completed in {} ms (rows={})",
+                    elapsedMs(dbStart),
+                    changedCourses.size());
         }
 
         return assignmentSnapshot.requirementAssignments().stream()
@@ -90,4 +109,8 @@ public class GenEdService {
             List<GenEdRequirementDto> genEdRequirements,
             List<UserCourse> userCourses
     ) {}
+
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
+    }
 }
