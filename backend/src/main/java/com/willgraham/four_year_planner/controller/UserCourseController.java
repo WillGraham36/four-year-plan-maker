@@ -7,6 +7,7 @@ import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.GenEdService;
+import com.willgraham.four_year_planner.service.GenEdService.GenEdCalculationResult;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
@@ -58,10 +59,12 @@ public class UserCourseController {
                 .map(dto -> processUserCourse(dto, userId))
                 .toList();
 
-        List<GenEdRequirementDto> updatedGenEdRequirements = genEdService.recalculateAndGetRequirements(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        List<GenEdRequirementDto> updatedGenEdRequirements = genEdResult.genEdRequirements();
 
         // Get updated UL concentration data
-        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+        ULConcentrationDTO updatedULConcentration =
+                userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
 
         // Create combined response
         UserCourseWithUpdatesResponseDto response = new UserCourseWithUpdatesResponseDto(
@@ -79,8 +82,8 @@ public class UserCourseController {
     @GetMapping
     public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        genEdService.recalculateAndGetRequirements(userId);
-        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
 
         return ResponseEntity.ok(ApiResponse.success(courses));
     }
@@ -98,10 +101,12 @@ public class UserCourseController {
         // Delete the courses (reusing existing logic)
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
 
-        List<GenEdRequirementDto> updatedGenEdRequirements = genEdService.recalculateAndGetRequirements(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        List<GenEdRequirementDto> updatedGenEdRequirements = genEdResult.genEdRequirements();
 
         // Get updated UL concentration data
-        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+        ULConcentrationDTO updatedULConcentration =
+                userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
 
         // Create combined response
         DeleteWithUpdatesResponseDto response = new DeleteWithUpdatesResponseDto(

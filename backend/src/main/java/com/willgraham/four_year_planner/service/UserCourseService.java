@@ -39,15 +39,16 @@ public class UserCourseService {
     }
 
     public Map<Semester, List<CourseDto>> getAllCoursesForUser(String userId) {
-        List<UserCourse> courses =  userCourseRepository.findByUserIdOrdered(userId);
+        List<UserCourse> courses =  userCourseRepository.findByUserIdWithCoursesOrdered(userId);
+        return getAllCoursesForUser(courses);
+    }
 
-        // Transform DTOs
+    public Map<Semester, List<CourseDto>> getAllCoursesForUser(List<UserCourse> courses) {
         List<CourseDto> courseDtos = courses.stream()
                 .map(this::hydrateCourse)
                 .map(CourseDto::fromUserCourse)
                 .toList();
 
-        // Group by semester
         return courseDtos.stream().collect(Collectors.groupingBy(CourseDto::getSemester));
     }
 
@@ -130,6 +131,30 @@ public class UserCourseService {
         String concentration = userService.findById(userId).getULConcentration();
         List<UserCourse> concentrationCourses = getULCourses(userId, concentration);
         List<UserCourse> customCourses = userCourseRepository.findCustomULCoursesByUserId(userId);
+        return buildULConcentrationAndCourses(concentration, concentrationCourses, customCourses);
+    }
+
+    public ULConcentrationDTO getULConcentrationAndCourses(String userId, List<UserCourse> orderedCourses) {
+        String concentration = userService.findById(userId).getULConcentration();
+        List<UserCourse> concentrationCourses = isValidConcentration(concentration)
+                ? orderedCourses.stream()
+                        .filter(course -> course.getCourseId() != null && course.getCourseId().startsWith(concentration))
+                        .filter(course -> course.getCourse() != null)
+                        .toList()
+                : List.of();
+        List<UserCourse> customCourses = orderedCourses.stream()
+                .filter(course -> Boolean.TRUE.equals(course.getCustomUlConcentration()))
+                .filter(course -> course.getCourse() != null)
+                .toList();
+
+        return buildULConcentrationAndCourses(concentration, concentrationCourses, customCourses);
+    }
+
+    private ULConcentrationDTO buildULConcentrationAndCourses(
+            String concentration,
+            List<UserCourse> concentrationCourses,
+            List<UserCourse> customCourses
+    ) {
         List<UserCourse> courses = Stream.concat(concentrationCourses.stream(), customCourses.stream()).toList();
 
         // Filter out malformed rows and courses that are not 300 level or above.
@@ -160,6 +185,10 @@ public class UserCourseService {
                 .toList();
 
         return new ULConcentrationDTO(concentration, coursesDTO);
+    }
+
+    private boolean isValidConcentration(String concentration) {
+        return concentration != null && !concentration.isEmpty() && concentration.length() <= 4;
     }
 
     private UserCourse hydrateCourse(UserCourse userCourse) {

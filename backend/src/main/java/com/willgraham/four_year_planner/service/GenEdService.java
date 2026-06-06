@@ -19,7 +19,17 @@ public class GenEdService {
 
     @Transactional
     public List<GenEdRequirementDto> recalculateAndGetRequirements(String userId) {
-        List<UserCourse> courses = userCourseRepository.findByUserId(userId);
+        return recalculateAndGetRequirementsWithCourses(userId).genEdRequirements();
+    }
+
+    @Transactional
+    public GenEdCalculationResult recalculateAndGetRequirementsWithCourses(String userId) {
+        List<UserCourse> courses = userCourseRepository.findByUserIdWithCoursesOrdered(userId);
+        List<GenEdRequirementDto> genEdRequirements = recalculateAndGetRequirements(courses);
+        return new GenEdCalculationResult(genEdRequirements, courses);
+    }
+
+    private List<GenEdRequirementDto> recalculateAndGetRequirements(List<UserCourse> courses) {
         courses.sort(Comparator
                 .comparing(UserCourse::getSemester)
                 .thenComparing(UserCourse::getIndex, Comparator.nullsLast(Integer::compareTo))
@@ -29,19 +39,13 @@ public class GenEdService {
         GenEdAssignmentService.AssignmentSnapshot assignmentSnapshot =
                 genEdAssignmentService.assignCourses(courses);
 
-        boolean changed = false;
         for (UserCourse course : courses) {
             GenEdAssignmentService.CourseAssignment assignment =
                     assignmentSnapshot.courseAssignments().get(course.getId());
             List<String> assignedBranch = assignment == null ? null : assignment.assignedBranch();
             if (!Objects.equals(course.getSelectedGenEds(), assignedBranch)) {
                 course.setSelectedGenEds(assignedBranch);
-                changed = true;
             }
-        }
-
-        if (changed) {
-            userCourseRepository.saveAll(courses);
         }
 
         return assignmentSnapshot.requirementAssignments().stream()
@@ -54,4 +58,9 @@ public class GenEdService {
                 ))
                 .toList();
     }
+
+    public record GenEdCalculationResult(
+            List<GenEdRequirementDto> genEdRequirements,
+            List<UserCourse> userCourses
+    ) {}
 }

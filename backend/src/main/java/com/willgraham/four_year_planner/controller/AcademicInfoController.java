@@ -3,6 +3,7 @@ package com.willgraham.four_year_planner.controller;
 import com.willgraham.four_year_planner.dto.*;
 import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.service.GenEdService;
+import com.willgraham.four_year_planner.service.GenEdService.GenEdCalculationResult;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
@@ -32,9 +33,10 @@ public class AcademicInfoController {
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
-        List<GenEdRequirementDto> genEdRequirements = genEdService.recalculateAndGetRequirements(userId);
-        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
-        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
+        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
+        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
 
 
