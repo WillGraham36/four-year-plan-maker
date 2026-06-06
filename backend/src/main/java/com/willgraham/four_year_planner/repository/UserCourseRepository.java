@@ -21,11 +21,38 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
 
     List<UserCourse> findByUserIdAndCourse_CourseIdOrderBySemesterDesc(String userId, String courseId);
 
-    List<UserCourse> findByUserId(String userId);
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        """)
+    List<UserCourse> findByUserId(@Param("userId") String userId);
 
     @Query("""
         SELECT uc
         FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
+        WHERE uc.userId = :userId
+        ORDER BY
+            uc.semester.year ASC,
+            CASE
+                WHEN uc.semester.term = 'TRANSFER' THEN 0
+                WHEN uc.semester.term = 'SPRING' THEN 1
+                WHEN uc.semester.term = 'SUMMER' THEN 2
+                WHEN uc.semester.term = 'FALL' THEN 3
+                WHEN uc.semester.term = 'WINTER' THEN 4
+                ELSE 5
+            END ASC,
+            COALESCE(uc.index, 2147483647) ASC,
+            uc.id ASC
+        """)
+    List<UserCourse> findByUserIdWithCoursesOrdered(@Param("userId") String userId);
+
+    @Query("""
+        SELECT uc
+        FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
         WHERE uc.userId = :userId
         ORDER BY
             uc.semester.year ASC,
@@ -99,6 +126,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     @Query("""
         SELECT uc
         FROM UserCourse uc
+        LEFT JOIN FETCH uc.course c
         WHERE uc.userId = :userId
         AND (
             uc.semester.term = 'TRANSFER'

@@ -36,6 +36,10 @@ public class CourseService {
                 .orElseThrow(() -> new CourseNotFoundException("Could not find course with ID: " + courseId));
     }
 
+    public List<Course> findByIds(List<String> courseIds) {
+        return courseRepository.findAllById(courseIds);
+    }
+
     public Course findOrCreateCourse(Course course) {
         String normalizedCourseId = normalizeQuery(course.getCourseId());
         course.setCourseId(normalizedCourseId);

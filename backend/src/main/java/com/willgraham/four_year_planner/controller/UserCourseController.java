@@ -7,13 +7,15 @@ import com.willgraham.four_year_planner.model.Semester;
 import com.willgraham.four_year_planner.model.UserCourse;
 import com.willgraham.four_year_planner.service.CourseService;
 import com.willgraham.four_year_planner.service.GenEdService;
+import com.willgraham.four_year_planner.service.GenEdService.GenEdCalculationResult;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,8 +35,8 @@ public class UserCourseController {
      * Called by bulk course-save flows that only need the saved course records back
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, @AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
                 .map(dto -> processUserCourse(dto, userId))
@@ -49,19 +51,21 @@ public class UserCourseController {
     @PostMapping("/with-updates")
     public ResponseEntity<ApiResponse<UserCourseWithUpdatesResponseDto>> saveUserCoursesWithUpdates(
             @RequestBody List<UserCourseRequestDto> requestDtos,
-            Authentication authentication) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        String userId = AuthUtils.getCurrentUserId(authentication);
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
         // Save the courses (reusing existing logic)
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
                 .map(dto -> processUserCourse(dto, userId))
                 .toList();
 
-        List<GenEdRequirementDto> updatedGenEdRequirements = genEdService.recalculateAndGetRequirements(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        List<GenEdRequirementDto> updatedGenEdRequirements = genEdResult.genEdRequirements();
 
         // Get updated UL concentration data
-        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+        ULConcentrationDTO updatedULConcentration =
+                userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
 
         // Create combined response
         UserCourseWithUpdatesResponseDto response = new UserCourseWithUpdatesResponseDto(
@@ -77,10 +81,10 @@ public class UserCourseController {
      * Called by helper refreshes that need the latest semester-by-semester planner data.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
-        genEdService.recalculateAndGetRequirements(userId);
-        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
+    public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(@AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
+        GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
+        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
 
         return ResponseEntity.ok(ApiResponse.success(courses));
     }
@@ -91,17 +95,19 @@ public class UserCourseController {
     @DeleteMapping("/with-updates")
     public ResponseEntity<ApiResponse<DeleteWithUpdatesResponseDto>> deleteUserCoursesWithUpdates(
             @RequestBody List<CourseIdentifierDto> courseIdentifiers,
-            Authentication authentication) {
+            @AuthenticationPrincipal Jwt jwt) {
 
-        String userId = AuthUtils.getCurrentUserId(authentication);
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
         // Delete the courses (reusing existing logic)
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
 
-        List<GenEdRequirementDto> updatedGenEdRequirements = genEdService.recalculateAndGetRequirements(userId);
+        GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        List<GenEdRequirementDto> updatedGenEdRequirements = genEdResult.genEdRequirements();
 
         // Get updated UL concentration data
-        ULConcentrationDTO updatedULConcentration = userCourseService.getULConcentrationAndCourses(userId);
+        ULConcentrationDTO updatedULConcentration =
+                userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
 
         // Create combined response
         DeleteWithUpdatesResponseDto response = new DeleteWithUpdatesResponseDto(
@@ -117,8 +123,8 @@ public class UserCourseController {
      * Called by delete flows that only need a success message back.
      */
     @DeleteMapping
-    public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, @AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
         genEdService.recalculateAndGetRequirements(userId);

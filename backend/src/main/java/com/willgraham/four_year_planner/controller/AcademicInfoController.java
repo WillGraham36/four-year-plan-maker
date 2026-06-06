@@ -2,13 +2,16 @@ package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
 import com.willgraham.four_year_planner.model.Semester;
+import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.service.GenEdService;
+import com.willgraham.four_year_planner.service.GenEdService.GenEdCalculationResult;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,13 +32,15 @@ public class AcademicInfoController {
      * Called when the planner and audit pages first load
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(@AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
-        List<GenEdRequirementDto> genEdRequirements = genEdService.recalculateAndGetRequirements(userId);
-        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(userId);
-        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId);
-        GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
+        GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
+        User user = userService.findById(userId);
+        List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
+        Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
+        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(user, genEdResult.userCourses());
+        GetUserInfoResponseDto userInfo = userService.getUserInfo(user);
 
 
         AcademicOverviewResponseDto dto = new AcademicOverviewResponseDto(

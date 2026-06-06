@@ -9,7 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,8 +28,8 @@ public class OnboardingController {
      * Called when the account setup form submits onboarding choices and transfer credits
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, @AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
         logger.info("Starting processing user onboarding course with userId: {}", userId);
 
         // First, remove all transfer credits the user has
@@ -57,8 +58,8 @@ public class OnboardingController {
      * Called when the account setup page loads existing onboarding values for editing
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(@AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
         logger.info("Started getting user onboarding form with userId: {}", userId);
 
         // Fetch user and course values for dto

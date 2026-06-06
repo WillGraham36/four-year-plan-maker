@@ -1,5 +1,6 @@
 package com.willgraham.four_year_planner.service;
 
+import com.willgraham.four_year_planner.dto.CourseDto;
 import com.willgraham.four_year_planner.dto.ULConcentrationDTO;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.model.Semester;
@@ -10,10 +11,14 @@ import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class UserCourseServiceTest {
@@ -46,7 +51,7 @@ class UserCourseServiceTest {
         when(userService.findById(userId)).thenReturn(user);
         when(userCourseRepository.findULCoursesByUserIdAndConcentration(userId, "CMSC"))
                 .thenReturn(List.of(userCourse));
-        when(courseService.findById("CMSC330")).thenReturn(course);
+        when(courseService.findByIds(List.of("CMSC330"))).thenReturn(List.of(course));
 
         ULConcentrationDTO result = userCourseService.getULConcentrationAndCourses(userId);
 
@@ -87,5 +92,61 @@ class UserCourseServiceTest {
         assertEquals(1, result.getCourses().size());
         assertEquals("MATH401", result.getCourses().getFirst().getCourseId());
         assertTrue(result.getCourses().getFirst().isCustom());
+    }
+
+    @Test
+    void getULConcentrationAndCoursesWithLoadedUserDoesNotReloadUser() {
+        User user = new User();
+        user.setId("user_123");
+        user.setULConcentration("CMSC");
+
+        Course course = new Course();
+        course.setCourseId("CMSC330");
+        course.setCredits(3);
+
+        UserCourse userCourse = new UserCourse();
+        userCourse.setCourseId("CMSC330");
+        userCourse.setCourse(course);
+        userCourse.setSemester(new Semester(Term.FALL, 2025));
+
+        ULConcentrationDTO result = userCourseService.getULConcentrationAndCourses(user, List.of(userCourse));
+
+        assertEquals("CMSC", result.getConcentration());
+        assertEquals(1, result.getCourses().size());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void getAllCoursesForUserHydratesMissingCoursesInBatch() {
+        UserCourse cmscCourse = new UserCourse();
+        cmscCourse.setId(1L);
+        cmscCourse.setCourseId("CMSC330");
+        cmscCourse.setSemester(new Semester(Term.FALL, 2025));
+
+        UserCourse mathCourse = new UserCourse();
+        mathCourse.setId(2L);
+        mathCourse.setCourseId("MATH401");
+        mathCourse.setSemester(new Semester(Term.FALL, 2025));
+
+        Course cmsc = new Course();
+        cmsc.setCourseId("CMSC330");
+        cmsc.setName("Organization of Programming Languages");
+        cmsc.setCredits(3);
+        cmsc.setGenEds(List.of(List.of("NONE")));
+
+        Course math = new Course();
+        math.setCourseId("MATH401");
+        math.setName("Applications of Linear Algebra");
+        math.setCredits(3);
+        math.setGenEds(List.of(List.of("NONE")));
+
+        when(courseService.findByIds(List.of("CMSC330", "MATH401"))).thenReturn(List.of(cmsc, math));
+
+        Map<Semester, List<CourseDto>> result = userCourseService.getAllCoursesForUser(List.of(cmscCourse, mathCourse));
+
+        assertEquals(2, result.get(new Semester(Term.FALL, 2025)).size());
+        verify(courseService).findByIds(List.of("CMSC330", "MATH401"));
+        verify(courseService, never()).findById("CMSC330");
+        verify(courseService, never()).findById("MATH401");
     }
 }
