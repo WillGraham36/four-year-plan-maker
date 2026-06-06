@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
 import com.willgraham.four_year_planner.model.Semester;
+import com.willgraham.four_year_planner.model.User;
 import com.willgraham.four_year_planner.service.GenEdService;
 import com.willgraham.four_year_planner.service.GenEdService.GenEdCalculationResult;
 import com.willgraham.four_year_planner.service.UserCourseService;
@@ -34,10 +35,11 @@ public class AcademicInfoController {
         String userId = AuthUtils.getCurrentUserId(authentication);
 
         GenEdCalculationResult genEdResult = genEdService.recalculateAndGetRequirementsWithCourses(userId);
+        User user = userService.findById(userId);
         List<GenEdRequirementDto> genEdRequirements = genEdResult.genEdRequirements();
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
-        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(userId, genEdResult.userCourses());
-        GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
+        ULConcentrationDTO concentrationDTO = userCourseService.getULConcentrationAndCourses(user, genEdResult.userCourses());
+        GetUserInfoResponseDto userInfo = userService.getUserInfo(user);
 
 
         AcademicOverviewResponseDto dto = new AcademicOverviewResponseDto(

@@ -99,16 +99,20 @@ public class UserService {
     public GetUserInfoResponseDto getUserInfo(String userId) {
         Optional<User> user = userRepository.findById(userId);
 
-        return user.map(value -> new GetUserInfoResponseDto(
-                value.getStartSemester(),
-                value.getEndSemester(),
-                value.getOffSemesters(),
-                value.getCompletedSemesters(),
-                value.getNote(),
-                value.getTrack(),
-                value.getMajor()
-            )).orElseGet(GetUserInfoResponseDto::new);
+        return user.map(this::getUserInfo).orElseGet(GetUserInfoResponseDto::new);
 
+    }
+
+    public GetUserInfoResponseDto getUserInfo(User user) {
+        return new GetUserInfoResponseDto(
+                user.getStartSemester(),
+                user.getEndSemester(),
+                user.getOffSemesters(),
+                user.getCompletedSemesters(),
+                user.getNote(),
+                user.getTrack(),
+                user.getMajor()
+        );
     }
 
     public void createOffTerm(String userId, CreateOffTermRequestDto semester) {
