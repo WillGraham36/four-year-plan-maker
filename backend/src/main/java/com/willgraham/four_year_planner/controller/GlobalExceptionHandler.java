@@ -3,14 +3,10 @@ package com.willgraham.four_year_planner.controller;
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.exception.InvalidInputException;
-import com.willgraham.four_year_planner.exception.JwtAuthenticationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,15 +24,5 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CourseNotFoundException.class)
     public ResponseEntity<ApiResponse<String>> handleCourseNotFoundException(CourseNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.error(ex.getMessage()));
-    }
-
-    @ExceptionHandler(JwtAuthenticationException.class)
-    public ResponseEntity<Map<String, Object>> handleJwtAuthenticationException(JwtAuthenticationException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", "error");
-        response.put("message", e.getMessage());
-        response.put("code", HttpStatus.UNAUTHORIZED.value());
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 }

@@ -10,7 +10,8 @@ import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +32,8 @@ public class AcademicInfoController {
      * Called when the planner and audit pages first load
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
-        String userId = AuthUtils.getCurrentUserId(authentication);
+    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(@AuthenticationPrincipal Jwt jwt) {
+        String userId = AuthUtils.getCurrentUserId(jwt);
 
         GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
         User user = userService.findById(userId);
