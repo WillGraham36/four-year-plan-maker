@@ -26,8 +26,22 @@ public interface CurriculumProgramRequirementRepository extends
                   LOWER(r.programName) LIKE LOWER(CONCAT('%', :query, '%'))
                   OR LOWER(r.catalogTitle) LIKE LOWER(CONCAT('%', :query, '%'))
                   OR LOWER(r.rawRequirementsText) LIKE LOWER(CONCAT('%', :query, '%'))
+                  OR LOWER(r.structuredRequirementsJson) LIKE LOWER(CONCAT('%', :query, '%'))
               )
             ORDER BY r.programName ASC, r.catalogTitle ASC
             """)
     List<CurriculumProgramRequirement> searchByStatus(String query, CurriculumRequirementStatus status, Pageable pageable);
+
+    @Query("""
+            SELECT r FROM CurriculumProgramRequirement r
+            WHERE r.status <> :status
+              AND (
+                  LOWER(r.programName) LIKE LOWER(CONCAT('%', :query, '%'))
+                  OR LOWER(r.catalogTitle) LIKE LOWER(CONCAT('%', :query, '%'))
+                  OR LOWER(r.rawRequirementsText) LIKE LOWER(CONCAT('%', :query, '%'))
+                  OR LOWER(r.structuredRequirementsJson) LIKE LOWER(CONCAT('%', :query, '%'))
+              )
+            ORDER BY r.programName ASC, r.catalogTitle ASC
+            """)
+    List<CurriculumProgramRequirement> searchByStatusNot(String query, CurriculumRequirementStatus status, Pageable pageable);
 }

@@ -11,5 +11,6 @@ public record PlannerChatRequirementDto(
         CurriculumRequirementStatus status,
         String catalogYear,
         String sourceUrl,
-        String requirementsExcerpt
+        String requirementsExcerpt,
+        String structuredRequirementsExcerpt
 ) {}

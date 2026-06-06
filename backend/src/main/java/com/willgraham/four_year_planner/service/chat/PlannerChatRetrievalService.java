@@ -20,6 +20,8 @@ import com.willgraham.four_year_planner.service.GenEdService;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +34,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Service
 public class PlannerChatRetrievalService {
+    private static final Logger logger = LoggerFactory.getLogger(PlannerChatRetrievalService.class);
     private static final int REQUIRED_DEGREE_CREDITS = 120;
 
     private final CourseService courseService;
@@ -42,9 +45,30 @@ public class PlannerChatRetrievalService {
     private final CurriculumProgramRequirementRepository requirementRepository;
 
     public PlannerChatRetrievalDto retrieve(String userId, PlannerChatIntentDto intent) {
+        logger.info(
+                "Planner chat retrieval started: intent={}, query='{}', courseIds={}, departments={}, genEds={}, requirementKeywords={}, programNames={}, limit={}",
+                intent.intent(),
+                intent.query(),
+                intent.courseIds(),
+                intent.departments(),
+                intent.genEds(),
+                intent.requirementKeywords(),
+                intent.programNames(),
+                intent.limit()
+        );
+
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
         Map<Semester, List<CourseDto>> userCourses = userCourseService.getAllCoursesForUser(userId);
         List<GenEdRequirementDto> genEdRequirements = genEdService.recalculateAndGetRequirements(userId);
+
+        int plannedCourseCount = userCourses.values().stream().mapToInt(List::size).sum();
+        logger.info(
+                "Planner chat loaded user context: major='{}', track='{}', plannedCourseCount={}, genEdRequirementCount={}",
+                userInfo.getMajor(),
+                userInfo.getTrack(),
+                plannedCourseCount,
+                genEdRequirements.size()
+        );
 
         List<PlannerChatCourseDto> courses = retrieveCourses(intent, userCourses, userInfo);
         List<PlannerChatRequirementDto> requirements = retrieveRequirements(intent, userInfo);
@@ -65,9 +89,19 @@ public class PlannerChatRetrievalService {
             notes.add("No verified courses matched the request.");
         }
         if (requirements.isEmpty()) {
-            notes.add("No approved stored curriculum requirements matched the request.");
+            notes.add("No saved curriculum requirements matched the request.");
+        } else if (requirements.stream().anyMatch(requirement -> requirement.status() != CurriculumRequirementStatus.APPROVED)) {
+            notes.add("Some saved curriculum requirements are not approved; mention their status and avoid treating them as final reviewed requirements.");
         }
         notes.add("Use only these retrieved courses, requirements, and progress facts in the response.");
+
+        logger.info(
+                "Planner chat retrieval completed: returnedCourses={}, returnedRequirements={}, returnedGenEds={}, notes={}",
+                courses.size(),
+                requirements.size(),
+                genEds.size(),
+                notes
+        );
 
         return new PlannerChatRetrievalDto(progress, courses, requirements, genEds, notes);
     }
@@ -86,12 +120,14 @@ public class PlannerChatRetrievalService {
         }
 
         if (intent.query() != null && !intent.query().isBlank()) {
+            logger.info("Planner chat course DB query: searchCourses query='{}', limit={}", intent.query(), limit);
             for (Course course : courseRepository.searchCourses(intent.query(), PageRequest.of(0, limit))) {
                 results.putIfAbsent(course.getCourseId(), PlannerChatCourseDto.fromCourse(course));
             }
         }
 
         if (!intent.departments().isEmpty()) {
+            logger.info("Planner chat course DB query: findByDepartments departments={}, limit={}", intent.departments(), limit);
             for (Course course : courseRepository.findByDepartments(intent.departments(), PageRequest.of(0, limit))) {
                 results.putIfAbsent(course.getCourseId(), PlannerChatCourseDto.fromCourse(course));
             }
@@ -134,17 +170,59 @@ public class PlannerChatRetrievalService {
             queries.add(intent.query());
         }
 
+        logger.info("Planner chat requirement DB queries prepared: queries={}, approvedFirst=true, limit={}", queries, limit);
+
         for (String query : queries) {
             if (query == null || query.isBlank()) {
                 continue;
             }
-            for (CurriculumProgramRequirement requirement : requirementRepository.searchByStatus(
+            logger.info(
+                    "Planner chat requirement DB query: searchByStatus query='{}', status={}, limit={}",
+                    query,
+                    CurriculumRequirementStatus.APPROVED,
+                    limit
+            );
+            List<CurriculumProgramRequirement> approvedMatches = requirementRepository.searchByStatus(
                     query,
                     CurriculumRequirementStatus.APPROVED,
                     PageRequest.of(0, limit)
-            )) {
+            );
+            logger.info(
+                    "Planner chat requirement DB result: query='{}', status={}, count={}, ids={}",
+                    query,
+                    CurriculumRequirementStatus.APPROVED,
+                    approvedMatches.size(),
+                    approvedMatches.stream().map(CurriculumProgramRequirement::getId).toList()
+            );
+            for (CurriculumProgramRequirement requirement : approvedMatches) {
                 results.putIfAbsent(requirement.getId(), toRequirementDto(requirement));
             }
+
+            if (results.size() < limit) {
+                int remainingLimit = limit - results.size();
+                logger.info(
+                        "Planner chat requirement DB query: searchByStatusNot query='{}', excludedStatus={}, limit={}",
+                        query,
+                        CurriculumRequirementStatus.APPROVED,
+                        remainingLimit
+                );
+                List<CurriculumProgramRequirement> savedMatches = requirementRepository.searchByStatusNot(
+                        query,
+                        CurriculumRequirementStatus.APPROVED,
+                        PageRequest.of(0, remainingLimit)
+                );
+                logger.info(
+                        "Planner chat requirement DB result: query='{}', excludedStatus={}, count={}, ids={}",
+                        query,
+                        CurriculumRequirementStatus.APPROVED,
+                        savedMatches.size(),
+                        savedMatches.stream().map(CurriculumProgramRequirement::getId).toList()
+                );
+                for (CurriculumProgramRequirement requirement : savedMatches) {
+                    results.putIfAbsent(requirement.getId(), toRequirementDto(requirement));
+                }
+            }
+
             if (results.size() >= limit) {
                 break;
             }
@@ -162,7 +240,8 @@ public class PlannerChatRetrievalService {
                 requirement.getStatus(),
                 requirement.getCatalogYear(),
                 requirement.getSourceUrl(),
-                excerpt(requirement.getRawRequirementsText())
+                excerpt(requirement.getRawRequirementsText()),
+                excerpt(requirement.getStructuredRequirementsJson())
         );
     }
 

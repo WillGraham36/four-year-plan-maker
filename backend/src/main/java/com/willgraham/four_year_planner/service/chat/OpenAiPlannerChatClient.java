@@ -7,6 +7,8 @@ import com.willgraham.four_year_planner.dto.chat.PlannerChatIntentDto;
 import com.willgraham.four_year_planner.dto.chat.PlannerChatMessageDto;
 import com.willgraham.four_year_planner.dto.chat.PlannerChatRetrievalDto;
 import com.willgraham.four_year_planner.exception.InvalidInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import java.util.Optional;
 
 @Component
 public class OpenAiPlannerChatClient {
+    private static final Logger logger = LoggerFactory.getLogger(OpenAiPlannerChatClient.class);
     private static final String INTENT_SYSTEM_PROMPT = """
             You parse UMD four-year planner chat messages into structured JSON only.
             Do not make academic decisions. Do not invent course IDs or requirements.
@@ -34,6 +37,7 @@ public class OpenAiPlannerChatClient {
             You are TerpPlanner's planning assistant.
             Answer only from the verified backend data supplied in retrievedData.
             Do not invent courses, prerequisites, policies, or requirement status.
+            Requirement records include a review status. Treat APPROVED as reviewed; clearly qualify DRAFT or PARSE_ERROR as saved admin data that still needs review.
             If retrievedData is insufficient, say what data is missing and suggest a safe next step.
             Keep advice non-authoritative and encourage official advisor/catalog confirmation for decisions.
             """;
@@ -100,6 +104,8 @@ public class OpenAiPlannerChatClient {
         if (!isConfigured()) {
             throw new InvalidInputException("OpenAI API key is not configured");
         }
+
+        logger.info("OpenAI planner chat request body sent to API: {}", serialize(body));
 
         return restClient.post()
                 .uri("/responses")
