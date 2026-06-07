@@ -1,12 +1,14 @@
 package com.willgraham.four_year_planner.service;
 
 import com.willgraham.four_year_planner.dto.CourseAutocompleteDto;
+import com.willgraham.four_year_planner.dto.CourseCatalogDto;
 import com.willgraham.four_year_planner.dto.UmdIoCourseDto;
 import com.willgraham.four_year_planner.model.Course;
 import com.willgraham.four_year_planner.repository.CourseRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -96,6 +98,22 @@ class CourseServiceTest {
 
         assertEquals(1, result.size());
         assertEquals("BIOE120", result.getFirst().getCourseId());
+    }
+
+    @Test
+    void getCourseCatalogReturnsFrontendCatalogFields() {
+        Course course = course("CMSC131", "Object-Oriented Programming I");
+        when(courseRepository.findAll(Sort.by(Sort.Direction.ASC, "courseId")))
+                .thenReturn(List.of(course));
+
+        List<CourseCatalogDto> result = courseService.getCourseCatalog();
+
+        assertEquals(1, result.size());
+        assertEquals("CMSC131", result.getFirst().getCourseId());
+        assertEquals("CMSC", result.getFirst().getDeptId());
+        assertEquals(4, result.getFirst().getCredits());
+        assertEquals(List.of(List.of("NONE")), result.getFirst().getGenEds());
+        assertEquals("Object-Oriented Programming I", result.getFirst().getName());
     }
 
     private Course course(String courseId, String name) {

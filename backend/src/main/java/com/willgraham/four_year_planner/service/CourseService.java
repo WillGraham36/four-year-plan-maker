@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.service;
 
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.dto.CourseAutocompleteDto;
+import com.willgraham.four_year_planner.dto.CourseCatalogDto;
 import com.willgraham.four_year_planner.dto.CourseSyncResponseDto;
 import com.willgraham.four_year_planner.dto.UmdIoCourseDto;
 import com.willgraham.four_year_planner.model.Course;
@@ -9,8 +10,10 @@ import com.willgraham.four_year_planner.repository.CourseRepository;
 import com.willgraham.four_year_planner.utils.DepartmentCodes;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -23,6 +26,7 @@ import java.util.regex.Pattern;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class CourseService {
     private static final int AUTOCOMPLETE_LIMIT = 10;
     private static final Pattern NORMALIZED_COURSE_QUERY = Pattern.compile("^[A-Z]{4}[0-9A-Z]*$");
@@ -32,12 +36,21 @@ public class CourseService {
     private final UmdIoCourseClient umdIoCourseClient;
 
     public Course findById(String courseId) {
-        return courseRepository.findById(courseId)
+        long dbStart = System.nanoTime();
+        Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new CourseNotFoundException("Could not find course with ID: " + courseId));
+        log.info("CourseRepository.findById completed in {} ms (courseId={})", elapsedMs(dbStart), courseId);
+        return course;
     }
 
     public List<Course> findByIds(List<String> courseIds) {
-        return courseRepository.findAllById(courseIds);
+        long dbStart = System.nanoTime();
+        List<Course> courses = courseRepository.findAllById(courseIds);
+        log.info("CourseRepository.findAllById completed in {} ms (requested={}, found={})",
+                elapsedMs(dbStart),
+                courseIds.size(),
+                courses.size());
+        return courses;
     }
 
     public Course findOrCreateCourse(Course course) {
@@ -120,6 +133,12 @@ public class CourseService {
         }
 
         return new CourseSyncResponseDto(syncedDepartments, upsertedCount, errors);
+    }
+
+    public List<CourseCatalogDto> getCourseCatalog() {
+        return courseRepository.findAll(Sort.by(Sort.Direction.ASC, "courseId")).stream()
+                .map(CourseCatalogDto::fromCourse)
+                .toList();
     }
 
     private List<Course> searchLocal(String query) {
@@ -222,5 +241,9 @@ public class CourseService {
 
     private String normalizeQuery(String value) {
         return value == null ? "" : value.toUpperCase().replaceAll("[\\s-]", "");
+    }
+
+    private long elapsedMs(long startNanos) {
+        return (System.nanoTime() - startNanos) / 1_000_000;
     }
 }

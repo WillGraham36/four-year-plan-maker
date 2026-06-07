@@ -3,8 +3,8 @@
 
 import { useFetchWithAuth } from "@/hooks/useFetchWithAuthClient";
 import { courseAndSemesterToDto } from "@/lib/utils";
-import { CourseAutocompleteSuggestionListSchema, CourseSchema, CourseSyncSummarySchema, GenEdRequirementList, GenEdRequirementListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
-import { Course, CourseAutocompleteSuggestion, CourseSyncSummary, CourseWithSemester, CsSpecializations, CustomServerResponse, Term, UserInfo } from "@/lib/utils/types";
+import { CourseAutocompleteSuggestionListSchema, CourseCatalogEntryListSchema, CourseSchema, CourseSyncSummarySchema, GenEdRequirementList, GenEdRequirementListSchema, SemesterSchema, SemestersSchema, ULConcentrationSchema, ULCoursesInfo } from "@/lib/utils/schemas";
+import { Course, CourseAutocompleteSuggestion, CourseCatalogEntry, CourseSyncSummary, CourseWithSemester, CsSpecializations, CustomServerResponse, Term, UserInfo } from "@/lib/utils/types";
 
 // Save a course
 export function useCourseApi() {
@@ -477,6 +477,33 @@ export function useCourseApi() {
       data: parsedSummary.data,
     };
   };
+
+  const exportCourseCatalog = async (): Promise<CustomServerResponse<CourseCatalogEntry[]>> => {
+    const res = await fetchWithAuth("admin/courses/catalog");
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        message: res.message || "Failed to export course catalog",
+        data: null,
+      };
+    }
+
+    const parsedCatalog = CourseCatalogEntryListSchema.safeParse(res.data);
+    if (!parsedCatalog.success) {
+      return {
+        ok: false,
+        message: "Unexpected course catalog response",
+        data: null,
+      };
+    }
+
+    return {
+      ok: true,
+      message: "Successfully exported course catalog",
+      data: parsedCatalog.data,
+    };
+  };
   
 
   return {
@@ -501,6 +528,7 @@ export function useCourseApi() {
     updateUserNote,
     updateUserTrack,
     autocompleteCourses,
-    syncCourseDepartments
+    syncCourseDepartments,
+    exportCourseCatalog
   };
 }

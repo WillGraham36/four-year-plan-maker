@@ -9,6 +9,11 @@ import {
 } from "@/components/ui/popover";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
 import {
+  preloadCourseCatalog,
+  searchCachedCourseCatalog,
+  searchCourseCatalog,
+} from "@/lib/courses/course-catalog";
+import {
   DEPARTMENT_CODES,
   DEPARTMENT_CODE_SET,
   normalizeCourseQuery,
@@ -89,6 +94,10 @@ export function CourseAutocomplete({
   }, [normalizedValue, shouldShowDepartments]);
 
   useEffect(() => {
+    preloadCourseCatalog();
+  }, []);
+
+  useEffect(() => {
     if (!shouldSearchCourses) {
       requestId.current += 1;
       setCourseSuggestions([]);
@@ -97,6 +106,24 @@ export function CourseAutocomplete({
     }
 
     requestId.current += 1;
+
+    const localSuggestions = searchCachedCourseCatalog(
+      normalizedValue,
+      MAX_SUGGESTIONS,
+    );
+
+    if (localSuggestions != null && localSuggestions.length > 0) {
+      setCourseSuggestions(
+        localSuggestions.map((suggestion) => ({
+          ...suggestion,
+          type: "course",
+        })),
+      );
+      setLoading(false);
+      setHighlightedIndex(0);
+      return;
+    }
+
     setLoading(true);
   }, [normalizedValue, shouldSearchCourses]);
 
@@ -112,6 +139,27 @@ export function CourseAutocomplete({
     let isCurrent = true;
 
     const loadSuggestions = async () => {
+      const localSuggestions = await searchCourseCatalog(
+        debouncedCourseSearchValue,
+        MAX_SUGGESTIONS,
+      );
+
+      if (!isCurrent || requestId.current !== currentRequestId) {
+        return;
+      }
+
+      if (localSuggestions != null && localSuggestions.length > 0) {
+        setCourseSuggestions(
+          localSuggestions.map((suggestion) => ({
+            ...suggestion,
+            type: "course",
+          })),
+        );
+        setLoading(false);
+        setHighlightedIndex(0);
+        return;
+      }
+
       const response =
         await autocompleteCoursesRef.current(debouncedCourseSearchValue);
 

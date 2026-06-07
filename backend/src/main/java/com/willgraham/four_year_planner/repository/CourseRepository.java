@@ -14,10 +14,10 @@ public interface CourseRepository extends JpaRepository<Course, String> {
     Optional<Course> findByCourseIdIgnoreCase(String courseId);
 
     @Query("""
-            SELECT c FROM Course c
-            WHERE LOWER(c.courseId) LIKE LOWER(CONCAT(:query, '%'))
-            ORDER BY c.courseId ASC
-            """)
+        SELECT c FROM Course c
+        WHERE c.courseId LIKE CONCAT(:query, '%')
+        ORDER BY c.courseId ASC    
+        """)
     List<Course> findCourseIdPrefixMatches(String query, Pageable pageable);
 
 }
