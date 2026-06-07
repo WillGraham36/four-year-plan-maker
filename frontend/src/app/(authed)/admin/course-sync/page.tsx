@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
 import { useUser } from "@clerk/nextjs";
-import { LoaderCircle } from "lucide-react";
+import { Download, LoaderCircle } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -256,9 +256,10 @@ const hasAdminRole = (metadata: Record<string, unknown> | null | undefined) => {
 
 export default function CourseSyncPage() {
   const { user, isLoaded } = useUser();
-  const { syncCourseDepartments } = useCourseApi();
+  const { exportCourseCatalog, syncCourseDepartments } = useCourseApi();
   const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [exportingCatalog, setExportingCatalog] = useState(false);
   const [syncMode, setSyncMode] = useState<"selected" | "all" | null>(null);
   const [progress, setProgress] = useState<
     Record<string, DepartmentSyncProgress>
@@ -386,6 +387,30 @@ export default function CourseSyncPage() {
     toast.success("All department sync finished");
   };
 
+  const downloadCourseCatalog = async () => {
+    setExportingCatalog(true);
+    const response = await exportCourseCatalog();
+    setExportingCatalog(false);
+
+    if (!response.ok) {
+      toast.error(response.message);
+      return;
+    }
+
+    const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "course-catalog.json";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast.success("Course catalog downloaded");
+  };
+
   const completedProgressCount = Object.values(progress).filter(
     (department) =>
       department.status === "synced" || department.status === "error",
@@ -417,6 +442,31 @@ export default function CourseSyncPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Pull course data from UMD.io into the local courses table.
         </p>
+      </div>
+
+      <div className="border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-sm font-medium">Static Catalog Export</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Download the current database catalog for the frontend public
+              folder.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={downloadCourseCatalog}
+            disabled={exportingCatalog}
+          >
+            {exportingCatalog ? (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="mr-2 h-4 w-4" />
+            )}
+            Export Catalog JSON
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

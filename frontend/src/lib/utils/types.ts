@@ -26,6 +26,14 @@ export type CourseAutocompleteSuggestion = {
   credits: number | null
 }
 
+export type CourseCatalogEntry = {
+  courseId: string
+  deptId: string | null
+  credits: number | null
+  genEds: string[][]
+  name: string | null
+}
+
 export type CourseSyncSummary = {
   syncedDepartments: string[]
   coursesInsertedOrUpdated: number

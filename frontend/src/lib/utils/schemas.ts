@@ -28,6 +28,16 @@ export const CourseAutocompleteSuggestionSchema = z.object({
 
 export const CourseAutocompleteSuggestionListSchema = z.array(CourseAutocompleteSuggestionSchema);
 
+export const CourseCatalogEntrySchema = z.object({
+  courseId: z.string(),
+  deptId: z.string().nullable().optional().default(null),
+  credits: z.number().nullable().optional().default(null),
+  genEds: z.array(z.array(z.string())).nullable().optional().transform((value) => value ?? []),
+  name: z.string().nullable().optional().default(null),
+});
+
+export const CourseCatalogEntryListSchema = z.array(CourseCatalogEntrySchema);
+
 export const CourseSyncSummarySchema = z.object({
   syncedDepartments: z.array(z.string()),
   coursesInsertedOrUpdated: z.number(),

@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.service;
 
 import com.willgraham.four_year_planner.exception.CourseNotFoundException;
 import com.willgraham.four_year_planner.dto.CourseAutocompleteDto;
+import com.willgraham.four_year_planner.dto.CourseCatalogDto;
 import com.willgraham.four_year_planner.dto.CourseSyncResponseDto;
 import com.willgraham.four_year_planner.dto.UmdIoCourseDto;
 import com.willgraham.four_year_planner.model.Course;
@@ -12,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -131,6 +133,12 @@ public class CourseService {
         }
 
         return new CourseSyncResponseDto(syncedDepartments, upsertedCount, errors);
+    }
+
+    public List<CourseCatalogDto> getCourseCatalog() {
+        return courseRepository.findAll(Sort.by(Sort.Direction.ASC, "courseId")).stream()
+                .map(CourseCatalogDto::fromCourse)
+                .toList();
     }
 
     private List<Course> searchLocal(String query) {
