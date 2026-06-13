@@ -139,4 +139,17 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     @Modifying
     @Transactional
     void deleteByUserIdAndSemester_TermAndSemester_Year(String userId, Term term, Integer year);
+
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE UserCourse uc
+        SET uc.userId = :newUserId
+        WHERE uc.userId = :oldUserId
+        """)
+    int reassignUserCourses(@Param("oldUserId") String oldUserId, @Param("newUserId") String newUserId);
+
+    @Modifying
+    @Transactional
+    int deleteByUserId(String userId);
 }

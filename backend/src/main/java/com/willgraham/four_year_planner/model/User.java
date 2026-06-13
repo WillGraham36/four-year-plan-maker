@@ -5,11 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Entity
@@ -67,6 +65,21 @@ public class User {
     @Column(name = "note", columnDefinition = "TEXT")
     private String note = "";
     private CsTrack track;
+
+    @Column(name = "is_guest", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean guest = false;
+
+    @Column(name = "guest_created_at")
+    private Instant guestCreatedAt;
+
+    @Column(name = "guest_last_seen_at")
+    private Instant guestLastSeenAt;
+
+    @Column(name = "guest_expires_at")
+    private Instant guestExpiresAt;
+
+    @Column(name = "migrated_to_user_id")
+    private String migratedToUserId;
 
     public User(String id, Semester startSemester, Semester endSemester, String major, String minor, CsTrack track) {
         this.id = id;

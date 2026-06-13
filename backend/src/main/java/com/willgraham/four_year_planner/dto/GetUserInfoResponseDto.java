@@ -20,4 +20,17 @@ public class GetUserInfoResponseDto {
     private String note;
     private CsTrack track;
     private String major;
+    private boolean guest;
+
+    public GetUserInfoResponseDto(
+            Semester startSemester,
+            Semester endSemester,
+            List<Semester> offSemesters,
+            List<Semester> completedSemesters,
+            String note,
+            CsTrack track,
+            String major
+    ) {
+        this(startSemester, endSemester, offSemesters, completedSemesters, note, track, major, false);
+    }
 }

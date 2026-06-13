@@ -14,8 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,8 +34,8 @@ public class UserCourseController {
      * Called by bulk course-save flows that only need the saved course records back
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<List<UserCourseResponseDto>>> saveUserCourses(@RequestBody List<UserCourseRequestDto> requestDtos, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
                 .map(dto -> processUserCourse(dto, userId))
@@ -51,9 +50,9 @@ public class UserCourseController {
     @PostMapping("/with-updates")
     public ResponseEntity<ApiResponse<UserCourseWithUpdatesResponseDto>> saveUserCoursesWithUpdates(
             @RequestBody List<UserCourseRequestDto> requestDtos,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         // Save the courses (reusing existing logic)
         List<UserCourseResponseDto> savedCourses = requestDtos.stream()
@@ -81,8 +80,8 @@ public class UserCourseController {
      * Called by helper refreshes that need the latest semester-by-semester planner data.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(@AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<Map<Semester, List<CourseDto>>>> getUserCourses(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
         GenEdCalculationResult genEdResult = genEdService.getRequirementsWithCourses(userId);
         Map<Semester, List<CourseDto>> courses = userCourseService.getAllCoursesForUser(genEdResult.userCourses());
 
@@ -95,9 +94,9 @@ public class UserCourseController {
     @DeleteMapping("/with-updates")
     public ResponseEntity<ApiResponse<DeleteWithUpdatesResponseDto>> deleteUserCoursesWithUpdates(
             @RequestBody List<CourseIdentifierDto> courseIdentifiers,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         // Delete the courses (reusing existing logic)
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
@@ -123,8 +122,8 @@ public class UserCourseController {
      * Called by delete flows that only need a success message back.
      */
     @DeleteMapping
-    public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> deleteUserCourses(@RequestBody List<CourseIdentifierDto> courseIdentifiers, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         int deletedCount = userCourseService.deleteUserCoursesByIdentifiers(userId, courseIdentifiers);
         genEdService.recalculateAndGetRequirements(userId);

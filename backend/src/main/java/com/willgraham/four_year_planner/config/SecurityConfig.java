@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.willgraham.four_year_planner.security.ClerkJwtGrantedAuthoritiesConverter;
+import com.willgraham.four_year_planner.security.GuestAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +23,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -46,6 +48,7 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtDecoder jwtDecoder,
             Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter,
+            GuestAuthenticationFilter guestAuthenticationFilter,
             ObjectMapper objectMapper
     ) throws Exception {
         return http
@@ -60,6 +63,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/guest").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/session").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -72,6 +77,7 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter)
                         )
                 )
+                .addFilterAfter(guestAuthenticationFilter, BearerTokenAuthenticationFilter.class)
                 .build();
     }
 

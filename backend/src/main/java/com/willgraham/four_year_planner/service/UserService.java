@@ -89,14 +89,22 @@ public class UserService {
             return Optional.empty();
         }
 
+        User existingUser = user.get();
+        if (existingUser.getStartSemester() == null
+                || existingUser.getEndSemester() == null
+                || existingUser.getMajor() == null
+                || existingUser.getMajor().isBlank()) {
+            return Optional.empty();
+        }
+
         OnboardingFormRequestDto dto = new OnboardingFormRequestDto(
-                user.get().getStartSemester().getTerm(),
-                user.get().getStartSemester().getYear(),
-                user.get().getEndSemester().getTerm(),
-                user.get().getEndSemester().getYear(),
-                user.get().getMajor(),
-                user.get().getMinor(),
-                user.get().getTrack()
+                existingUser.getStartSemester().getTerm(),
+                existingUser.getStartSemester().getYear(),
+                existingUser.getEndSemester().getTerm(),
+                existingUser.getEndSemester().getYear(),
+                existingUser.getMajor(),
+                existingUser.getMinor(),
+                existingUser.getTrack()
         );
         return Optional.of(dto);
     }
@@ -116,7 +124,8 @@ public class UserService {
                 user.getCompletedSemesters(),
                 user.getNote(),
                 user.getTrack(),
-                user.getMajor()
+                user.getMajor(),
+                user.isGuest()
         );
     }
 

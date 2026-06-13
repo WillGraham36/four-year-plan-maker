@@ -7,6 +7,7 @@ import { TextEffect } from '../../../components/motion-primitives/text-effect'
 import { AnimatedGroup } from '../../../components/motion-primitives/animated-group'
 import { SignUpButton } from '@clerk/nextjs'
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
+import { ContinueAsGuestButton } from '@/components/auth/continue-as-guest-button'
 
 const transitionVariants = {
     item: {
@@ -73,7 +74,7 @@ export default function HeroSection() {
                                         },
                                         ...transitionVariants,
                                     }}
-                                    className="mt-12 flex items-center gap-2">
+                                    className="mt-12 flex flex-wrap items-center gap-2">
                                     <div
                                         key={1}
                                         className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5">
@@ -101,6 +102,12 @@ export default function HeroSection() {
                                             </Button>
                                           </SignedIn>
                                     </div>
+                                    <SignedOut>
+                                      <ContinueAsGuestButton
+                                        variant="ghost"
+                                        className="h-10.5 rounded-xl px-5 text-base"
+                                      />
+                                    </SignedOut>
                                     <>
                                       <SignedIn>
                                         <Button

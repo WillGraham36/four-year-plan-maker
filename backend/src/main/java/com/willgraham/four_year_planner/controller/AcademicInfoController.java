@@ -11,8 +11,7 @@ import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,9 +33,9 @@ public class AcademicInfoController {
      * Called when the planner and audit pages first load
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         long requestStart = System.nanoTime();
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
         log.info("GET /api/v1/academic/overview started (userId={})", userId);
 
         try {

@@ -85,6 +85,14 @@ export type CustomServerResponse<T> =
   | { ok: true; message: string; data: T }
   | { ok: false; message: string; data: null }
 
+export type CurrentUserSession = {
+  authenticated: boolean
+  guest: boolean
+  userId: string | null
+  onboarded: boolean
+  guestExpiresAt?: string | null
+}
+
 export type Term = "FALL" | "SPRING" | "SUMMER" | "WINTER" | "TRANSFER";
 
 
@@ -380,6 +388,7 @@ export type UserInfo = {
   note: string | null
   track: CsSpecializations | undefined,
   major: string
+  guest?: boolean
 }
 
 export type CsSpecializations = 

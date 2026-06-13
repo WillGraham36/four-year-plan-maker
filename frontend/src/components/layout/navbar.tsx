@@ -5,9 +5,13 @@ import AccountButton from "./account-button";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { MobileSidebar } from "../ui/mobile-sidebar";
+import { useOptionalCurrentUser } from "../context/current-user-context";
+import { LogIn } from "lucide-react";
 
 const Navbar = () => {
   const pathName = usePathname();
+  const currentUser = useOptionalCurrentUser();
+  const isGuest = currentUser?.isGuest ?? false;
 
   let headerTitle = "";
   let headerSubtitle: string | undefined;
@@ -37,9 +41,13 @@ const Navbar = () => {
   return (
     <nav className="w-full h-15 flex items-center justify-between px-4 border-b shadow-xs z-[9999]">
       <span className="flex gap-2 md:gap-5 items-center">
-        <SignedIn>
+        {isGuest ? (
           <MobileSidebar />
-        </SignedIn>
+        ) : (
+          <SignedIn>
+            <MobileSidebar />
+          </SignedIn>
+        )}
         <Link href={pathName === "/terms-of-service" ? "/" : pathName === "/privacy-policy" ? "/" : pathName}>
           <h3 className="text-xl font-bold">{headerTitle}</h3>
         </Link>
@@ -48,31 +56,46 @@ const Navbar = () => {
         )}
       </span>
       <div className="gap-2 items-center flex">
-        <SignedOut>
-          <div className="flex gap-4">
-            <SignUpButton
-              mode="modal"
-              forceRedirectUrl="/account/setup"
-            >
-              <Button className="px-5">
-                Sign Up
-              </Button>
-            </SignUpButton>
+        {isGuest ? (
+          <SignInButton
+            mode="modal"
+            forceRedirectUrl="/planner"
+          >
+            <Button className="gap-2 px-4">
+              <LogIn className="h-4 w-4" />
+              <span className="hidden sm:inline">Sign in to save your data</span>
+              <span className="sm:hidden">Sign in</span>
+            </Button>
+          </SignInButton>
+        ) : (
+          <>
+            <SignedOut>
+              <div className="flex gap-4">
+                <SignUpButton
+                  mode="modal"
+                  forceRedirectUrl="/account/setup"
+                >
+                  <Button className="px-5">
+                    Sign Up
+                  </Button>
+                </SignUpButton>
 
-            <SignInButton
-              mode="modal"
-              forceRedirectUrl="/planner"
-            >
-              <Button variant="secondary" className="px-5">
-                Log In
-              </Button>
-            </SignInButton>
-          </div>
-        </SignedOut>
+                <SignInButton
+                  mode="modal"
+                  forceRedirectUrl="/planner"
+                >
+                  <Button variant="secondary" className="px-5">
+                    Log In
+                  </Button>
+                </SignInButton>
+              </div>
+            </SignedOut>
 
-        <SignedIn>
-          <AccountButton />
-        </SignedIn>
+            <SignedIn>
+              <AccountButton />
+            </SignedIn>
+          </>
+        )}
       </div>
     </nav>
   );

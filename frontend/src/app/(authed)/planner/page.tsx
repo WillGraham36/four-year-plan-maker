@@ -1,14 +1,26 @@
 import { RequirementsProvider } from "@/components/context/requirements-context";
 import PageError from "@/components/layout/page-error";
+import SessionRecovery from "@/components/layout/session-recovery";
 import TabbedPlanner from "@/components/planner/tabbed-planner";
+import { getCurrentSession } from "@/lib/api/auth/session.server";
 import { getAllAcademicInfo } from "@/lib/api/planner/planner.server";
 import { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "TerpPlanner | Planner",
 };
 
 const PlannerPage = async () => {
+  const currentSession = await getCurrentSession();
+  if (!currentSession.authenticated) {
+    return <SessionRecovery title="Start or restore your planner" />;
+  }
+
+  if (!currentSession.onboarded) {
+    redirect("/account/setup");
+  }
+
   const { data: academicInfo } = await getAllAcademicInfo();
   if (!academicInfo) {
     return <PageError error={"Failed to load page"} />;

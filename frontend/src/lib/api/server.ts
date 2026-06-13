@@ -1,6 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
+import { cookies } from "next/headers";
 import { CustomServerResponse } from "../utils/types";
 import { getApiBaseUrl } from "./getApiBaseUrl";
+
+const GUEST_COOKIE_NAME = process.env.NEXT_PUBLIC_GUEST_COOKIE_NAME || "terpplanner_guest";
 
 export const fetchWithAuth = async (
   route: string,
@@ -13,16 +16,26 @@ export const fetchWithAuth = async (
   try {
     const { getToken } = await auth();
     const token = await getToken();
+    const cookieStore = await cookies();
+    const guestCookie = cookieStore.get(GUEST_COOKIE_NAME);
 
-    const url = `${getApiBaseUrl()}/${route}?${params.toString()}`;
+    const query = params.toString();
+    const url = `${getApiBaseUrl()}/${route}${query ? `?${query}` : ""}`;
+    const headers = new Headers(init.headers);
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+
+    if (guestCookie?.value) {
+      headers.set("Cookie", `${GUEST_COOKIE_NAME}=${guestCookie.value}`);
+    }
 
     const res = await fetch(url, {
       credentials: "include",
+      cache: "no-store",
       ...init,
-      headers: {
-        ...init?.headers,
-        Authorization: `Bearer ${token}`,
-      },
+      headers,
     });
 
     const data = await res.json();

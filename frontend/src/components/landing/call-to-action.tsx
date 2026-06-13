@@ -1,5 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button'
+import { ContinueAsGuestButton } from '@/components/auth/continue-as-guest-button';
 import { SignedIn, SignedOut, SignUpButton } from '@clerk/nextjs';
 import Link from 'next/link'
 
@@ -13,17 +14,20 @@ export default function CallToAction() {
 
                     <div className="mt-12 flex flex-wrap justify-center gap-4">
                         <SignedOut>
-                          <SignUpButton
-                            mode="modal"
-                            forceRedirectUrl="/account/setup"
-                          >
-                            <Button
-                              asChild
-                              size="lg"
-                              className='cursor-pointer w-full max-w-48'>
-                                <span>Get Started</span>
-                              </Button>
-                          </SignUpButton>
+                          <>
+                            <SignUpButton
+                              mode="modal"
+                              forceRedirectUrl="/account/setup"
+                            >
+                              <Button
+                                asChild
+                                size="lg"
+                                className='cursor-pointer w-full max-w-48'>
+                                  <span>Get Started</span>
+                                </Button>
+                            </SignUpButton>
+                            <ContinueAsGuestButton className="w-full max-w-48" />
+                          </>
                         </SignedOut>
                         <SignedIn>
                           <Button

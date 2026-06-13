@@ -28,9 +28,8 @@ const AccountButton = () => {
   };
 
   const handleSignOut = () => {
-    router.push('/'); // Redirect to home page after sign out
     toast.success('You have successfully signed out');
-    signOut();
+    void signOut({ redirectUrl: '/' });
   };
 
  return (
