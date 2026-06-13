@@ -18,7 +18,7 @@ type ContinueAsGuestButtonProps = {
 
 export function ContinueAsGuestButton({
   className,
-  label = "Continue as Guest",
+  label = "Try without signing in",
   redirectTo = "/account/setup",
   variant = "secondary",
   size = "lg",
@@ -29,11 +29,14 @@ export function ContinueAsGuestButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/guest`, {
-        method: "POST",
-        credentials: "include",
-        cache: "no-cache",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/guest`,
+        {
+          method: "POST",
+          credentials: "include",
+          cache: "no-cache",
+        },
+      );
       const body = await response.json();
 
       if (!response.ok || !body.data) {
