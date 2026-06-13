@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { TextEffect } from "../../../components/motion-primitives/text-effect";
 import { AnimatedGroup } from "../../../components/motion-primitives/animated-group";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { ContinueAsGuestButton } from "@/components/auth/continue-as-guest-button";
 
 const transitionVariants = {

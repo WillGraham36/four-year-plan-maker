@@ -27,7 +27,7 @@ export const fetchWithAuth = async (
       headers.set("Authorization", `Bearer ${token}`);
     }
 
-    if (guestCookie?.value) {
+    if (!token && guestCookie?.value) {
       headers.set("Cookie", `${GUEST_COOKIE_NAME}=${guestCookie.value}`);
     }
 

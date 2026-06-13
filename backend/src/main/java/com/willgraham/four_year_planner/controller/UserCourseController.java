@@ -131,18 +131,6 @@ public class UserCourseController {
         return ResponseEntity.ok(ApiResponse.success("Successfully deleted " + deletedCount + "courses from user"));
     }
 
-    private UserCourse convertDtoToUserCourse(UserCourseRequestDto requestDto, String userId) {
-        Course course = courseService.findOrCreateCourse(requestDto.getCourse());
-
-        // Create new UserCourse
-        UserCourse userCourse = new UserCourse();
-        userCourse.setUserId(userId);  // Set only the userId
-        userCourse.setCourseId(course.getCourseId());  // Set only the courseId
-        userCourse.setSemester(requestDto.getSemester());
-
-        return userCourse;
-    }
-
     private UserCourseResponseDto processUserCourse(UserCourseRequestDto requestDto, String userId) {
         Course course = courseService.findOrCreateCourse(requestDto.getCourse());
 

@@ -93,6 +93,14 @@ export type CurrentUserSession = {
   guestExpiresAt?: string | null
 }
 
+export const ANONYMOUS_CURRENT_USER_SESSION: CurrentUserSession = {
+  authenticated: false,
+  guest: false,
+  userId: null,
+  onboarded: false,
+  guestExpiresAt: null,
+}
+
 export type Term = "FALL" | "SPRING" | "SUMMER" | "WINTER" | "TRANSFER";
 
 

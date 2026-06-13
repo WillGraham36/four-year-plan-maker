@@ -29,7 +29,7 @@ public class OnboardingController {
     @PostMapping
     public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        logger.info("Starting processing user onboarding course with userId: {}", userId);
+        logger.info("Started onboarding submit");
 
         // First, remove all transfer credits the user has
         List<TransferCreditDto> existingTransferCourses = userCourseService.getTransferCreditsForUser(userId);
@@ -59,13 +59,15 @@ public class OnboardingController {
     @GetMapping
     public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
-        logger.info("Started getting user onboarding form with userId: {}", userId);
+        logger.info("Started getting onboarding form values");
 
         // Fetch user and course values for dto
         Optional<OnboardingFormRequestDto> dtoOpt = userService.getOnboardingFormUserValues(userId);
         List<TransferCreditDto> transferCourses = userCourseService.getTransferCreditsForUser(userId);
 
-        logger.info("Finished getting user onboarding form, result: {}, transferCourses: {}", dtoOpt, transferCourses);
+        logger.info("Finished getting onboarding form values (hasValues={}, transferCredits={})",
+                dtoOpt.isPresent(),
+                transferCourses.size());
         return dtoOpt
                 .map(dto -> {
                     dto.setTransferCredits(transferCourses); // Add transfer courses to DTO

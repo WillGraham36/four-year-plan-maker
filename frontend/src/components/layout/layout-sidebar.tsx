@@ -39,7 +39,7 @@ function LayoutSidebar() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
-  const metadata = user?.publicMetadata || user?.unsafeMetadata;
+  const metadata = user?.publicMetadata;
   const isAdmin =
     metadata?.role?.toString().toUpperCase() === "ADMIN" ||
     metadata?.status?.toString().toUpperCase() === "ADMIN" ||
@@ -69,7 +69,7 @@ function LayoutSidebar() {
       const totalCredits = Object.values(semesters)
         .flat()
         .reduce((sum, course) => sum + course.credits, 0);
-      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
+      await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
     } catch (error) {
       toast.error("Failed to generate PDF");
     } finally {

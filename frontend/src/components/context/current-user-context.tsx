@@ -1,6 +1,6 @@
 "use client";
 
-import { CurrentUserSession } from "@/lib/utils/types";
+import { ANONYMOUS_CURRENT_USER_SESSION, CurrentUserSession } from "@/lib/utils/types";
 import { useAuth } from "@clerk/nextjs";
 import {
   createContext,
@@ -21,14 +21,6 @@ type CurrentUserContextValue = {
   setSession: Dispatch<SetStateAction<CurrentUserSession>>;
 };
 
-const anonymousSession: CurrentUserSession = {
-  authenticated: false,
-  guest: false,
-  userId: null,
-  onboarded: false,
-  guestExpiresAt: null,
-};
-
 const CurrentUserContext = createContext<CurrentUserContextValue | undefined>(undefined);
 
 export function CurrentUserProvider({
@@ -38,13 +30,13 @@ export function CurrentUserProvider({
   initialSession?: CurrentUserSession | null;
   children: ReactNode;
 }) {
-  const [session, setSession] = useState<CurrentUserSession>(initialSession || anonymousSession);
+  const [session, setSession] = useState<CurrentUserSession>(initialSession || ANONYMOUS_CURRENT_USER_SESSION);
   const { getToken, isLoaded, isSignedIn } = useAuth();
   const migrationAttempted = useRef(false);
   const migrationInFlight = useRef(false);
 
   useEffect(() => {
-    setSession(initialSession || anonymousSession);
+    setSession(initialSession || ANONYMOUS_CURRENT_USER_SESSION);
   }, [initialSession]);
 
   useEffect(() => {

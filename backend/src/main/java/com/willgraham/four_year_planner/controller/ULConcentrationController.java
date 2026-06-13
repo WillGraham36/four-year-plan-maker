@@ -1,6 +1,7 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
+import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
@@ -34,6 +35,10 @@ public class ULConcentrationController {
     @PatchMapping
     public ResponseEntity<ApiResponse<String>> updateUserULConcentration(@RequestBody UpdateConcentrationRequestDTO request, Authentication authentication) {
         String userId = AuthUtils.getCurrentUserId(authentication);
+
+        if (request.getConcentration() == null) {
+            throw new InvalidInputException("Upper level concentration is required");
+        }
 
         String concentration = request.getConcentration().toString();
         userService.updateULConcentrationById(userId, concentration);

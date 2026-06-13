@@ -36,7 +36,7 @@ public class AcademicInfoController {
     public ResponseEntity<ApiResponse<AcademicOverviewResponseDto>> getAcademicOverview(Authentication authentication) {
         long requestStart = System.nanoTime();
         String userId = AuthUtils.getCurrentUserId(authentication);
-        log.info("GET /api/v1/academic/overview started (userId={})", userId);
+        log.info("GET /api/v1/academic/overview started");
 
         try {
             long genEdStart = System.nanoTime();
@@ -65,9 +65,7 @@ public class AcademicInfoController {
 
             return ResponseEntity.ok(ApiResponse.success(dto));
         } finally {
-            log.info("GET /api/v1/academic/overview completed in {} ms (userId={})",
-                    elapsedMs(requestStart),
-                    userId);
+            log.info("GET /api/v1/academic/overview completed in {} ms", elapsedMs(requestStart));
         }
     }
 

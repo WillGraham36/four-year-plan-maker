@@ -1,15 +1,13 @@
 package com.willgraham.four_year_planner.controller;
 
-import com.willgraham.four_year_planner.config.GuestSessionProperties;
 import com.willgraham.four_year_planner.dto.ApiResponse;
 import com.willgraham.four_year_planner.dto.CurrentUserResponseDto;
+import com.willgraham.four_year_planner.service.GuestCookieService;
 import com.willgraham.four_year_planner.service.GuestSessionService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
@@ -18,15 +16,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Optional;
-
 @AllArgsConstructor
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-    private final GuestSessionProperties guestSessionProperties;
+    private final GuestCookieService guestCookieService;
     private final GuestSessionService guestSessionService;
 
     @PostMapping("/guest")
@@ -43,7 +37,7 @@ public class AuthController {
         }
 
         GuestSessionService.GuestSessionCreation guestSession =
-                guestSessionService.createOrResumeGuestSession(readGuestCookie(request).orElse(null));
+                guestSessionService.createOrResumeGuestSession(guestCookieService.readGuestCookie(request).orElse(null));
         CurrentUserResponseDto response = new CurrentUserResponseDto(
                 true,
                 true,
@@ -53,7 +47,7 @@ public class AuthController {
         );
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, createGuestCookie(guestSession.rawToken()).toString())
+                .header(HttpHeaders.SET_COOKIE, guestCookieService.createGuestCookie(guestSession.rawToken()).toString())
                 .body(ApiResponse.success(response, guestSession.created() ? "Guest session created" : "Guest session restored"));
     }
 
@@ -86,7 +80,7 @@ public class AuthController {
 
         String userId = AuthUtils.getCurrentUserId(authentication);
         GuestSessionService.MigrationResult migrationResult =
-                guestSessionService.migrateGuestToAuthenticatedUser(readGuestCookie(request).orElse(null), userId);
+                guestSessionService.migrateGuestToAuthenticatedUser(guestCookieService.readGuestCookie(request).orElse(null), userId);
 
         CurrentUserResponseDto response = new CurrentUserResponseDto(
                 true,
@@ -97,52 +91,7 @@ public class AuthController {
         );
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteGuestCookie().toString())
+                .header(HttpHeaders.SET_COOKIE, guestCookieService.deleteGuestCookie().toString())
                 .body(ApiResponse.success(response, migrationResult.message()));
-    }
-
-    private Optional<String> readGuestCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return Optional.empty();
-        }
-
-        return Arrays.stream(cookies)
-                .filter(cookie -> guestSessionProperties.getCookieName().equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .filter(value -> value != null && !value.isBlank())
-                .findFirst();
-    }
-
-    private ResponseCookie createGuestCookie(String rawToken) {
-        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie
-                .from(guestSessionProperties.getCookieName(), rawToken)
-                .httpOnly(true)
-                .secure(guestSessionProperties.isCookieSecure())
-                .sameSite(guestSessionProperties.getCookieSameSite())
-                .path("/")
-                .maxAge(Duration.ofDays(guestSessionProperties.getSessionDays()));
-
-        if (guestSessionProperties.getCookieDomain() != null && !guestSessionProperties.getCookieDomain().isBlank()) {
-            builder.domain(guestSessionProperties.getCookieDomain());
-        }
-
-        return builder.build();
-    }
-
-    private ResponseCookie deleteGuestCookie() {
-        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie
-                .from(guestSessionProperties.getCookieName(), "")
-                .httpOnly(true)
-                .secure(guestSessionProperties.isCookieSecure())
-                .sameSite(guestSessionProperties.getCookieSameSite())
-                .path("/")
-                .maxAge(Duration.ZERO);
-
-        if (guestSessionProperties.getCookieDomain() != null && !guestSessionProperties.getCookieDomain().isBlank()) {
-            builder.domain(guestSessionProperties.getCookieDomain());
-        }
-
-        return builder.build();
     }
 }
