@@ -29,6 +29,11 @@ const TranscriptUpload = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleSkip = () => {
+    setTranscriptValues(undefined);
+    incrementStep();
+  };
+
   const handleFileUpload = async (files: FileWithPreview[]) => {
     setLoading(true);
     setError(null);
@@ -99,8 +104,8 @@ const TranscriptUpload = ({
     <section className="mt-10">
       <div className="text-center mb-8 space-y-2">
         <p>
-          Upload the PDF version of your unofficial transcript to autofill
-          values or click next to skip this step
+          Upload your unofficial transcript to import AP classes or transfer
+          credits
         </p>
         <p>
           You can find your transcript{" "}
@@ -160,7 +165,7 @@ const TranscriptUpload = ({
                 <p className="mb-1.5 text-sm font-medium">
                   {files.length > 0
                     ? files[0].file.name
-                    : "Drag and drop your transcript PDF here or click to select"}
+                    : "Upload your unofficial transcript PDF here"}
                 </p>
                 <p className="text-muted-foreground text-xs">
                   Max size: {maxSizeMB}MB
@@ -188,9 +193,23 @@ const TranscriptUpload = ({
             <span>{error}</span>
           </div>
         )}
-        <Button onClick={incrementStep} disabled={loading} className="mt-2">
-          Next
-        </Button>
+        <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSkip}
+            disabled={loading}
+          >
+            Skip this step for now
+          </Button>
+          <Button
+            type="button"
+            onClick={incrementStep}
+            disabled={loading || files.length === 0}
+          >
+            Continue
+          </Button>
+        </div>
       </div>
     </section>
   );
