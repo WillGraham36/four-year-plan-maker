@@ -9,8 +9,7 @@ import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +27,8 @@ public class UserInfoController {
      * Called when planner setup, planner export, and other authenticated pages need the current user info
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<GetUserInfoResponseDto>> getUserInfo(@AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<GetUserInfoResponseDto>> getUserInfo(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         GetUserInfoResponseDto userInfo = userService.getUserInfo(userId);
 
@@ -40,8 +39,8 @@ public class UserInfoController {
      * Called when the planner UI adds a Summer or Winter off-term
      */
     @PostMapping("/offterms")
-    public ResponseEntity<ApiResponse<String>> createOffTerm(@RequestBody CreateOffTermRequestDto request, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> createOffTerm(@RequestBody CreateOffTermRequestDto request, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         userService.createOffTerm(userId, request);
 
@@ -52,8 +51,8 @@ public class UserInfoController {
      * Called when the planner UI removes a Summer or Winter off-term
      */
     @DeleteMapping("/offterms")
-    public ResponseEntity<ApiResponse<String>> deleteOffTerm(@RequestParam("term") Term term, @RequestParam("year") Integer year, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> deleteOffTerm(@RequestParam("term") Term term, @RequestParam("year") Integer year, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         userService.deleteOffTerm(userId, term, year);
 
@@ -64,8 +63,8 @@ public class UserInfoController {
      * Called by any frontend that wants only the completed-semester list without the full user payload
      */
     @GetMapping("/semesters/completion")
-    public ResponseEntity<ApiResponse<List<Semester>>> getCompletedSemesters(@AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<List<Semester>>> getCompletedSemesters(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         List<Semester> completedSemesters = userService.getCompletedSemesters(userId);
 
@@ -80,9 +79,9 @@ public class UserInfoController {
             @PathVariable Term term,
             @PathVariable Integer year,
             @RequestBody CompletionRequestDto request,
-            @AuthenticationPrincipal Jwt jwt
+            Authentication authentication
     ) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         userService.updateSemesterCompletion(userId, term, year, request.isCompleted());
         return ResponseEntity.ok(ApiResponse.success(String.format("Updated %s %d status successfully to %s", term, year, request.isCompleted())));
@@ -92,8 +91,8 @@ public class UserInfoController {
      * Called when the planner notes panel autosaves the user's notes
      */
     @PutMapping("/notes")
-    public ResponseEntity<ApiResponse<String>> upsertNote(@RequestBody UpdateNoteDto dto, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> upsertNote(@RequestBody UpdateNoteDto dto, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         if (dto.getNote() == null) {
             dto.setNote("");
@@ -107,8 +106,8 @@ public class UserInfoController {
      * Called when the audit page changes the selected CS track
      */
     @PutMapping("/track")
-    public ResponseEntity<ApiResponse<String>> updateUserTrack(@RequestBody UpdateTrackDto track, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> updateUserTrack(@RequestBody UpdateTrackDto track, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
 
         if(track.getTrack() == null) {
             throw new InvalidInputException("User must have one of the 5 tracks");

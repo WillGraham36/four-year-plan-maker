@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Sidebar, SidebarBody, SideBarClickableItem, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
-import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, PanelLeft, Settings, ShieldCheck, User } from "lucide-react";
+import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, LogIn, PanelLeft, Settings, ShieldCheck, User } from "lucide-react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { ThemeToggleIcon } from "../ui/toggle";
@@ -12,6 +12,7 @@ import fillPDFForm from "../planner/fill-pdf";
 import { toast } from "sonner";
 import { IconWithLightMode } from "./footer";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
+import { useCurrentUser } from "../context/current-user-context";
 
 export const navbarLinks = [
   {
@@ -33,11 +34,12 @@ export const navbarLinks = [
 function LayoutSidebar() {
   const [open, setOpen] = useState(false);
   const { setTheme, theme } = useTheme();
-  const { openUserProfile, user } = useClerk();
+  const { openSignIn, openUserProfile, user } = useClerk();
+  const { isGuest } = useCurrentUser();
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
-  const metadata = user?.publicMetadata || user?.unsafeMetadata;
+  const metadata = user?.publicMetadata;
   const isAdmin =
     metadata?.role?.toString().toUpperCase() === "ADMIN" ||
     metadata?.status?.toString().toUpperCase() === "ADMIN" ||
@@ -48,6 +50,9 @@ function LayoutSidebar() {
   };
   const handleManageAccountClick = () => {
     openUserProfile();
+  };
+  const handleSignInClick = () => {
+    openSignIn({ forceRedirectUrl: "/planner" });
   };
   const handleDownloadClick = async () => {
     setGeneratingPdf(true);
@@ -64,7 +69,7 @@ function LayoutSidebar() {
       const totalCredits = Object.values(semesters)
         .flat()
         .reduce((sum, course) => sum + course.credits, 0);
-      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
+      await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
     } catch (error) {
       toast.error("Failed to generate PDF");
     } finally {
@@ -111,12 +116,21 @@ function LayoutSidebar() {
               href: "/account/setup", 
               icon: <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" /> }} 
             />
-            <SideBarClickableItem
-              label="Manage Account" 
-              onClickAction={handleManageAccountClick}
-            >
-              <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-            </SideBarClickableItem>
+            {isGuest ? (
+              <SideBarClickableItem
+                label="Sign In"
+                onClickAction={handleSignInClick}
+              >
+                <LogIn className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              </SideBarClickableItem>
+            ) : (
+              <SideBarClickableItem
+                label="Manage Account"
+                onClickAction={handleManageAccountClick}
+              >
+                <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+              </SideBarClickableItem>
+            )}
             <SideBarClickableItem
               label="Toggle Theme" 
               onClickAction={handleThemeToggle}

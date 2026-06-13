@@ -7,8 +7,11 @@ import { Course } from '@/lib/utils/types';
 import React from 'react'
 import ResponsiveAuditLayout from '@/components/audit/audit-tabs';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import PageError from '@/components/layout/page-error';
+import GuestAuditLock from '@/components/audit/guest-audit-lock';
+import SessionRecovery from '@/components/layout/session-recovery';
+import { getCurrentSession } from '@/lib/api/auth/session.server';
 
 export const metadata: Metadata = {
   title: "TerpPlanner | Audit",
@@ -31,6 +34,19 @@ const formatSemester = (semesterName: string): string => {
 };
 
 const AuditPage = async () => {
+  const currentSession = await getCurrentSession();
+  if (!currentSession.authenticated) {
+    return <SessionRecovery title="Sign in or start a guest planner" />;
+  }
+
+  if (currentSession.guest) {
+    return <GuestAuditLock />;
+  }
+
+  if (!currentSession.onboarded) {
+    redirect("/account/setup");
+  }
+
   const { data: academicInfo } = await getAllAcademicInfo();
   if (!academicInfo) {
     return <PageError error={"Failed to load page"} />;

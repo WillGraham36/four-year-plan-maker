@@ -271,8 +271,7 @@ export default function CourseSyncPage() {
   } | null>(null);
 
   const isAdmin = useMemo(
-    () =>
-      hasAdminRole(user?.publicMetadata) || hasAdminRole(user?.unsafeMetadata),
+    () => hasAdminRole(user?.publicMetadata),
     [user],
   );
 

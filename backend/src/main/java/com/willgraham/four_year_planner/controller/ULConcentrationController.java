@@ -1,13 +1,13 @@
 package com.willgraham.four_year_planner.controller;
 
 import com.willgraham.four_year_planner.dto.*;
+import com.willgraham.four_year_planner.exception.InvalidInputException;
 import com.willgraham.four_year_planner.service.UserCourseService;
 import com.willgraham.four_year_planner.service.UserService;
 import com.willgraham.four_year_planner.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @AllArgsConstructor
@@ -23,8 +23,8 @@ public class ULConcentrationController {
      * Called when the planner, audit page, or export flow needs the current UL concentration summary
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<ULConcentrationDTO>> getUserULConcentrationAndCourses(@AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<ULConcentrationDTO>> getUserULConcentrationAndCourses(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
         ULConcentrationDTO coursesAndConcentration = userCourseService.getULConcentrationAndCourses(userId);
         return ResponseEntity.ok(ApiResponse.success(coursesAndConcentration));
     }
@@ -33,8 +33,12 @@ public class ULConcentrationController {
      * Called when the planner or audit UI updates the selected UL concentration area
      */
     @PatchMapping
-    public ResponseEntity<ApiResponse<String>> updateUserULConcentration(@RequestBody UpdateConcentrationRequestDTO request, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
+    public ResponseEntity<ApiResponse<String>> updateUserULConcentration(@RequestBody UpdateConcentrationRequestDTO request, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+
+        if (request.getConcentration() == null) {
+            throw new InvalidInputException("Upper level concentration is required");
+        }
 
         String concentration = request.getConcentration().toString();
         userService.updateULConcentrationById(userId, concentration);
@@ -49,9 +53,9 @@ public class ULConcentrationController {
     @PostMapping("/custom-courses")
     public ResponseEntity<ApiResponse<ULConcentrationDTO>> addCustomULCourse(
             @RequestBody CourseIdentifierDto request,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
         ULConcentrationDTO updatedULConcentration = userCourseService.addCustomULCourse(userId, request);
         return ResponseEntity.ok(ApiResponse.success(updatedULConcentration));
     }
@@ -62,9 +66,9 @@ public class ULConcentrationController {
     @DeleteMapping("/custom-courses")
     public ResponseEntity<ApiResponse<ULConcentrationDTO>> removeCustomULCourse(
             @RequestBody CourseIdentifierDto request,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = AuthUtils.getCurrentUserId(jwt);
+        String userId = AuthUtils.getCurrentUserId(authentication);
         ULConcentrationDTO updatedULConcentration = userCourseService.removeCustomULCourse(userId, request);
         return ResponseEntity.ok(ApiResponse.success(updatedULConcentration));
     }

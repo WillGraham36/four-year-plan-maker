@@ -13,24 +13,25 @@ export function useFetchWithAuth() {
   ): Promise<CustomServerResponse<T>> => {
     try {
       const token = await getToken();
-      if (!token) {
-        return { ok: false, message: "Not authenticated", data: null };
-      }
 
       const url = `${process.env.NEXT_PUBLIC_API_URL}/${route}?${params.toString()}`;
-      const fetchWithToken = (bearerToken: string) => fetch(url, {
-        ...init,
-        headers: {
-          ...init.headers,
-          Authorization: `Bearer ${bearerToken}`,
-        },
-        credentials: "include",
-        cache: "no-cache",
-      });
+      const fetchWithToken = (bearerToken: string | null) => {
+        const headers = new Headers(init.headers);
+        if (bearerToken) {
+          headers.set("Authorization", `Bearer ${bearerToken}`);
+        }
+
+        return fetch(url, {
+          ...init,
+          headers,
+          credentials: "include",
+          cache: "no-cache",
+        });
+      };
 
       let res = await fetchWithToken(token);
 
-      if (res.status === 401) {
+      if (res.status === 401 && token) {
         const freshToken = await getToken();
         if (freshToken && freshToken !== token) {
           res = await fetchWithToken(freshToken);

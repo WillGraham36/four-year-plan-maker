@@ -1,5 +1,7 @@
 package com.willgraham.four_year_planner.utils;
 
+import com.willgraham.four_year_planner.security.GuestAuthenticationToken;
+import com.willgraham.four_year_planner.security.GuestPrincipal;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.Authentication;
@@ -21,8 +23,24 @@ public class AuthUtils {
         return jwt.getSubject();
     }
 
+    public static String getCurrentUserId(Authentication authentication) {
+        if (authentication instanceof GuestAuthenticationToken guestAuthenticationToken) {
+            GuestPrincipal principal = guestAuthenticationToken.getPrincipal();
+            if (principal.userId() == null || principal.userId().isBlank()) {
+                throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+            }
+            return principal.userId();
+        }
+
+        return getCurrentUserId(getJwt(authentication));
+    }
+
     public static String getClerkUserId(Authentication authentication) {
         return getCurrentUserId(getJwt(authentication));
+    }
+
+    public static boolean isGuest(Authentication authentication) {
+        return authentication instanceof GuestAuthenticationToken;
     }
 
     public static Optional<String> getEmail(Jwt jwt) {

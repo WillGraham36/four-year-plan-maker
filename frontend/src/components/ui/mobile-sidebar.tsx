@@ -8,7 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Download, LoaderCircleIcon, Menu, Settings, ShieldCheck, User } from "lucide-react";
+import { Download, LoaderCircleIcon, LogIn, Menu, Settings, ShieldCheck, User } from "lucide-react";
 import { buttonVariants } from "./button";
 import { navbarLinks } from "../layout/layout-sidebar";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ import { IconWithLightMode } from "../layout/footer";
 import fillPDFForm from "../planner/fill-pdf";
 import { toast } from "sonner";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
+import { useOptionalCurrentUser } from "../context/current-user-context";
 
 export const MobileSidebar = ({
   className,
@@ -29,10 +30,12 @@ export const MobileSidebar = ({
   const [open, setOpen] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const { setTheme, theme } = useTheme();
-  const { openUserProfile, user } = useClerk();
+  const { openSignIn, openUserProfile, user } = useClerk();
+  const currentUser = useOptionalCurrentUser();
+  const isGuest = currentUser?.isGuest ?? false;
   const { getAllGenEdRequirements, getAllSemesters, getUserInfo } = useCourseApi();
   const fullName = user?.fullName;
-  const metadata = user?.publicMetadata || user?.unsafeMetadata;
+  const metadata = user?.publicMetadata;
   const isAdmin =
     metadata?.role?.toString().toUpperCase() === "ADMIN" ||
     metadata?.status?.toString().toUpperCase() === "ADMIN" ||
@@ -44,6 +47,10 @@ export const MobileSidebar = ({
   const handleManageAccountClick = () => {
     setOpen(false);
     openUserProfile();
+  };
+  const handleSignInClick = () => {
+    setOpen(false);
+    openSignIn({ forceRedirectUrl: "/planner" });
   };
   const handleDownloadClick = async () => {
     setGeneratingPdf(true);
@@ -60,7 +67,7 @@ export const MobileSidebar = ({
       const totalCredits = Object.values(semesters)
         .flat()
         .reduce((sum, course) => sum + course.credits, 0);
-      const res = await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
+      await fillPDFForm({ userInfo: userData, semesters, totalCredits, genEdRequirements, fullName });
     } catch (error) {
       toast.error("Failed to generate PDF");
     } finally {
@@ -145,17 +152,31 @@ export const MobileSidebar = ({
               <User className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
               <p>Account Setup</p>
             </Link>
-            <div 
-              className={cn(
-                buttonVariants({ variant: "ghost" }),
-                "flex items-center justify-start gap-2 group/sidebar cursor-pointer",
-                className
-              )}
-              onClick={handleManageAccountClick}
-            >
-              <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-              <p>Manage Account</p>
-            </div>
+            {isGuest ? (
+              <div
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "flex items-center justify-start gap-2 group/sidebar cursor-pointer",
+                  className
+                )}
+                onClick={handleSignInClick}
+              >
+                <LogIn className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                <p>Sign In</p>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  buttonVariants({ variant: "ghost" }),
+                  "flex items-center justify-start gap-2 group/sidebar cursor-pointer",
+                  className
+                )}
+                onClick={handleManageAccountClick}
+              >
+                <Settings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
+                <p>Manage Account</p>
+              </div>
+            )}
             <div 
               className={cn(
                 buttonVariants({ variant: "ghost" }),

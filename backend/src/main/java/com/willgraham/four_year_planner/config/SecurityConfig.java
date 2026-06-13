@@ -2,6 +2,7 @@ package com.willgraham.four_year_planner.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.willgraham.four_year_planner.security.ClerkJwtGrantedAuthoritiesConverter;
+import com.willgraham.four_year_planner.security.GuestAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,12 +23,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +49,7 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtDecoder jwtDecoder,
             Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter,
+            GuestAuthenticationFilter guestAuthenticationFilter,
             ObjectMapper objectMapper
     ) throws Exception {
         return http
@@ -60,6 +64,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/guest").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/session").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -72,6 +78,7 @@ public class SecurityConfig {
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter)
                         )
                 )
+                .addFilterAfter(guestAuthenticationFilter, BearerTokenAuthenticationFilter.class)
                 .build();
     }
 
@@ -95,7 +102,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigins));
+        config.setAllowedOrigins(parseAllowedOrigins(allowedOrigins));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -137,5 +144,13 @@ public class SecurityConfig {
         }
 
         throw new IllegalArgumentException("clerk.jwks-url must point to Clerk's .well-known JWKS endpoint");
+    }
+
+    private static List<String> parseAllowedOrigins(String origins) {
+        return Arrays.stream(origins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isBlank())
+                .map(origin -> origin.endsWith("/") ? origin.substring(0, origin.length() - 1) : origin)
+                .toList();
     }
 }

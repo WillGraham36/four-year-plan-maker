@@ -14,7 +14,6 @@ import com.willgraham.four_year_planner.repository.UserCourseRepository;
 import com.willgraham.four_year_planner.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
-@Slf4j
 public class UserService {
 
     private static final int MAX_NOTE_LENGTH = 50000;
@@ -33,11 +31,8 @@ public class UserService {
     private final UserCourseRepository userCourseRepository;
 
     public User findById(String id) {
-        long dbStart = System.nanoTime();
-        User user = userRepository.findById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("User not found with ID: " + id));
-        log.info("UserRepository.findById completed in {} ms (userId={})", elapsedMs(dbStart), id);
-        return user;
     }
 
     public void updateULConcentrationById(String userId, String concentration) {
@@ -89,14 +84,22 @@ public class UserService {
             return Optional.empty();
         }
 
+        User existingUser = user.get();
+        if (existingUser.getStartSemester() == null
+                || existingUser.getEndSemester() == null
+                || existingUser.getMajor() == null
+                || existingUser.getMajor().isBlank()) {
+            return Optional.empty();
+        }
+
         OnboardingFormRequestDto dto = new OnboardingFormRequestDto(
-                user.get().getStartSemester().getTerm(),
-                user.get().getStartSemester().getYear(),
-                user.get().getEndSemester().getTerm(),
-                user.get().getEndSemester().getYear(),
-                user.get().getMajor(),
-                user.get().getMinor(),
-                user.get().getTrack()
+                existingUser.getStartSemester().getTerm(),
+                existingUser.getStartSemester().getYear(),
+                existingUser.getEndSemester().getTerm(),
+                existingUser.getEndSemester().getYear(),
+                existingUser.getMajor(),
+                existingUser.getMinor(),
+                existingUser.getTrack()
         );
         return Optional.of(dto);
     }
@@ -116,7 +119,8 @@ public class UserService {
                 user.getCompletedSemesters(),
                 user.getNote(),
                 user.getTrack(),
-                user.getMajor()
+                user.getMajor(),
+                user.isGuest()
         );
     }
 
@@ -222,9 +226,4 @@ public class UserService {
         user.setTrack(track);
         userRepository.save(user);
     }
-
-    private long elapsedMs(long startNanos) {
-        return (System.nanoTime() - startNanos) / 1_000_000;
-    }
-
 }

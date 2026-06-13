@@ -9,8 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,9 +27,9 @@ public class OnboardingController {
      * Called when the account setup form submits onboarding choices and transfer credits
      */
     @PostMapping
-    public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, @AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
-        logger.info("Starting processing user onboarding course with userId: {}", userId);
+    public ResponseEntity<ApiResponse<String>> saveOnboardingForm(@RequestBody OnboardingFormRequestDto onboardingFormRequestDto, Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+        logger.info("Started onboarding submit");
 
         // First, remove all transfer credits the user has
         List<TransferCreditDto> existingTransferCourses = userCourseService.getTransferCreditsForUser(userId);
@@ -58,15 +57,17 @@ public class OnboardingController {
      * Called when the account setup page loads existing onboarding values for editing
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(@AuthenticationPrincipal Jwt jwt) {
-        String userId = AuthUtils.getCurrentUserId(jwt);
-        logger.info("Started getting user onboarding form with userId: {}", userId);
+    public ResponseEntity<ApiResponse<OnboardingFormRequestDto>> getOnboardingFormValues(Authentication authentication) {
+        String userId = AuthUtils.getCurrentUserId(authentication);
+        logger.info("Started getting onboarding form values");
 
         // Fetch user and course values for dto
         Optional<OnboardingFormRequestDto> dtoOpt = userService.getOnboardingFormUserValues(userId);
         List<TransferCreditDto> transferCourses = userCourseService.getTransferCreditsForUser(userId);
 
-        logger.info("Finished getting user onboarding form, result: {}, transferCourses: {}", dtoOpt, transferCourses);
+        logger.info("Finished getting onboarding form values (hasValues={}, transferCredits={})",
+                dtoOpt.isPresent(),
+                transferCourses.size());
         return dtoOpt
                 .map(dto -> {
                     dto.setTransferCredits(transferCourses); // Add transfer courses to DTO
