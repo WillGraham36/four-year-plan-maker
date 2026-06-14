@@ -42,7 +42,7 @@ export function ContinueAsGuestButton({
       }
 
       const session = body.data as CurrentUserSession;
-      router.push(session.onboarded ? "/planner" : redirectTo);
+      router.push(session.pending ? redirectTo : "/planner");
       router.refresh();
     } catch (error) {
       console.error("Guest session creation failed", error);
