@@ -1,8 +1,7 @@
 import { getApiBaseUrl } from "@/lib/api/getApiBaseUrl";
+import { GUEST_COOKIE_NAME } from "@/lib/api/auth/guest-session";
 import { NextRequest, NextResponse } from "next/server";
 
-const GUEST_COOKIE_NAME =
-  process.env.NEXT_PUBLIC_GUEST_COOKIE_NAME || "terpplanner_guest";
 const BODYLESS_METHODS = new Set(["GET", "HEAD"]);
 
 type CookieOptions = {

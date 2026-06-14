@@ -91,6 +91,7 @@ export type CurrentUserSession = {
   userId: string | null
   onboarded: boolean
   guestExpiresAt?: string | null
+  pending?: boolean
 }
 
 export const ANONYMOUS_CURRENT_USER_SESSION: CurrentUserSession = {

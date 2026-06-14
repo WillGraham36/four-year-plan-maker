@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const PlannerPage = async () => {
-  const currentSession = await getCurrentSession();
+  const currentSession = await getCurrentSession({ allowPendingGuest: false });
   if (!currentSession.authenticated) {
     return <SessionRecovery title="Start or restore your planner" />;
   }

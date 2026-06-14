@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -162,6 +163,71 @@ class GuestSessionServiceTest {
         assertNotNull(session.getInvalidatedAt());
         verify(guestSessionRepository).save(session);
         verify(userRepository, never()).findById(any());
+    }
+
+    @Test
+    void resolveSessionMaterializesPendingNextGuestToken() {
+        String rawToken = "tp_pending_guest_" + "A".repeat(43);
+        String tokenHash = guestSessionService.hashToken(rawToken);
+        when(guestSessionRepository.findByTokenHash(tokenHash))
+                .thenReturn(Optional.empty());
+
+        Optional<GuestSessionService.ResolvedGuestSession> result =
+                guestSessionService.resolveSession(rawToken);
+
+        assertTrue(result.isPresent());
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        ArgumentCaptor<GuestSession> sessionCaptor = ArgumentCaptor.forClass(GuestSession.class);
+        verify(userRepository).save(userCaptor.capture());
+        verify(guestSessionRepository).save(sessionCaptor.capture());
+
+        User savedUser = userCaptor.getValue();
+        GuestSession savedSession = sessionCaptor.getValue();
+
+        assertTrue(savedUser.isGuest());
+        assertTrue(savedUser.getId().startsWith("guest_"));
+        assertEquals(savedUser.getId(), savedSession.getUserId());
+        assertEquals(tokenHash, savedSession.getTokenHash());
+        assertEquals(savedSession.getUserId(), result.get().userId());
+        var repositoryCalls = inOrder(guestSessionRepository);
+        repositoryCalls.verify(guestSessionRepository).lockPendingTokenHash(tokenHash);
+        repositoryCalls.verify(guestSessionRepository).findByTokenHash(tokenHash);
+    }
+
+    @Test
+    void resolveSessionReusesPendingTokenMaterializedWhileWaitingForLock() {
+        String rawToken = "tp_pending_guest_" + "B".repeat(43);
+        String tokenHash = guestSessionService.hashToken(rawToken);
+        GuestSession session = activeSession("guest_123");
+        User guestUser = guestUser("guest_123");
+
+        when(guestSessionRepository.findByTokenHash(tokenHash))
+                .thenReturn(Optional.of(session));
+        when(userRepository.findById("guest_123")).thenReturn(Optional.of(guestUser));
+
+        Optional<GuestSessionService.ResolvedGuestSession> result =
+                guestSessionService.resolveSession(rawToken);
+
+        assertTrue(result.isPresent());
+        assertEquals("guest_123", result.get().userId());
+        verify(guestSessionRepository).lockPendingTokenHash(tokenHash);
+        verify(guestUsageStatsRepository, never()).save(any());
+    }
+
+    @Test
+    void resolveSessionIgnoresUnknownNonPendingToken() {
+        String rawToken = "unknown-token";
+        when(guestSessionRepository.findByTokenHash(guestSessionService.hashToken(rawToken)))
+                .thenReturn(Optional.empty());
+
+        Optional<GuestSessionService.ResolvedGuestSession> result =
+                guestSessionService.resolveSession(rawToken);
+
+        assertTrue(result.isEmpty());
+        verify(userRepository, never()).save(any());
+        verify(guestSessionRepository, never()).save(any());
+        verify(guestSessionRepository, never()).lockPendingTokenHash(any());
     }
 
     private GuestSession activeSession(String userId) {

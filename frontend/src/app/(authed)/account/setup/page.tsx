@@ -19,7 +19,9 @@ const OnboardingPage = async () => {
     );
   }
 
-  const initialValues = await getOnboardingFormValues();
+  const initialValues = currentSession.pending
+    ? null
+    : await getOnboardingFormValues();
 
   return (
     <MultiStageOnboardingForm formInputs={initialValues} />

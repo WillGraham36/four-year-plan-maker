@@ -1,9 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { CustomServerResponse } from "../utils/types";
+import { GUEST_COOKIE_NAME } from "./auth/guest-session";
 import { getApiBaseUrl } from "./getApiBaseUrl";
-
-const GUEST_COOKIE_NAME = process.env.NEXT_PUBLIC_GUEST_COOKIE_NAME || "terpplanner_guest";
 
 export const fetchWithAuth = async (
   route: string,

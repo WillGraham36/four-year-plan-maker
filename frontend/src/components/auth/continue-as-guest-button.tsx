@@ -29,7 +29,7 @@ export function ContinueAsGuestButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/backend/v1/auth/guest", {
+      const response = await fetch("/api/auth/guest", {
         method: "POST",
         credentials: "include",
         cache: "no-cache",

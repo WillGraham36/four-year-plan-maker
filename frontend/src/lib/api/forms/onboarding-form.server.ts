@@ -1,6 +1,7 @@
 'use server';
 import { CsSpecializations, OnboardingFormValues } from "@/components/onboarding/onboarding-form"
 import { Course, CustomServerResponse, Term } from "@/lib/utils/types";
+import { clearPendingGuestMarker } from "../auth/guest-session";
 import { fetchWithAuth } from "../server";
 import { OnboardingFormInitialValuesSchema } from "@/lib/utils/schemas";
 
@@ -39,6 +40,9 @@ export const submitOnboardingForm = async (formData: SubmitOnboardingFormProps):
       data: null,
     };
   }
+
+  await clearPendingGuestMarker();
+
   return {
     ok: true,
     message: "Successfully submitted onboarding form",

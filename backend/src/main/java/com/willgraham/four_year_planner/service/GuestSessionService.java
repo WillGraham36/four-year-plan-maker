@@ -29,6 +29,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Service
 @AllArgsConstructor
@@ -36,6 +37,11 @@ import java.util.UUID;
 public class GuestSessionService {
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final String GUEST_USER_ID_PREFIX = "guest_";
+    private static final String PENDING_GUEST_TOKEN_PREFIX = "tp_pending_guest_";
+    private static final int PENDING_GUEST_TOKEN_RANDOM_LENGTH = 43;
+    private static final Pattern PENDING_GUEST_TOKEN_PATTERN = Pattern.compile(
+            "^" + PENDING_GUEST_TOKEN_PREFIX + "[A-Za-z0-9_-]{" + PENDING_GUEST_TOKEN_RANDOM_LENGTH + ",}$"
+    );
 
     private final GuestSessionProperties guestSessionProperties;
     private final GuestSessionRepository guestSessionRepository;
@@ -52,25 +58,8 @@ public class GuestSessionService {
         }
 
         Instant now = Instant.now();
-        String guestUserId = GUEST_USER_ID_PREFIX + UUID.randomUUID();
-        User guestUser = new User();
-        guestUser.setId(guestUserId);
-        guestUser.setGuest(true);
-        guestUser.setGuestCreatedAt(now);
-        guestUser.setGuestLastSeenAt(now);
-        guestUser.setGuestExpiresAt(expiresAt(now));
-        userRepository.save(guestUser);
-
         String newRawToken = generateRawToken();
-        GuestSession session = new GuestSession();
-        session.setTokenHash(hashToken(newRawToken));
-        session.setUserId(guestUserId);
-        session.setCreatedAt(now);
-        session.setLastSeenAt(now);
-        session.setExpiresAt(guestUser.getGuestExpiresAt());
-        GuestSession savedSession = guestSessionRepository.save(session);
-
-        incrementStats(stats -> stats.setCreatedGuestUsers(stats.getCreatedGuestUsers() + 1));
+        GuestSession savedSession = createGuestSession(newRawToken, now);
         return new GuestSessionCreation(newRawToken, savedSession, true);
     }
 
@@ -81,8 +70,23 @@ public class GuestSessionService {
         }
 
         Instant now = Instant.now();
-        Optional<GuestSession> sessionOpt = guestSessionRepository.findByTokenHash(hashToken(rawToken));
+        String tokenHash = hashToken(rawToken);
+        if (isPendingGuestToken(rawToken)) {
+            // Serializes first-use materialization for the same pending token across app instances.
+            guestSessionRepository.lockPendingTokenHash(tokenHash);
+        }
+
+        Optional<GuestSession> sessionOpt = guestSessionRepository.findByTokenHash(tokenHash);
         if (sessionOpt.isEmpty()) {
+            if (isPendingGuestToken(rawToken)) {
+                GuestSession createdSession = createGuestSession(rawToken, now);
+                return Optional.of(new ResolvedGuestSession(
+                        createdSession.getUserId(),
+                        createdSession.getId(),
+                        createdSession
+                ));
+            }
+
             return Optional.empty();
         }
 
@@ -299,6 +303,32 @@ public class GuestSessionService {
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException("SHA-256 is required for guest token hashing", ex);
         }
+    }
+
+    private GuestSession createGuestSession(String rawToken, Instant now) {
+        String guestUserId = GUEST_USER_ID_PREFIX + UUID.randomUUID();
+        User guestUser = new User();
+        guestUser.setId(guestUserId);
+        guestUser.setGuest(true);
+        guestUser.setGuestCreatedAt(now);
+        guestUser.setGuestLastSeenAt(now);
+        guestUser.setGuestExpiresAt(expiresAt(now));
+        userRepository.save(guestUser);
+
+        GuestSession session = new GuestSession();
+        session.setTokenHash(hashToken(rawToken));
+        session.setUserId(guestUserId);
+        session.setCreatedAt(now);
+        session.setLastSeenAt(now);
+        session.setExpiresAt(guestUser.getGuestExpiresAt());
+        GuestSession savedSession = guestSessionRepository.save(session);
+
+        incrementStats(stats -> stats.setCreatedGuestUsers(stats.getCreatedGuestUsers() + 1));
+        return savedSession;
+    }
+
+    private boolean isPendingGuestToken(String rawToken) {
+        return PENDING_GUEST_TOKEN_PATTERN.matcher(rawToken).matches();
     }
 
     private Instant expiresAt(Instant now) {
