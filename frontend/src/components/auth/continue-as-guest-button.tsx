@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { startDelayedLoadingToast } from "@/lib/delayed-loading-toast";
 import { CurrentUserSession } from "@/lib/utils/types";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -28,6 +29,7 @@ export function ContinueAsGuestButton({
 
   const handleClick = async () => {
     setLoading(true);
+    const dismissLoadingToast = startDelayedLoadingToast();
     try {
       const response = await fetch("/api/auth/guest", {
         method: "POST",
@@ -48,6 +50,7 @@ export function ContinueAsGuestButton({
       console.error("Guest session creation failed", error);
       toast.error("Could not start a guest session");
     } finally {
+      dismissLoadingToast();
       setLoading(false);
     }
   };

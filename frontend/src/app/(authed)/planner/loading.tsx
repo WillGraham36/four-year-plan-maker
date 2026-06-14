@@ -1,3 +1,4 @@
+import { DelayedLoadingToast } from '@/components/layout/delayed-loading-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronUp } from 'lucide-react';
 import React from 'react'
@@ -19,6 +20,7 @@ const YearSkeleton = ({year}: {year: number}) => (
 const PlannerLoadingPage = () => {
   return (
     <div className='flex flex-col xl:flex-row items-center xl:items-start justify-between gap-4 mx-4'>
+      <DelayedLoadingToast />
       <div className='flex flex-col w-full mt-2 xl:w-[60%] gap-[29px]'>
         <YearSkeleton year={1} />
         <YearSkeleton year={2} />

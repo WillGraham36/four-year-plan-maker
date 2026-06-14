@@ -27,6 +27,7 @@ import {
   Term,
   termOrder,
 } from "@/lib/utils/types";
+import { startDelayedLoadingToast } from "@/lib/delayed-loading-toast";
 import { Input } from "../ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { MajorMinorCombobox } from "./major-minor-combobox";
@@ -227,6 +228,7 @@ export default function OnboardingForm({
   const watchedMajor = form.watch("major");
 
   async function onSubmit(values: z.infer<typeof baseOnboardingFormSchema>) {
+    const dismissLoadingToast = startDelayedLoadingToast();
     try {
       const errors: Record<number, string> = {};
       let coursesInfo: CustomServerResponse<Course[]> = {
@@ -471,6 +473,8 @@ export default function OnboardingForm({
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
+    } finally {
+      dismissLoadingToast();
     }
   }
 
