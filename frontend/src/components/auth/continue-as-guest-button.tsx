@@ -29,14 +29,11 @@ export function ContinueAsGuestButton({
   const handleClick = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/guest`,
-        {
-          method: "POST",
-          credentials: "include",
-          cache: "no-cache",
-        },
-      );
+      const response = await fetch("/api/backend/v1/auth/guest", {
+        method: "POST",
+        credentials: "include",
+        cache: "no-cache",
+      });
       const body = await response.json();
 
       if (!response.ok || !body.data) {

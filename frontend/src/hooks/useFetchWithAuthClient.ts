@@ -13,15 +13,13 @@ export function useFetchWithAuth() {
   ): Promise<CustomServerResponse<T>> => {
     try {
       const token = await getToken();
-
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/${route}?${params.toString()}`;
       const fetchWithToken = (bearerToken: string | null) => {
         const headers = new Headers(init.headers);
         if (bearerToken) {
           headers.set("Authorization", `Bearer ${bearerToken}`);
         }
 
-        return fetch(url, {
+        return fetch(buildApiUrl(route, params, Boolean(bearerToken)), {
           ...init,
           headers,
           credentials: "include",
@@ -51,4 +49,15 @@ export function useFetchWithAuth() {
   };
 
   return { fetchWithAuth };
+}
+
+function buildApiUrl(route: string, params: URLSearchParams, useBackendUrl: boolean) {
+  const normalizedRoute = route.replace(/^\/+/, "");
+  const query = params.toString();
+  const baseUrl = useBackendUrl
+    ? process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+    : "/api/backend";
+  const url = `${baseUrl.replace(/\/+$/, "")}/${normalizedRoute}`;
+
+  return query ? `${url}?${query}` : url;
 }

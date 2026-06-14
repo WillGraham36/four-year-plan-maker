@@ -59,7 +59,7 @@ export function CurrentUserProvider({
             continue;
           }
 
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/migrate-guest`, {
+          const response = await fetch("/api/backend/v1/auth/migrate-guest", {
             method: "POST",
             credentials: "include",
             headers: {
