@@ -89,6 +89,11 @@ export function CurrentUserProvider({
             window.location.assign("/planner");
           }
 
+          if (body.message === "Signed-in account data kept") {
+            toast.info("Using your saved account planner");
+            window.location.assign("/planner");
+          }
+
           return;
         }
       } catch (error) {

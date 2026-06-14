@@ -148,6 +148,48 @@ class GuestSessionServiceTest {
     }
 
     @Test
+    void migrateGuestToExistingAuthenticatedUserDiscardsGuestDataAndKeepsAccountPlanner() {
+        String rawToken = "guest-token";
+        GuestSession session = activeSession("guest_123");
+        User guestUser = guestUser("guest_123");
+        guestUser.setStartSemester(new Semester(Term.FALL, 2024));
+        guestUser.setEndSemester(new Semester(Term.SPRING, 2028));
+        guestUser.setMajor("Computer Science");
+
+        User authenticatedUser = new User();
+        authenticatedUser.setId("user_123");
+        authenticatedUser.setStartSemester(new Semester(Term.FALL, 2023));
+        authenticatedUser.setEndSemester(new Semester(Term.SPRING, 2027));
+        authenticatedUser.setMajor("Information Science");
+        authenticatedUser.setNote("keep account planner");
+
+        when(guestSessionRepository.findByTokenHash(guestSessionService.hashToken(rawToken)))
+                .thenReturn(Optional.of(session));
+        when(userRepository.findById("guest_123")).thenReturn(Optional.of(guestUser));
+        when(userRepository.findById("user_123")).thenReturn(Optional.of(authenticatedUser));
+        when(userCourseRepository.deleteByUserId("guest_123")).thenReturn(3);
+        when(guestSessionRepository.findByUserId("guest_123")).thenReturn(List.of(session));
+
+        GuestSessionService.MigrationResult result =
+                guestSessionService.migrateGuestToAuthenticatedUser(rawToken, "user_123");
+
+        assertFalse(result.migrated());
+        assertEquals(0, result.movedCourses());
+        assertEquals(1, result.invalidatedSessions());
+        assertEquals("Signed-in account data kept", result.message());
+        assertEquals(new Semester(Term.FALL, 2023), authenticatedUser.getStartSemester());
+        assertEquals(new Semester(Term.SPRING, 2027), authenticatedUser.getEndSemester());
+        assertEquals("Information Science", authenticatedUser.getMajor());
+        assertEquals("keep account planner", authenticatedUser.getNote());
+        assertNotNull(session.getInvalidatedAt());
+        assertEquals("user_123", session.getMigratedToUserId());
+        verify(userCourseRepository).deleteByUserId("guest_123");
+        verify(userCourseRepository, never()).reassignUserCourses("guest_123", "user_123");
+        verify(userRepository, never()).save(authenticatedUser);
+        verify(userRepository).delete(guestUser);
+    }
+
+    @Test
     void resolveSessionInvalidatesExpiredSession() {
         String rawToken = "expired-token";
         GuestSession session = activeSession("guest_123");

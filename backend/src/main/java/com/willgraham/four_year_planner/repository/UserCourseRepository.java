@@ -15,6 +15,8 @@ import java.util.List;
 public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
     boolean existsByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
 
+    boolean existsByUserId(String userId);
+
     UserCourse findByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
 
     List<UserCourse> findByUserIdAndCourseIdOrderBySemesterDesc(String userId, String courseId);

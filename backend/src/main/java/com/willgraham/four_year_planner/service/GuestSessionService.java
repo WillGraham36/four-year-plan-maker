@@ -137,7 +137,12 @@ public class GuestSessionService {
         }
 
         User guest = guestOpt.get();
-        User authenticatedUser = userRepository.findById(authenticatedUserId)
+        Optional<User> authenticatedUserOpt = userRepository.findById(authenticatedUserId);
+        if (authenticatedUserOpt.isPresent() && hasSavedPlannerData(authenticatedUserOpt.get())) {
+            return discardGuestData(guest, authenticatedUserId, now);
+        }
+
+        User authenticatedUser = authenticatedUserOpt
                 .orElseGet(() -> {
                     User user = new User();
                     user.setId(authenticatedUserId);
@@ -165,6 +170,26 @@ public class GuestSessionService {
         });
 
         return new MigrationResult(true, movedCourses, invalidatedSessions, "Guest data migrated");
+    }
+
+    private MigrationResult discardGuestData(User guest, String authenticatedUserId, Instant now) {
+        int deletedCourses = userCourseRepository.deleteByUserId(guest.getId());
+        int invalidatedSessions = invalidateGuestSessions(guest.getId(), authenticatedUserId, now);
+        userRepository.delete(guest);
+
+        incrementStats(stats ->
+                stats.setInvalidatedGuestSessions(stats.getInvalidatedGuestSessions() + invalidatedSessions));
+
+        log.info(
+                "Discarded guest data during sign-in because authenticated account already has planner data " +
+                        "(guestUserId={}, authenticatedUserId={}, deletedCourses={}, invalidatedSessions={})",
+                guest.getId(),
+                authenticatedUserId,
+                deletedCourses,
+                invalidatedSessions
+        );
+
+        return new MigrationResult(false, 0, invalidatedSessions, "Signed-in account data kept");
     }
 
     @Transactional
@@ -215,6 +240,19 @@ public class GuestSessionService {
                         && user.getMajor() != null
                         && !user.getMajor().isBlank())
                 .orElse(false);
+    }
+
+    private boolean hasSavedPlannerData(User user) {
+        return user.getStartSemester() != null
+                || user.getEndSemester() != null
+                || !isBlank(user.getMajor())
+                || !isBlank(user.getMinor())
+                || user.getTrack() != null
+                || !isBlank(user.getULConcentration())
+                || !isBlank(user.getNote())
+                || !isEmpty(user.getOffSemesters())
+                || !isEmpty(user.getCompletedSemesters())
+                || userCourseRepository.existsByUserId(user.getId());
     }
 
     private void mergeGuestUserData(User guest, User authenticatedUser) {
@@ -337,6 +375,10 @@ public class GuestSessionService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private boolean isEmpty(List<?> values) {
+        return values == null || values.isEmpty();
     }
 
     private void incrementStats(StatsUpdater updater) {
