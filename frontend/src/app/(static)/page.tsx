@@ -11,7 +11,7 @@ useEffect(() => {
   const pingBackend = async () => {
     const start = performance.now();
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/ping`, {
+      await fetch("/api/health", {
         method: "GET",
         cache: "no-store", // avoid cached responses
       });

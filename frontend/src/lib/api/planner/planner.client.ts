@@ -22,7 +22,7 @@ export function useCourseApi() {
       index,
     }]);
 
-    return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
@@ -49,7 +49,7 @@ export function useCourseApi() {
       index,
     }]);
 
-    return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
@@ -61,7 +61,7 @@ export function useCourseApi() {
       courses.map((course, idx) => courseAndSemesterToDto(course, term, year, idx))
     );
   
-    return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export function useCourseApi() {
       )
     );
 
-    return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -101,7 +101,7 @@ export function useCourseApi() {
       }))
     );
   
-    return await fetchWithAuth("v1/usercourses", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export function useCourseApi() {
       }))
     );
   
-    return await fetchWithAuth("v1/usercourses/with-updates", new URLSearchParams(), {
+    return await fetchWithAuth("planner/courses", new URLSearchParams(), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -133,19 +133,19 @@ export function useCourseApi() {
   }
 
   const getAllSemesters = async (): Promise<SemesterSchema> => {
-    const res = await fetchWithAuth("v1/usercourses");
+    const res = await fetchWithAuth("planner/courses");
     const courses = SemestersSchema.safeParse(res.data);
     return courses.data || {} as SemesterSchema;
   };
   
   const getAllGenEdRequirements = async () => {
-    const res = await fetchWithAuth("v1/geneds");
+    const res = await fetchWithAuth("requirements/geneds");
     const genEdRequirements = GenEdRequirementListSchema.safeParse(res.data);
     return genEdRequirements.data || [];
   };
   
   const getAllULCourses = async () => {
-    const res = await fetchWithAuth('v1/ulconcentration');
+    const res = await fetchWithAuth('requirements/ul-concentration');
     const ULCourses = ULConcentrationSchema.safeParse(res.data);
     return ULCourses.data || {
       concentration: "",
@@ -154,7 +154,7 @@ export function useCourseApi() {
   };
 
   const getUserInfo = async (): Promise<CustomServerResponse<UserInfo>> => {
-    const res = await fetchWithAuth("v1/userinfo");
+    const res = await fetchWithAuth("user/profile");
     if (!res.ok) {
       return {
         ok: false,
@@ -171,7 +171,7 @@ export function useCourseApi() {
   };
 
   const updateULConcentration = async (concentration: string) => {
-    const res = await fetchWithAuth('v1/ulconcentration', new URLSearchParams(), {
+    const res = await fetchWithAuth('requirements/ul-concentration', new URLSearchParams(), {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -187,7 +187,7 @@ export function useCourseApi() {
   };
 
   const addCustomULCourse = async (courseId: string, term: Term, year: number) => {
-    const res = await fetchWithAuth('v1/ulconcentration/custom-courses', new URLSearchParams(), {
+    const res = await fetchWithAuth('requirements/ul-concentration/custom-courses', new URLSearchParams(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +211,7 @@ export function useCourseApi() {
   };
 
   const removeCustomULCourse = async (courseId: string, term: Term, year: number) => {
-    const res = await fetchWithAuth('v1/ulconcentration/custom-courses', new URLSearchParams(), {
+    const res = await fetchWithAuth('requirements/ul-concentration/custom-courses', new URLSearchParams(), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -310,7 +310,7 @@ export function useCourseApi() {
   };
 
   const createOffTerm = async (term: Term, year: number): Promise<CustomServerResponse<void>> => {
-    const res = await fetchWithAuth("v1/userinfo/offterms", new URLSearchParams(), {
+    const res = await fetchWithAuth("planner/off-terms", new URLSearchParams(), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -335,7 +335,7 @@ export function useCourseApi() {
       year: year.toString()
     });
     
-    const res = await fetchWithAuth(`v1/userinfo/offterms`, params, {
+    const res = await fetchWithAuth(`planner/off-terms`, params, {
       method: "DELETE",
     })
   
@@ -354,7 +354,7 @@ export function useCourseApi() {
   };
 
   const updateSemesterCompletion = async (term: Term, year: number, completed: boolean): Promise<CustomServerResponse<string>> => {
-    const res = await fetchWithAuth(`v1/userinfo/semesters/${term}/${year}/completion`, new URLSearchParams(), {
+    const res = await fetchWithAuth(`planner/semesters/${term}/${year}/completion`, new URLSearchParams(), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -378,7 +378,7 @@ export function useCourseApi() {
   };
 
   const updateUserNote = async (note: string): Promise<CustomServerResponse<string>> => {
-    const res = await fetchWithAuth("v1/userinfo/notes", new URLSearchParams(), {
+    const res = await fetchWithAuth("planner/notes", new URLSearchParams(), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -402,7 +402,7 @@ export function useCourseApi() {
   };
 
   const updateUserTrack = async (track: CsSpecializations): Promise<CustomServerResponse<string>> => {
-    const res = await fetchWithAuth("v1/userinfo/track", new URLSearchParams(), {
+    const res = await fetchWithAuth("requirements/cs-track", new URLSearchParams(), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -427,7 +427,7 @@ export function useCourseApi() {
 
   const autocompleteCourses = async (query: string): Promise<CustomServerResponse<CourseAutocompleteSuggestion[]>> => {
     const params = new URLSearchParams({ q: query });
-    const res = await fetchWithAuth("courses/autocomplete", params);
+    const res = await fetchWithAuth("courses/search", params);
 
     if (!res.ok) {
       return {

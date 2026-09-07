@@ -28,7 +28,7 @@ public class UserCourseService {
     private final UserService userService;
 
     public UserCourse save(UserCourse userCourse) {
-        UserCourse existingCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
+        UserCourse existingCourse = userCourseRepository.findByUserIdAndCourse_CourseIdAndSemester(
                 userCourse.getUserId(),
                 userCourse.getCourseId(),
                 userCourse.getSemester()
@@ -60,7 +60,7 @@ public class UserCourseService {
 
         for(CourseIdentifierDto dto : courseIdentifiers) {
             // Remove course
-            count += userCourseRepository.deleteByUserIdAndCourseIdAndSemester(userId, dto.getCourseId(), dto.getSemester());
+            count += userCourseRepository.deleteByUserIdAndCourse_CourseIdAndSemester(userId, dto.getCourseId(), dto.getSemester());
         }
         return count;
     }
@@ -73,7 +73,7 @@ public class UserCourseService {
     }
 
     public ULConcentrationDTO addCustomULCourse(String userId, CourseIdentifierDto courseIdentifier) {
-        UserCourse userCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
+        UserCourse userCourse = userCourseRepository.findByUserIdAndCourse_CourseIdAndSemester(
                 userId,
                 courseIdentifier.getCourseId(),
                 courseIdentifier.getSemester()
@@ -90,7 +90,7 @@ public class UserCourseService {
     }
 
     public ULConcentrationDTO removeCustomULCourse(String userId, CourseIdentifierDto courseIdentifier) {
-        UserCourse userCourse = userCourseRepository.findByUserIdAndCourseIdAndSemester(
+        UserCourse userCourse = userCourseRepository.findByUserIdAndCourse_CourseIdAndSemester(
                 userId,
                 courseIdentifier.getCourseId(),
                 courseIdentifier.getSemester()
@@ -109,7 +109,7 @@ public class UserCourseService {
 
         UserCourse userCourse = new UserCourse();
         userCourse.setUserId(userId);
-        userCourse.setCourseId(course.getCourseId());
+        userCourse.setCourse(course);
         userCourse.setSemester(dto.getSemester());
         userCourse.setTransferCreditName(dto.getName());
         userCourse.setTransferGenEdsOverride(dto.getGenEdOverrides());

@@ -256,16 +256,19 @@ const CourseInput = ({
   }, [debouncedCourseIdToVerify]);
 
   const displayGenEds = () => {
-    if (course.genEds[0][0] === "NONE") {
+    // Courses without Gen Eds are represented as either [] or [["NONE"]]
+    // depending on whether the data came from the catalog or the legacy API.
+    const genEdGroups = course.genEds ?? [];
+    if (genEdGroups.length === 0 || genEdGroups[0]?.[0] === "NONE") {
       return null;
     }
 
-    if (course.genEds[0].length > 0) {
-      const hasOrChoice = course.genEds.length > 1;
+    if (genEdGroups[0].length > 0) {
+      const hasOrChoice = genEdGroups.length > 1;
 
       return (
         <span className="flex items-center gap-1">
-          {course.genEds.map((genEdGroup, groupIndex) => {
+          {genEdGroups.map((genEdGroup, groupIndex) => {
             const genEdContent = (
               <React.Fragment>
                 {genEdGroup.map((genEd, genEdIndex) => (
@@ -310,7 +313,7 @@ const CourseInput = ({
                 ) : (
                   genEdContent
                 )}
-                {groupIndex < course.genEds.length - 1 && <span>or</span>}
+                {groupIndex < genEdGroups.length - 1 && <span>or</span>}
               </React.Fragment>
             );
           })}

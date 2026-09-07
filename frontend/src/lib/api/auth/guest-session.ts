@@ -64,6 +64,32 @@ export function setPendingGuestCookies(response: CookieWritable, token: string) 
   });
 }
 
+export function setPersistedGuestCookie(response: CookieWritable, token: string) {
+  response.cookies.set(GUEST_COOKIE_NAME, token, {
+    ...getGuestCookieOptions(),
+    maxAge: getGuestSessionMaxAgeSeconds(),
+  });
+  response.cookies.set(PENDING_GUEST_COOKIE_NAME, "", {
+    ...getGuestCookieOptions(),
+    maxAge: 0,
+  });
+}
+
+export function clearGuestCookies(response: CookieWritable) {
+  response.cookies.set(GUEST_COOKIE_NAME, "", {
+    ...getGuestCookieOptions(),
+    maxAge: 0,
+  });
+  response.cookies.set(PENDING_GUEST_COOKIE_NAME, "", {
+    ...getGuestCookieOptions(),
+    maxAge: 0,
+  });
+}
+
+export function getGuestSessionDaysValue() {
+  return getGuestSessionDays();
+}
+
 export async function clearPendingGuestMarker() {
   const cookieStore = await cookies();
   cookieStore.set(PENDING_GUEST_COOKIE_NAME, "", {

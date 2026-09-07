@@ -137,7 +137,7 @@ public class UserCourseController {
         // Create new UserCourse
         UserCourse userCourse = new UserCourse();
         userCourse.setUserId(userId);  // Set only the userId
-        userCourse.setCourseId(course.getCourseId());  // Set only the courseId
+        userCourse.setCourse(course);
         userCourse.setSemester(requestDto.getSemester());
         userCourse.setIndex(requestDto.getIndex());
 

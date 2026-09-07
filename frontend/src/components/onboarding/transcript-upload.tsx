@@ -15,7 +15,7 @@ import { CsSpecializations, OnboardingFormValues } from "./onboarding-form";
 import { Term } from "@/lib/utils/types";
 
 const maxSizeMB = 10;
-const maxSize = maxSizeMB * 1024 * 1024; // 5MB default
+const maxSize = maxSizeMB * 1024 * 1024;
 
 interface TranscriptUploadProps {
   incrementStep: () => void;
@@ -35,51 +35,58 @@ const TranscriptUpload = ({
   };
 
   const handleFileUpload = async (files: FileWithPreview[]) => {
+    if (loading || !files[0]) return;
     setLoading(true);
-    setError(null);
-    const values = await parseTranscript(files[0].file as File);
-    if ("error" in values) {
-      setError(values.error);
+    try {
+      setError(null);
+      const values = await parseTranscript(files[0].file as File);
+      if ("error" in values) {
+        setError(values.error);
+        removeFile(files[0].id);
+        return;
+      }
+
+      // Helper to transform names like "AP HUMAN GEOG" to "AP Human Geog"
+      function formatCourseName(name: string): string {
+        return name
+          .split(" ")
+          .map((word) =>
+            word.length <= 2
+              ? word.toUpperCase()
+              : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+          )
+          .join(" ");
+      }
+
+      const transcriptValues: OnboardingFormValues = {
+        startTerm: (values.parsed?.startTerm?.toLowerCase() as Term) || "",
+        endTerm: (values.parsed?.endTerm?.toLowerCase() as Term) || "",
+        startYear: values.parsed?.startYear?.toString() || "",
+        endYear: values.parsed?.endYear?.toString() || "",
+        major: values.parsed?.major || "",
+        csSpecialization: mapSpecialization(values.parsed?.specialization),
+        minor: values.parsed?.minor || "",
+        transferCredits: values.parsed?.transferCredits.map((credit) => ({
+          name: formatCourseName(credit.name),
+          courseId: credit.courseId,
+          genEds: credit.genEds,
+        })) || [{ name: "", courseId: "", genEds: "" }],
+        completedCourses:
+          values.parsed?.completedCourses.map((course) => ({
+            courseId: course.courseId,
+            term: course.term,
+            year: course.year.toString(),
+          })) || [],
+      };
+      setTranscriptValues(transcriptValues);
+
+      incrementStep();
+    } catch {
+      setError("Failed to parse transcript. Please try again.");
       removeFile(files[0].id);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Helper to transform names like "AP HUMAN GEOG" to "AP Human Geog"
-    function formatCourseName(name: string): string {
-      return name
-        .split(" ")
-        .map((word) =>
-          word.length <= 2
-            ? word.toUpperCase()
-            : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-        )
-        .join(" ");
-    }
-
-    const transcriptValues: OnboardingFormValues = {
-      startTerm: (values.parsed?.startTerm?.toLowerCase() as Term) || "",
-      endTerm: (values.parsed?.endTerm?.toLowerCase() as Term) || "",
-      startYear: values.parsed?.startYear?.toString() || "",
-      endYear: values.parsed?.endYear?.toString() || "",
-      major: values.parsed?.major || "",
-      csSpecialization: mapSpecialization(values.parsed?.specialization),
-      minor: values.parsed?.minor || "",
-      transferCredits: values.parsed?.transferCredits.map((credit) => ({
-        name: formatCourseName(credit.name),
-        courseId: credit.courseId,
-        genEds: credit.genEds,
-      })) || [{ name: "", courseId: "", genEds: "" }],
-      completedCourses:
-        values.parsed?.completedCourses.map((course) => ({
-          courseId: course.courseId,
-          term: course.term,
-          year: course.year.toString(),
-        })) || [],
-    };
-    setTranscriptValues(transcriptValues);
-
-    setLoading(false);
   };
 
   const [
@@ -128,16 +135,17 @@ const TranscriptUpload = ({
           {/* Drop area */}
           <div
             role="button"
-            onClick={openFileDialog}
+            onClick={loading ? undefined : openFileDialog}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
-            onDrop={handleDrop}
+            onDrop={loading ? (event) => event.preventDefault() : handleDrop}
             data-dragging={isDragging || undefined}
             className="border-input hover:bg-accent/50 data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 relative flex min-h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-disabled:pointer-events-none has-disabled:opacity-50 has-[img]:border-none has-[input:focus]:ring-[3px]"
           >
             <input
               {...getInputProps()}
+              disabled={loading}
               className="sr-only"
               aria-label="Upload file"
             />
@@ -202,13 +210,7 @@ const TranscriptUpload = ({
           >
             Skip this step for now
           </Button>
-          <Button
-            type="button"
-            onClick={incrementStep}
-            disabled={loading || files.length === 0}
-          >
-            Continue
-          </Button>
+
         </div>
       </div>
     </section>
