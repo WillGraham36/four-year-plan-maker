@@ -50,6 +50,17 @@ export function handleRouteError(error: unknown) {
   return fail(500, "INTERNAL_ERROR", "An unexpected error occurred");
 }
 
+export async function readJson(request: Request): Promise<unknown> {
+  try {
+    return await request.json();
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new ApiError(400, "INVALID_JSON", "Request body must contain valid JSON");
+    }
+    throw error;
+  }
+}
+
 export async function route<T>(operation: () => Promise<T>) {
   try {
     return await operation();
@@ -57,4 +68,3 @@ export async function route<T>(operation: () => Promise<T>) {
     return handleRouteError(error);
   }
 }
-

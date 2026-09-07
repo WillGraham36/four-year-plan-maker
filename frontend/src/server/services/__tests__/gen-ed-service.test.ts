@@ -95,3 +95,42 @@ test("does not overlap Gen Ed writes on a transaction connection", async () => {
   ], client);
   assert.equal(writes, 2);
 });
+
+test("transfer overrides replace catalog branches and retain the transfer label", async () => {
+  const transfer = course(1, "MATH140", [["FSAR"]], "TRANSFER");
+  transfer.transferGenEdsOverride = [["FSMA"]];
+  transfer.transferCreditName = "AP Calculus";
+  const requirements = await calculateGenEds([transfer]);
+  assert.equal(requirements.find((item) => item.requirementName === "FSAR")?.courseId, "");
+  assert.equal(requirements.find((item) => item.requirementName === "FSMA")?.transferCreditName, "AP Calculus");
+});
+
+test("prerequisites in another semester do not enable a conditional Gen Ed", async () => {
+  const requirements = await calculateGenEds([
+    course(1, "CMSC131", [], "SPRING"), course(2, "TEST300", [["DVUP|CMSC131"]]),
+  ]);
+  assert.equal(requirements.find((item) => item.requirementName === "DVUP")?.courseId, "");
+});
+
+test("removing a prerequisite clears a stale stored assignment", async () => {
+  const dependent = course(1, "TEST300", [["DVUP|CMSC131"]]);
+  dependent.selectedGenEds = ["DVUP|CMSC131"];
+  const writes: unknown[][] = [];
+  const client: DatabaseClient = { query: async (_sql, values) => { writes.push(values ?? []); return { rows: [], rowCount: 1, command: "UPDATE", oid: 0, fields: [] }; } };
+  await calculateGenEds([dependent], client);
+  assert.deepEqual(writes, [[1, null]]);
+});
+
+test("200-course batch stress: deterministic assignments and sequential persistence", async (context) => {
+  const courses = Array.from({ length: 200 }, (_, index) => course(index + 1, `TEST${100 + index}`, [
+    ["DSHU", "DVUP"], ["FSAW"], ["FSMA"],
+  ]));
+  let writes = 0;
+  const client: DatabaseClient = { query: async () => { writes += 1; return { rows: [], rowCount: 1, command: "UPDATE", oid: 0, fields: [] }; } };
+  const started = performance.now();
+  const first = await calculateGenEds(courses, client);
+  assert.equal(writes, 200);
+  assert.equal(first.filter((item) => item.courseId).length, 6);
+  assert.deepEqual(await calculateGenEds(courses), first);
+  context.diagnostic(`Two 200-course calculations: ${Math.round(performance.now() - started)} ms`);
+});

@@ -29,6 +29,7 @@ export type UserRow = {
 };
 
 function trackFromDatabase(value: UserRow["track"]): CsSpecializations | undefined {
+  if (value == null || (typeof value === "string" && !value.trim())) return undefined;
   if (typeof value === "number") return TRACKS[value];
   if (typeof value === "string" && TRACKS.includes(value as CsSpecializations)) {
     return value as CsSpecializations;
@@ -170,4 +171,3 @@ export async function updateTrack(userId: string, track: CsSpecializations) {
 }
 
 export { trackFromDatabase, trackToDatabase };
-

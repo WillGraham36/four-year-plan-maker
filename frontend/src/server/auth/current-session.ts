@@ -9,7 +9,7 @@ import { query } from "@/server/db/client";
 import { ApiError } from "@/server/http/api-response";
 import { resolveGuestSession } from "./guest-session";
 
-async function isOnboarded(userId: string) {
+export async function isOnboarded(userId: string) {
   const result = await query<{ onboarded: boolean }>(
     `SELECT (start_term IS NOT NULL AND end_term IS NOT NULL
              AND major IS NOT NULL AND BTRIM(major) <> '') AS onboarded

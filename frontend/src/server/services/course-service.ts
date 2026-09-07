@@ -119,14 +119,19 @@ export async function findOrCreateCourse(
   client: DatabaseClient,
 ) {
   const courseId = normalizeCourseQuery(input.courseId);
-  return upsertCourseRecord(client, {
-    courseId,
-    name: input.name || null,
-    deptId: courseId.slice(0, 4),
-    credits: input.credits,
-    genEds: input.genEds || [],
-    lastSyncedAt: null,
-  });
+  // Planner payloads must never replace metadata shared by every user.
+  // Only catalog synchronization and umd.io lookups may update existing rows.
+  const inserted = await client.query<CourseRow>(
+    `INSERT INTO courses (course_id, name, dept_id, credits, gen_eds, last_synced_at)
+     VALUES ($1, $2, $3, $4, $5, NULL)
+     ON CONFLICT (course_id) DO NOTHING RETURNING *`,
+    [courseId, input.name || null, courseId.slice(0, 4), input.credits, JSON.stringify(input.genEds || [])],
+  );
+  const row = inserted.rows[0] ?? (await client.query<CourseRow>(
+    "SELECT * FROM courses WHERE course_id = $1", [courseId],
+  )).rows[0];
+  if (!row) throw new ApiError(409, "COURSE_NOT_SAVED", "Could not save course");
+  return fromRow(row);
 }
 
 export async function findOrFetchCourse(rawCourseId: string) {

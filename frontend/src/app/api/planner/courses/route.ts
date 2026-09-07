@@ -1,5 +1,5 @@
 import { requireUserId } from "@/server/auth/current-session";
-import { ok, route } from "@/server/http/api-response";
+import { ok, readJson, route } from "@/server/http/api-response";
 import {
   deleteCoursePlacements,
   getUserCourses,
@@ -19,15 +19,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   return route(async () => {
-    const [userId, body] = await Promise.all([requireUserId(), request.json()]);
+    const [userId, body] = await Promise.all([requireUserId(), readJson(request)]);
     return ok(await saveCoursePlacements(userId, coursePlacementsSchema.parse(body)), undefined, 201);
   });
 }
 
 export async function DELETE(request: Request) {
   return route(async () => {
-    const [userId, body] = await Promise.all([requireUserId(), request.json()]);
+    const [userId, body] = await Promise.all([requireUserId(), readJson(request)]);
     return ok(await deleteCoursePlacements(userId, courseIdentifiersSchema.parse(body)));
   });
 }
-

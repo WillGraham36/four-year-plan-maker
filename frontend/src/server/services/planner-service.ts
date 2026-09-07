@@ -184,6 +184,10 @@ export async function saveCoursePlacementsInTransaction(
     if (!id) {
       throw new ApiError(409, "COURSE_PLACEMENT_NOT_SAVED", "Could not save the course placement");
     }
+    await client.query(
+      "UPDATE user_courses SET index = $3 WHERE id = $1 AND user_id = $2",
+      [id, userId, placement.index],
+    );
     savedCourses.push({ id: Number(id), courseId: course.courseId, semester: placement.semester });
   }
   const courses = await getUserCourses(userId, client);
@@ -215,6 +219,9 @@ export async function setCustomULCourse(
   identifier: CourseIdentifier,
   custom: boolean,
 ) {
+  if (custom && !isUpperLevel(identifier.courseId)) {
+    throw new ApiError(400, "NOT_UPPER_LEVEL", "Only planner courses at the 300 level or above can be added");
+  }
   const result = await query(
     `UPDATE user_courses SET custom_ul_concentration = $5
      WHERE user_id = $1 AND course_id = $2 AND term = $3 AND year = $4`,
@@ -222,14 +229,6 @@ export async function setCustomULCourse(
   );
   if (custom && !result.rowCount) {
     throw new ApiError(404, "COURSE_NOT_FOUND", "Planner course was not found");
-  }
-  if (custom && !isUpperLevel(identifier.courseId)) {
-    await query(
-      `UPDATE user_courses SET custom_ul_concentration = FALSE
-       WHERE user_id = $1 AND course_id = $2 AND term = $3 AND year = $4`,
-      [userId, identifier.courseId, identifier.semester.term, identifier.semester.year],
-    );
-    throw new ApiError(400, "NOT_UPPER_LEVEL", "Only planner courses at the 300 level or above can be added");
   }
   return getULConcentration(userId);
 }

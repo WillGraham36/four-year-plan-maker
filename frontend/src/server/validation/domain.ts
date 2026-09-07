@@ -10,7 +10,8 @@ export const termSchema = z.enum([
 
 export const semesterSchema = z.object({
   term: termSchema,
-  year: z.coerce.number().int().min(-1).max(2200),
+  year: z.union([z.number(), z.string().trim().regex(/^-?\d+$/)])
+    .pipe(z.coerce.number().int().min(-1).max(2200)),
 });
 
 export const courseInputSchema = z.object({
