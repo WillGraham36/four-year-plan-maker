@@ -3,6 +3,7 @@
 import { FileWithPreview, useFileUpload } from "@/hooks/use-file-upload";
 import { parseTranscript } from "@/lib/api/forms/parse-transcript";
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import {
   AlertCircleIcon,
@@ -79,6 +80,7 @@ const TranscriptUpload = ({
           })) || [],
       };
       setTranscriptValues(transcriptValues);
+      toast.success("Transcript parsed successfully");
 
       incrementStep();
     } catch {
@@ -210,7 +212,6 @@ const TranscriptUpload = ({
           >
             Skip this step for now
           </Button>
-
         </div>
       </div>
     </section>
