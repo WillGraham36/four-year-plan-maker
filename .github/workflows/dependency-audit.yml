@@ -1,0 +1,32 @@
+name: Production dependency audit
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/package*.json'
+      - '.github/workflows/dependency-audit.yml'
+  push:
+    branches: [master, main]
+    paths:
+      - 'frontend/package*.json'
+  schedule:
+    - cron: '0 12 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm run audit:prod

@@ -114,10 +114,13 @@ export class TranscriptParsingService {
 }
 
 export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  // pdf2json reads the backing ArrayBuffer; a pooled Buffer can include unrelated bytes.
+  const pdfBuffer = Buffer.alloc(buffer.length);
+  buffer.copy(pdfBuffer);
   return new Promise((resolve, reject) => {
     const textItems: string[] = [];
 
-    new PdfReader().parseBuffer(buffer, (err, item) => {
+    new PdfReader().parseBuffer(pdfBuffer, (err, item) => {
       if (err) {
         reject(err);
         return;
