@@ -270,7 +270,7 @@ function splitTransferSectionByInstitution(section: string, fullText: string) {
 
 function extractTransferInstitutions(text: string) {
   const receivedSection = text.match(
-    /Course Transcripts received from the following institutions:(.*?)(?=Transfer Credit Information)/i,
+    /Course Transcripts received from the following institutions:([\s\S]*?)(?=Transfer Credit Information)/i,
   )?.[1];
 
   if (!receivedSection) return [];

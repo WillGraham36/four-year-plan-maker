@@ -21,9 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Course,
-  CustomServerResponse,
-  GenEd,
   Term,
   termOrder,
 } from "@/lib/utils/types";
@@ -33,11 +30,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { MajorMinorCombobox } from "./major-minor-combobox";
 import {
   submitOnboardingForm,
-  SubmitOnboardingFormProps,
 } from "@/lib/api/forms/onboarding-form.server";
 import { useRouter } from "next/navigation";
 import LoadingButton from "../ui/loading-button";
-import { useCourseApi } from "@/lib/api/planner/planner.client";
 
 export type CsSpecializations =
   | "GENERAL"
@@ -214,7 +209,6 @@ export default function OnboardingForm({
   backButton?: React.ReactNode;
 }) {
   const router = useRouter();
-  const { getMultipleCourseInfos, saveCoursePlacements } = useCourseApi();
   const form = useForm<z.infer<typeof baseOnboardingFormSchema>>({
     resolver: zodResolver(baseOnboardingFormSchema),
     defaultValues: {
@@ -230,237 +224,18 @@ export default function OnboardingForm({
   async function onSubmit(values: z.infer<typeof baseOnboardingFormSchema>) {
     const dismissLoadingToast = startDelayedLoadingToast();
     try {
-      const errors: Record<number, string> = {};
-      let coursesInfo: CustomServerResponse<Course[]> = {
-        ok: true,
-        message: "",
-        data: [],
-      };
-
-      // If there are transfer credits, ensure they are trimmed and formatted correctly
-      // Then validate
-      const courseToGenEdMap: Record<string, string[][]> = {};
-      if (values.transferCredits && values.transferCredits.length > 0) {
-        values.transferCredits = values.transferCredits.map((credit) => ({
-          name: credit.name?.trim() || "",
-          courseId: credit.courseId?.trim().toUpperCase() || "",
-          genEds: credit.genEds?.trim().toUpperCase() || "",
-        }));
-
-        // Validate transfer credits
-        values.transferCredits?.forEach((credit, index) => {
-          if (!credit.name || !credit.courseId) {
-            errors[index] = "Both course name and ID are required";
-          } else if (!credit.courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
-            errors[index] = `Invalid course ID format`;
-          }
-
-          // Convert genEds to format expected by backend, add them to map
-          // Format: [["DSHS"], ["DSSP", "DSHU"]]
-          let formattedGenEds = [[]] as string[][];
-          if (credit.genEds && credit.genEds.length > 0) {
-            formattedGenEds = credit.genEds
-              .split("OR")
-              .map((group) =>
-                group
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean),
-              )
-              .filter((arr) => arr.length > 0);
-          }
-          if (formattedGenEds.length > 0) {
-            courseToGenEdMap[credit.courseId] = formattedGenEds;
-          }
-        });
-
-        // If any errors, set them using setError from RHF
-        if (Object.keys(errors).length > 0) {
-          Object.entries(errors).forEach(([index, message]) => {
-            form.setError(
-              `transferCredits.${Number(index)}.courseId` as const,
-              {
-                type: "manual",
-                message,
-              },
-            );
-          });
-          return;
+      form.clearErrors();
+      const res = await submitOnboardingForm(values);
+      if (res.fieldErrors) {
+        for (const error of res.fieldErrors) {
+          form.setError(error.path, { type: "server", message: error.message });
         }
-
-        if (!values.transferCredits || values.transferCredits.length === 0) {
-          return;
-        }
-        const courseIds = values.transferCredits.map(
-          (credit) => credit.courseId,
-        );
-        coursesInfo = await getMultipleCourseInfos(courseIds);
-
-        if (!coursesInfo.ok || !Array.isArray(coursesInfo.data)) {
-          values.transferCredits.forEach((_, idx) => {
-            form.setError(`transferCredits.${idx}.courseId` as const, {
-              type: "manual",
-              message: "Course could not be found",
-            });
-          });
-          return;
-        } else {
-          // coursesInfo.data should be an array of found course objects with courseId property
-          const foundIds = new Set(
-            coursesInfo.data.map((course: any) => course.courseId),
-          );
-          values.transferCredits.forEach((credit, idx) => {
-            if (!foundIds.has(credit.courseId)) {
-              form.setError(`transferCredits.${idx}.courseId` as const, {
-                type: "manual",
-                message: "Course could not be found",
-              });
-            }
-            // If genEds were provided, validate against the course's genEds
-            if (credit.genEds && courseToGenEdMap[credit.courseId]) {
-              // Get genEds from backend course info
-              const backendGenEds: string[][] =
-                coursesInfo.data?.find(
-                  (c: any) => c.courseId === credit.courseId,
-                )?.genEds || [];
-              const userGenEds: string[][] = courseToGenEdMap[credit.courseId];
-
-              // For each group in userGenEds, at least one value must be present in some group in backendGenEds
-              const allValid = userGenEds.every((userGroup) =>
-                backendGenEds.some((backendGroup) =>
-                  userGroup.every((userGenEd) =>
-                    backendGroup.includes(userGenEd),
-                  ),
-                ),
-              );
-
-              if (!allValid) {
-                form.setError(`transferCredits.${idx}.genEds` as const, {
-                  type: "manual",
-                  message:
-                    "Gen Eds do not match any available options for this course",
-                });
-              }
-            }
-          });
-          // If any errors were set, stop submission
-          if (
-            Object.keys(form.formState.errors.transferCredits || {}).length > 0
-          ) {
-            return;
-          }
-        }
-      } else {
-        // If no transfer credits, set to empty array
-        values.transferCredits = [];
       }
-
-      let completedCoursesInfo: CustomServerResponse<Course[]> = {
-        ok: true,
-        message: "",
-        data: [],
-      };
-      if (values.completedCourses && values.completedCourses.length > 0) {
-        values.completedCourses = values.completedCourses.map((course) => ({
-          ...course,
-          courseId: course.courseId.trim().toUpperCase(),
-          term: course.term.toUpperCase(),
-          year: course.year.trim(),
-        }));
-
-        let hasInvalidCompletedCourse = false;
-        values.completedCourses.forEach((course, index) => {
-          if (!course.courseId.match(/^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/)) {
-            hasInvalidCompletedCourse = true;
-            form.setError(`completedCourses.${index}.courseId` as const, {
-              type: "manual",
-              message: "Invalid course ID format",
-            });
-          }
-        });
-
-        if (hasInvalidCompletedCourse) return;
-
-        const completedCourseIds = values.completedCourses.map(
-          (course) => course.courseId,
-        );
-        completedCoursesInfo = await getMultipleCourseInfos([
-          ...new Set(completedCourseIds),
-        ]);
-
-        if (
-          !completedCoursesInfo.ok ||
-          !Array.isArray(completedCoursesInfo.data)
-        ) {
-          values.completedCourses.forEach((_, idx) => {
-            form.setError(`completedCourses.${idx}.courseId` as const, {
-              type: "manual",
-              message: "Course could not be found",
-            });
-          });
-          return;
-        }
-
-        const foundIds = new Set(
-          completedCoursesInfo.data.map((course) => course.courseId),
-        );
-        let hasMissingCompletedCourse = false;
-        values.completedCourses.forEach((course, idx) => {
-          if (!foundIds.has(course.courseId)) {
-            hasMissingCompletedCourse = true;
-            form.setError(`completedCourses.${idx}.courseId` as const, {
-              type: "manual",
-              message: "Course could not be found",
-            });
-          }
-        });
-        if (hasMissingCompletedCourse) return;
-      } else {
-        values.completedCourses = [];
-      }
-
-      // All validation passed
-      const { completedCourses, ...onboardingValues } = values;
-      const submitValues: SubmitOnboardingFormProps = {
-        ...onboardingValues,
-        track: (values.csSpecialization as CsSpecializations) || null,
-        startTerm: values.startTerm.toUpperCase(),
-        endTerm: values.endTerm.toUpperCase(),
-        transferCredits: values.transferCredits.map((credit) => ({
-          name: credit.name!,
-          course: coursesInfo.data.find(
-            (course: any) => course.courseId === credit.courseId,
-          )!,
-          semester: {
-            term: "TRANSFER",
-            year: -1,
-          },
-          genEdOverrides: (courseToGenEdMap[credit.courseId] as GenEd[][]) || [
-            [],
-          ],
-        })),
-      };
-      const res = await submitOnboardingForm(submitValues);
       if (!res.ok) {
         toast.error(
           res.message || "Failed to submit the form. Please try again",
         );
       } else {
-        if (completedCourses.length > 0) {
-          const completedCoursesSaveResult = await saveCompletedCourses(
-            completedCourses,
-            completedCoursesInfo.data,
-            saveCoursePlacements,
-          );
-
-          if (!completedCoursesSaveResult.ok) {
-            toast.error(
-              completedCoursesSaveResult.message ||
-                "Failed to save completed courses",
-            );
-            return;
-          }
-        }
         toast.success(res.message || "Onboarding form submitted successfully", {
           description: "You can always change this later in the settings",
           classNames: {
@@ -974,42 +749,3 @@ function formatSemesterHeading(term: string, year: string) {
   return `${formattedTerm} ${year || ""}`.trim();
 }
 
-async function saveCompletedCourses(
-  completedCourses: NonNullable<OnboardingFormValues["completedCourses"]>,
-  courseInfos: Course[],
-  saveCoursePlacements: ReturnType<typeof useCourseApi>["saveCoursePlacements"],
-) {
-  const courseInfoMap = new Map(
-    courseInfos.map((course) => [course.courseId, course]),
-  );
-  const semesterIndexes = new Map<string, number>();
-  const placements: {
-    course: Course;
-    term: Term;
-    year: number;
-    index: number;
-  }[] = [];
-
-  completedCourses.forEach((course) => {
-    const courseInfo = courseInfoMap.get(course.courseId);
-    if (!courseInfo) return;
-
-    const term = course.term as Term;
-    const year = Number(course.year);
-    const semesterKey = `${term}-${year}`;
-    const index = semesterIndexes.get(semesterKey) ?? 0;
-
-    placements.push({ course: courseInfo, term, year, index });
-    semesterIndexes.set(semesterKey, index + 1);
-  });
-
-  if (placements.length === 0) {
-    return {
-      ok: true,
-      message: "No completed courses to save",
-      data: undefined,
-    };
-  }
-
-  return saveCoursePlacements(placements);
-}

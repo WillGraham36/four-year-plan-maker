@@ -13,13 +13,11 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
-    boolean existsByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
+    boolean existsByUserIdAndCourse_CourseIdAndSemester(String userId, String courseId, Semester semester);
 
     boolean existsByUserId(String userId);
 
-    UserCourse findByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
-
-    List<UserCourse> findByUserIdAndCourseIdOrderBySemesterDesc(String userId, String courseId);
+    UserCourse findByUserIdAndCourse_CourseIdAndSemester(String userId, String courseId, Semester semester);
 
     List<UserCourse> findByUserIdAndCourse_CourseIdOrderBySemesterDesc(String userId, String courseId);
 
@@ -79,7 +77,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
         FROM UserCourse uc
         JOIN FETCH uc.course c
         WHERE uc.userId = :userId
-        AND uc.courseId LIKE CONCAT(:concentrationIdPrefix, '%')
+        AND uc.course.courseId LIKE CONCAT(:concentrationIdPrefix, '%')
         ORDER BY
             uc.semester.year ASC,
             CASE
@@ -121,9 +119,7 @@ public interface UserCourseRepository extends JpaRepository<UserCourse, Long> {
 
     @Modifying
     @Transactional
-    int deleteByUserIdAndCourseIdAndSemester(String userId, String courseId, Semester semester);
-
-    List<Course> findCoursesByUserId(String userId);
+    int deleteByUserIdAndCourse_CourseIdAndSemester(String userId, String courseId, Semester semester);
 
     @Query("""
         SELECT uc

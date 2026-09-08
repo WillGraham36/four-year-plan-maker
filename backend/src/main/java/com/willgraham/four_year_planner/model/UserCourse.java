@@ -5,28 +5,51 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Optional;
 
 @Data
 @Entity
-@Table(name = "user_courses")
+@Table(
+        name = "user_courses",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_user_courses_user_course_semester",
+                        columnNames = {"user_id", "course_id", "term", "year"}
+                )
+        },
+        indexes = {
+                @Index(name = "idx_user_courses_user_semester", columnList = "user_id, term, year")
+        }
+)
 public class UserCourse {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private String userId;  // Only store the userId
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", insertable = false, updatable = false)
-    private Course course;  // Use the full Course object for JPA, but only store courseId
+    /**
+     * A planner placement points at one shared catalog course. Course metadata is
+     * therefore stored only in courses; this table stores placement-specific data.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_courses_course"))
+    private Course course;
 
-    @Column(name = "course_id")
-    private String courseId;  // Only store the courseId
+    /**
+     * Convenience value used by service/DTO code while a placement is being
+     * hydrated. It is not a second database column; the relationship above is
+     * authoritative.
+     */
+    @Transient
+    private String unresolvedCourseId;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "term", column = @Column(name = "term", nullable = false)),
+            @AttributeOverride(name = "year", column = @Column(name = "year", nullable = false))
+    })
     private Semester semester;
 
     private List<String> selectedGenEds;
@@ -43,4 +66,12 @@ public class UserCourse {
     private List<List<String>> transferGenEdsOverride;
 
     private Integer index;
+
+    public String getCourseId() {
+        return course != null ? course.getCourseId() : unresolvedCourseId;
+    }
+
+    public void setCourseId(String courseId) {
+        this.unresolvedCourseId = courseId;
+    }
 }

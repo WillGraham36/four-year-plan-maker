@@ -38,14 +38,14 @@ Get stared by uploading your transcript, and download your plan as a PDF to shar
 - ![TailWindCSS][TailWind]
 - ![TypeScript][TypeScript]
 
-### Backend
+### Application API
 
-- ![Java][Java]
-- ![Spring Boot][Spring]
+- ![Next.js][Next.js] route handlers and server services
 - ![PostgreSQL][Postgres]
 - ![Vercel][Vercel]
-- [![Azure][Azure]][Azure-url]
 - [![GitHub Actions][GitHubActions]][GitHubActions-url]
+
+The legacy Spring Boot implementation remains in `backend/` as migration history and a rollback reference. The running application reads and writes PostgreSQL directly from the Next.js server layer.
 
 ## ⭐ Why I Built This Project
 
@@ -57,7 +57,7 @@ I built this project to automate that process - pulling official course data fro
 
 - How to design a full-stack application that can **scale to serve real users**
 - Deploying on **Azure** with **GitHub Actions CI/CD**, which taught me how to automate builds and deliver updates reliably
-- Solving a tough **cold start problem** on the backend by pre-initializing the Spring Boot service when users visited the landing page - a creative optimization that improved user experience
+- Migrating the API from Spring Boot to colocated **Next.js server services** while preserving the PostgreSQL schema and user data
 - On the frontend, learning how to manage the **state of complex, interactive components and charts** in Next.js while keeping the UI responsive and intuitive
 - On the backend, gaining deep experience with **Spring Boot** - especially handling transformations, business logic, and edge cases required to properly track degree requirements and course rules
 
@@ -82,9 +82,9 @@ Run everything from the repo root:
 docker compose up --build
 ```
 
-That starts PostgreSQL, the Spring Boot backend, and the frontend with `next dev`, so frontend changes hot reload automatically.
+That starts PostgreSQL and the frontend with `next dev`, so frontend changes hot reload automatically. Next route handlers own the application API.
 
-The frontend container reads env vars from `frontend/.env.local`. If you do not have one yet, start from `frontend/.env.example`.
+The frontend container reads secrets from `frontend/.env.local` and receives its local `DATABASE_URL` from Compose. Outside Docker, development uses the same local PostgreSQL defaults as the Spring development profile; override `DATABASE_URL` in `frontend/.env.local` when needed. Start from `frontend/.env.example`.
 
 ## 📞 Contact
 

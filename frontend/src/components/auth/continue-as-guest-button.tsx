@@ -31,7 +31,7 @@ export function ContinueAsGuestButton({
     setLoading(true);
     const dismissLoadingToast = startDelayedLoadingToast();
     try {
-      const response = await fetch("/api/auth/guest", {
+      const response = await fetch("/api/guest-session", {
         method: "POST",
         credentials: "include",
         cache: "no-cache",
@@ -44,7 +44,7 @@ export function ContinueAsGuestButton({
       }
 
       const session = body.data as CurrentUserSession;
-      router.push(session.pending ? redirectTo : "/planner");
+      router.push(session.onboarded ? "/planner" : redirectTo);
       router.refresh();
     } catch (error) {
       console.error("Guest session creation failed", error);

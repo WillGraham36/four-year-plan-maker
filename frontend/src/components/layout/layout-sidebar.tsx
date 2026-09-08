@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar, SidebarBody, SideBarClickableItem, SidebarLink } from "../ui/sidebar";
 import { motion } from "motion/react";
 import { CalendarCheck2, ChartSpline, Download, LoaderCircleIcon, LogIn, PanelLeft, Settings, ShieldCheck, User } from "lucide-react";
@@ -31,8 +31,11 @@ export const navbarLinks = [
   },
 ];
 
-function LayoutSidebar() {
-  const [open, setOpen] = useState(false);
+function LayoutSidebar({ defaultOpen = true }: { defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => {
+    document.cookie = `sidebar_open=${open}; Path=/; Max-Age=31536000; SameSite=Lax`;
+  }, [open]);
   const { setTheme, theme } = useTheme();
   const { openSignIn, openUserProfile, user } = useClerk();
   const { isGuest } = useCurrentUser();

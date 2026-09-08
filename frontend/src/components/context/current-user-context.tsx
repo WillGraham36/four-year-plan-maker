@@ -59,7 +59,7 @@ export function CurrentUserProvider({
             continue;
           }
 
-          const response = await fetch("/api/backend/v1/auth/migrate-guest", {
+          const response = await fetch("/api/guest-session/migrate", {
             method: "POST",
             credentials: "include",
             headers: {

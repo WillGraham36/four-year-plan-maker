@@ -4,6 +4,7 @@ import Footer from "@/components/layout/footer";
 import LayoutSidebar from "@/components/layout/layout-sidebar";
 import Navbar from "@/components/layout/navbar";
 import { getCurrentSession } from "@/lib/api/auth/session.server";
+import { cookies } from "next/headers";
 
 
 export default async function AuthedLayout({
@@ -12,6 +13,7 @@ export default async function AuthedLayout({
   children: React.ReactNode;
 }>) {
   const currentSession = await getCurrentSession();
+  const defaultSidebarOpen = (await cookies()).get("sidebar_open")?.value !== "false";
 
   return (
     <ThemeProvider
@@ -24,7 +26,7 @@ export default async function AuthedLayout({
     >
       <CurrentUserProvider initialSession={currentSession}>
         <div className="md:flex w-full">
-          <LayoutSidebar />
+          <LayoutSidebar defaultOpen={defaultSidebarOpen} />
           <main className="flex-1 w-full">
             <Navbar />
             {children}

@@ -178,7 +178,7 @@ export default async function fillPDFForm({
             .map((genEd: string) => genEd.split("|")[0])
             .join(", ");
         } else {
-          cleanedGenEds = course.genEds[0]
+          cleanedGenEds = (course.genEds?.[0] ?? [])
             .map((genEd: string) => genEd.split("|")[0])
             .join(", ");
         }
