@@ -53,6 +53,7 @@ function guestModule(options: { expired?: boolean; invalidated?: boolean; hasDat
     return result([], 1);
   } };
   const subject = loadModule<Guests>("server/auth/guest-session.ts", {
+    "@/server/security/abuse-limits": { limitGuestCreation: async () => {} },
     "@/server/db/transactions": { withTransaction: async (operation: (client: unknown) => Promise<unknown>) => operation(client) },
   });
   return { subject, calls };

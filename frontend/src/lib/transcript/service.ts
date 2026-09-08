@@ -1,4 +1,6 @@
-import { PdfReader } from "pdfreader";
+import { extractTextFromPdf } from "./pdf-extraction";
+import { MAX_EXTRACTED_CHARS, TRANSCRIPT_DEADLINE_MS, PDF_EXTRACTION_TIMEOUT_MS, TranscriptInputError, validateTranscriptFile } from "./limits";
+export { extractTextFromPdf } from "./pdf-extraction";
 import { ALL_GEN_EDS } from "@/lib/utils/types";
 import {
   buildTranscriptExtractionInput,
@@ -18,46 +20,43 @@ import {
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_MODEL = "gpt-5.5-nano";
 const DEFAULT_TIMEOUT_MS = 20_000;
-const MAX_TRANSCRIPT_CHARS = 36_000;
+const MAX_TRANSCRIPT_CHARS = MAX_EXTRACTED_CHARS;
 const RETRYABLE_STATUS_CODES = new Set([408, 409, 429, 500, 502, 503, 504]);
 
 export class TranscriptParsingService {
   async parsePdfFile(file: File): Promise<TranscriptParsingResult> {
+    const deadline = Date.now() + TRANSCRIPT_DEADLINE_MS;
     try {
-      if (!file) return { error: "No file provided" };
-      if (file.type !== "application/pdf")
-        return { error: "File must be a PDF" };
-      if (file.size > 10 * 1024 * 1024)
-        return { error: "File size exceeds 10 MB limit" };
+      validateTranscriptFile(file);
 
       const buffer = Buffer.from(await file.arrayBuffer());
-      const text = await extractTextFromPdf(buffer);
+      const text = await extractTextFromPdf(buffer, Math.min(PDF_EXTRACTION_TIMEOUT_MS, Math.max(1, deadline - Date.now())));
       const cleanedText = prepareTranscriptText(text);
 
       if (!looksLikeTranscript(cleanedText)) {
         return { error: "Invalid transcript format" };
       }
 
-      const rawParsed = await this.parseTranscriptText(cleanedText);
+      const rawParsed = await this.parseTranscriptText(cleanedText, deadline);
 
       return {
         success: true,
-        text: cleanedText,
         filename: file.name,
         rawParsed,
         parsed: toExtractedTextValues(rawParsed),
       };
     } catch (error) {
-      console.error("Transcript parsing failed", error);
+      if (error instanceof TranscriptInputError) return { error: error.message };
+      console.error("Transcript parsing failed");
       return {
-        error: "Failed to parse transcript",
-        details: error instanceof Error ? error.message : String(error),
+        error: "Failed to parse transcript. Please try again or enter courses manually.",
       };
     }
   }
 
   async parseTranscriptText(
     transcriptText: string,
+    deadline = Date.now() + TRANSCRIPT_DEADLINE_MS,
   ): Promise<TranscriptParseResponse> {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -91,7 +90,7 @@ export class TranscriptParsingService {
       },
     };
 
-    const json = await postOpenAIWithRetry(apiKey, body);
+    const json = await postOpenAIWithRetry(apiKey, body, deadline);
     const outputText = extractOutputText(json);
 
     if (!outputText) {
@@ -111,29 +110,6 @@ export class TranscriptParsingService {
           : removeNoCreditTransfers(rawParsed.transferCredits ?? []),
     });
   }
-}
-
-export async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  // pdf2json reads the backing ArrayBuffer; a pooled Buffer can include unrelated bytes.
-  const pdfBuffer = Buffer.alloc(buffer.length);
-  buffer.copy(pdfBuffer);
-  return new Promise((resolve, reject) => {
-    const textItems: string[] = [];
-
-    new PdfReader().parseBuffer(pdfBuffer, (err, item) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-
-      if (!item) {
-        resolve(textItems.join(" "));
-        return;
-      }
-
-      if (item.text) textItems.push(item.text);
-    });
-  });
 }
 
 export function prepareTranscriptText(text: string) {
@@ -356,15 +332,18 @@ function dedupeTransferCredits<T extends { courseCode: string; sourceInstitution
   return deduped;
 }
 
-async function postOpenAIWithRetry(apiKey: string, body: unknown) {
-  const maxAttempts = 3;
+async function postOpenAIWithRetry(apiKey: string, body: unknown, deadline: number) {
+  const maxAttempts = 2;
   let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) throw new Error("Transcript processing deadline exceeded");
     const controller = new AbortController();
+    const configuredTimeout = Number(process.env.OPENAI_TRANSCRIPT_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS);
     const timeout = setTimeout(
       () => controller.abort(),
-      Number(process.env.OPENAI_TRANSCRIPT_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS),
+      Math.min(remaining, Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : DEFAULT_TIMEOUT_MS),
     );
 
     try {
@@ -381,23 +360,23 @@ async function postOpenAIWithRetry(apiKey: string, body: unknown) {
       const json = await response.json().catch(() => null);
       if (response.ok) return json;
 
-      const message =
-        json?.error?.message ?? `OpenAI request failed with ${response.status}`;
-      lastError = new Error(message);
+      lastError = new Error("Transcript provider request failed");
 
       if (
         !RETRYABLE_STATUS_CODES.has(response.status) ||
         attempt === maxAttempts
       ) {
+        // Do not retry authentication/validation failures or a consumed request with an uncertain result.
         throw lastError;
       }
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      if (attempt === maxAttempts) throw lastError;
+      throw lastError;
     } finally {
       clearTimeout(timeout);
     }
 
+    if (Date.now() + 250 * attempt >= deadline) throw new Error("Transcript processing deadline exceeded");
     await wait(250 * attempt);
   }
 

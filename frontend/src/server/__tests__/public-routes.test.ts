@@ -6,6 +6,7 @@ import * as responses from "../http/api-response";
 
 test("public course search passes its query and returns suggestions", async () => {
   const subject = loadModule<typeof import("../../app/api/courses/search/route")>("app/api/courses/search/route.ts", {
+    "@/server/security/abuse-limits": { limitPublicCourses: async () => {} },
     "@/server/services/course-service": { autocompleteCourses: async (q: string) => { assert.equal(q, "cmsc 1"); return [{ courseId: "CMSC131", name: "Intro", credits: 4 }]; } },
   });
   const response = await subject.GET(new NextRequest("http://localhost/api/courses/search?q=cmsc%201"));
@@ -15,6 +16,7 @@ test("public course search passes its query and returns suggestions", async () =
 
 test("public course detail awaits dynamic parameters and preserves not-found errors", async () => {
   const subject = loadModule<typeof import("../../app/api/courses/[courseId]/route")>("app/api/courses/[courseId]/route.ts", {
+    "@/server/security/abuse-limits": { limitPublicCourses: async () => {} },
     "@/server/http/api-response": responses,
     "@/server/services/course-service": { findOrFetchCourse: async (id: string) => {
       assert.equal(id, "CMSC999");
@@ -76,6 +78,7 @@ test("unexpected errors are logged but sensitive details are not returned", asyn
 
 test("100 concurrent handler requests keep their independent response data", async () => {
   const subject = loadModule<typeof import("../../app/api/courses/search/route")>("app/api/courses/search/route.ts", {
+    "@/server/security/abuse-limits": { limitPublicCourses: async () => {} },
     "@/server/services/course-service": { autocompleteCourses: async (q: string) => {
       await new Promise((resolve) => setImmediate(resolve));
       return [{ courseId: q }];

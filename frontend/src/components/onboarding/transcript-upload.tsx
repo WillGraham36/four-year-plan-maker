@@ -2,6 +2,7 @@
 
 import { FileWithPreview, useFileUpload } from "@/hooks/use-file-upload";
 import { parseTranscript } from "@/lib/api/forms/parse-transcript";
+import { MAX_TRANSCRIPT_FILE_MB, MAX_TRANSCRIPT_FILE_BYTES } from "@/lib/transcript/limits";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
@@ -15,8 +16,8 @@ import Link from "next/link";
 import { CsSpecializations, OnboardingFormValues } from "./onboarding-form";
 import { Term } from "@/lib/utils/types";
 
-const maxSizeMB = 10;
-const maxSize = maxSizeMB * 1024 * 1024;
+const maxSizeMB = MAX_TRANSCRIPT_FILE_MB;
+const maxSize = MAX_TRANSCRIPT_FILE_BYTES;
 
 interface TranscriptUploadProps {
   incrementStep: () => void;

@@ -4,6 +4,7 @@ import { createHash, randomBytes, randomUUID } from "crypto";
 import type { DatabaseClient } from "@/server/db/client";
 import { query } from "@/server/db/client";
 import { withTransaction } from "@/server/db/transactions";
+import { limitGuestCreation } from "@/server/security/abuse-limits";
 import {
   getGuestSessionDaysValue,
   isPendingGuestToken,
@@ -65,6 +66,7 @@ async function createSession(
   token: string,
   now = new Date(),
 ): Promise<ResolvedGuestSession> {
+  await limitGuestCreation(client);
   const userId = `guest_${randomUUID()}`;
   const expiresAt = expiresFrom(now);
 

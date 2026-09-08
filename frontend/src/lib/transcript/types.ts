@@ -61,12 +61,10 @@ export type ExtractedTextValues = {
 export type TranscriptParsingResult =
   | {
       success: true;
-      text: string;
       filename: string;
       parsed: ExtractedTextValues;
       rawParsed: TranscriptParseResponse;
     }
   | {
       error: string;
-      details?: string;
     };

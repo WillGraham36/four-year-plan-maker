@@ -4,6 +4,9 @@ import { getCurrentSession } from "@/lib/api/auth/session.server";
 import { getOnboardingFormValues } from "@/lib/api/forms/onboarding-form.server";
 import { Metadata } from "next";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export const metadata: Metadata = {
   title: "TerpPlanner | Account Setup",
 };
