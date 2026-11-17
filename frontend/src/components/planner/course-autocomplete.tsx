@@ -38,6 +38,7 @@ type Suggestion = DepartmentSuggestion | CourseSuggestion;
 type CourseAutocompleteProps = {
   value: string;
   onValueChange: (value: string) => void;
+  onSubmit?: () => void;
   onCourseSelect?: (courseId: string) => void;
   acceptedCourseId?: string;
   disabled?: boolean;
@@ -51,6 +52,7 @@ export function CourseAutocomplete({
   value,
   onValueChange,
   onCourseSelect,
+  onSubmit,
   acceptedCourseId,
   disabled,
   maxLength,
@@ -269,6 +271,22 @@ export function CourseAutocomplete({
               }, 120);
             }}
             onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                const suggestion = showDropdown && !loading ? suggestions[highlightedIndex] : undefined;
+                if (onSubmit && /^[A-Z]{4}[0-9]{3}[A-Z]{0,2}$/.test(normalizedValue)) {
+                  onSubmit();
+                  setHasTyped(false);
+                  setOpen(false);
+                } else if (suggestion) {
+                  selectSuggestion(suggestion);
+                } else {
+                  onSubmit?.();
+                  setOpen(false);
+                }
+                return;
+              }
+
               if (!showDropdown || suggestions.length === 0) {
                 return;
               }
@@ -283,9 +301,6 @@ export function CourseAutocomplete({
                 setHighlightedIndex((current) =>
                   current === 0 ? suggestions.length - 1 : current - 1,
                 );
-              } else if (event.key === "Enter") {
-                event.preventDefault();
-                selectSuggestion(suggestions[highlightedIndex]);
               } else if (event.key === "Escape") {
                 setOpen(false);
               }

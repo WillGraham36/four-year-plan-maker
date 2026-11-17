@@ -14,6 +14,7 @@ import { arraysEqual } from "@/lib/utils";
 import { useRequirements } from "../context/requirements-context";
 import { useSemester } from "../context/semester-context";
 import { useCourseApi } from "@/lib/api/planner/planner.client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CourseAutocomplete } from "./course-autocomplete";
 import { normalizeCourseQuery } from "@/lib/courses/departments";
 
@@ -55,7 +56,8 @@ const CourseInput = ({
   const [acceptedCourseId, setAcceptedCourseId] = useState<string>(
     initialCourse?.courseId || "",
   );
-  const [courseIdToVerify, setCourseIdToVerify] = useState<string>("");
+  const [courseIdToVerify, setCourseIdToVerify] = useState<{ courseId: string; requestId: number } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [debouncedCourseIdToVerify] = useDebounce(courseIdToVerify, 250);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const verifiedCourseId = useRef<string>(initialCourse?.courseId || "");
@@ -107,6 +109,8 @@ const CourseInput = ({
 
     if (courseIdToRemove === "") return;
 
+    verifiedCourseId.current = "";
+
     if (hasCourse(courseIdToRemove)) {
       removeCourse(courseIdToRemove);
       await deleteSemesterCoursesAndRefreshGenEdsAndULCourses(
@@ -115,8 +119,6 @@ const CourseInput = ({
         year,
       );
     }
-
-    verifiedCourseId.current = "";
   };
 
   const resetCourseFields = async (courseId: string = "") => {
@@ -128,21 +130,39 @@ const CourseInput = ({
   const handleCourseIdChange = async (value: string) => {
     const courseId = normalizeCourseQuery(value).slice(0, MAX_COURSE_ID_LENGTH);
 
-    lookupRequestId.current += 1;
+    // Selecting the same suggestion must not cancel a valid lookup or resave a complete cell.
+    if (
+      courseId === courseIdInputRef.current &&
+      (isLoading || (acceptedCourseId === courseId && course.name !== "" && course.credits >= 0))
+    ) {
+      return;
+    }
+
+    const requestId = ++lookupRequestId.current;
+    setIsLoading(FULL_COURSE_ID_REGEX.test(courseId));
     courseIdInputRef.current = courseId;
     setCourseIdInput(courseId);
-    setCourseIdToVerify("");
+    setCourseIdToVerify(null);
     setErrorMessage("");
 
     const previousVerifiedCourseId = verifiedCourseId.current;
 
     if (courseId !== verifiedCourseId.current) {
       const reset = resetCourseFields(courseId);
-      pendingReset.current = reset;
-      await reset;
+      pendingReset.current = Promise.all([pendingReset.current, reset]).then(() => undefined);
+      try {
+        await pendingReset.current;
+      } catch {
+        if (lookupRequestId.current === requestId) {
+          setIsLoading(false);
+          setErrorMessage("Error updating course information. Press Enter to retry.");
+        }
+        pendingReset.current = Promise.resolve();
+        return;
+      }
     }
 
-    if (courseIdInputRef.current !== courseId) {
+    if (lookupRequestId.current !== requestId || courseIdInputRef.current !== courseId) {
       return;
     }
 
@@ -158,16 +178,19 @@ const CourseInput = ({
     ) {
       setAcceptedCourseId("");
       setErrorMessage("Course already added");
+      setIsLoading(false);
       return;
     }
 
     if (FULL_COURSE_ID_REGEX.test(courseId)) {
-      setCourseIdToVerify(courseId);
+      setCourseIdToVerify({ courseId, requestId });
     }
   };
 
   useEffect(() => {
-    const courseId = debouncedCourseIdToVerify;
+    if (!debouncedCourseIdToVerify) return;
+    const { courseId, requestId } = debouncedCourseIdToVerify;
+    if (lookupRequestId.current !== requestId) return;
 
     if (!FULL_COURSE_ID_REGEX.test(courseId)) {
       return;
@@ -187,13 +210,11 @@ const CourseInput = ({
     ) {
       setAcceptedCourseId("");
       setErrorMessage("Course already added");
+      setIsLoading(false);
       return;
     }
 
     const verifyCourse = async () => {
-      const requestId = lookupRequestId.current + 1;
-      lookupRequestId.current = requestId;
-
       try {
         await pendingReset.current;
 
@@ -219,6 +240,7 @@ const CourseInput = ({
           await resetCourseFields(courseId);
           return;
         }
+        setIsLoading(false);
         setCourse({
           ...courseInfo.data,
         });
@@ -238,17 +260,19 @@ const CourseInput = ({
             term,
             year,
           );
-          setCourse(emptyCourse(courseIdInputRef.current));
-          setAcceptedCourseId("");
           return;
         }
 
-        verifiedCourseId.current = courseId;
+        if (lookupRequestId.current === requestId) {
+          verifiedCourseId.current = courseId;
+        }
       } catch (e) {
-        if (courseIdInputRef.current === courseId) {
+        if (lookupRequestId.current === requestId && courseIdInputRef.current === courseId) {
           setAcceptedCourseId("");
           setErrorMessage("Error fetching course information");
         }
+      } finally {
+        if (lookupRequestId.current === requestId) setIsLoading(false);
       }
     };
 
@@ -346,6 +370,7 @@ const CourseInput = ({
             onValueChange={(value) => {
               void handleCourseIdChange(value);
             }}
+            onSubmit={() => { void handleCourseIdChange(courseIdInputRef.current); }}
             acceptedCourseId={acceptedCourseId}
             maxLength={MAX_COURSE_ID_LENGTH}
             disabled={disabled}
@@ -353,11 +378,11 @@ const CourseInput = ({
         </div>
 
         <div className="flex items-center h-8 w-full border-b border-x bg-background text-xs md:text-sm cursor-default px-3 border-t-0">
-          {displayGenEds()}
+          {isLoading ? <Skeleton className="h-4 w-24" aria-label="Loading Gen Eds" /> : displayGenEds()}
         </div>
 
         <div className="flex items-center justify-center h-8 w-full border-b bg-background text-xs md:text-sm cursor-default">
-          {course.credits === -1 ? "" : course.credits}
+          {isLoading ? <Skeleton className="h-4 w-5" aria-label="Loading credits" /> : course.credits === -1 ? "" : course.credits}
         </div>
       </div>
     </div>
